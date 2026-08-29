@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Dizzy
+Comment=Stream movies, TV shows, music and more
+Exec=Dizzy
+Icon=Dizzy
+Categories=AudioVideo;Video;Player;
+StartupWMClass=Dizzy
+Terminal=false

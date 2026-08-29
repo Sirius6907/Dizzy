@@ -1,0 +1,51 @@
+; ──────────────────────────────────────────────────────────────────────────────
+;  Dizzy — Windows Installer (Inno Setup 6)
+;  Built by CI from: build\windows\x64\runner\Release\
+; ──────────────────────────────────────────────────────────────────────────────
+
+#define MyAppName      "Dizzy"
+#define MyAppVersion   "1.0.0"
+#define MyAppPublisher "Dizzy"
+#define MyAppExeName   "Dizzy.exe"
+#define MyAppURL       "https://github.com/Sirius6907/Dizzy"
+
+[Setup]
+AppId={{74af8e1b-4b91-4756-b1d2-5b37786678a9}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}
+DefaultGroupName={#MyAppName}
+UninstallDisplayIcon={app}\{#MyAppExeName}
+SetupIconFile=..\..\windows\runner\resources\app_icon.ico
+OutputDir=Output
+OutputBaseFilename=Dizzy-Windows-Setup
+Compression=lzma2/ultra64
+SolidCompression=yes
+ArchitecturesInstallIn64BitMode=x64compatible
+WizardStyle=modern
+PrivilegesRequired=lowest
+DisableProgramGroupPage=yes
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
+[Files]
+Source: "..\..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[InstallDelete]
+; Clean up old files that might conflict with new version
+Type: filesandordirs; Name: "{app}\data\flutter_assets\*"
+Type: files; Name: "{app}\*.dll.old"
+
+[Icons]
+Name: "{group}\{#MyAppName}";    Filename: "{app}\{#MyAppExeName}"
+Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
