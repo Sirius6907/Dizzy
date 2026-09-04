@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/movie.dart';
 
@@ -9,11 +10,19 @@ class TmdbApi {
   static const String _imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
   
   // Increase timeout for slow networks
-  static const Duration _timeout = Duration(seconds: 15);
+  static const Duration _timeout = Duration(seconds: 30);
   
   /// Helper to make HTTP requests with timeout
   Future<http.Response> _get(String url) async {
-    return await _get(url).timeout(_timeout);
+    try {
+      return await http.get(Uri.parse(url)).timeout(
+        _timeout,
+        onTimeout: () => http.Response('{"results":[]}', 408),
+      );
+    } catch (e) {
+      debugPrint('[TmdbApi] Request failed for $url: $e');
+      return http.Response('{"results":[]}', 500);
+    }
   }
 
   /// High-res backdrop for hero banners / full-width headers.
