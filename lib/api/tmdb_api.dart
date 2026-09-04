@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/movie.dart';
+import '../core/cache/cache_engine.dart';
 
 class TmdbApi {
   static const String _apiKey = 'ef0d35fe298492270fcd565215e1901c';
@@ -11,6 +12,9 @@ class TmdbApi {
   
   // Increase timeout for slow networks
   static const Duration _timeout = Duration(seconds: 30);
+  
+  // Cache engine instance
+  final CacheEngine _cache = CacheEngine();
   
   /// Helper to make HTTP requests with timeout
   Future<http.Response> _get(String url) async {
@@ -38,12 +42,38 @@ class TmdbApi {
   static String getOriginalUrl(String path) => 'https://image.tmdb.org/t/p/original$path';
 
   Future<List<Movie>> getTrending() async {
+    final cacheKey = 'tmdb_trending_movie_day';
+    
+    // 1. Try cache first (instant!)
+    try {
+      final cached = await _cache.get(cacheKey, maxAge: const Duration(hours: 6));
+      if (cached != null) {
+        debugPrint('[TmdbApi] Cache HIT: trending (stale: ${cached.isStale})');
+        final movies = (cached.data as List)
+            .map((json) => Movie.fromJson(json, mediaType: 'movie'))
+            .toList();
+        
+        // If stale, refresh in background
+        if (cached.isStale) {
+          _refreshTrendingInBackground(cacheKey);
+        }
+        
+        return movies;
+      }
+    } catch (e) {
+      debugPrint('[TmdbApi] Cache read error: $e');
+    }
+    
+    // 2. Cache miss - fetch fresh
+    debugPrint('[TmdbApi] Cache MISS: trending - fetching from API');
     try {
       final response = await _get('$_baseUrl/trending/movie/day?api_key=$_apiKey');
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         final results = decoded['results'] as List?;
         if (results != null && results.isNotEmpty) {
+          // Save to cache
+          await _cache.set(cacheKey, results);
           return results.map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
         }
       }
@@ -54,6 +84,25 @@ class TmdbApi {
     
     // Fallback: return sample movies so app doesn't crash
     return _getFallbackMovies();
+  }
+  
+  /// Background refresh for stale cache (non-blocking)
+  void _refreshTrendingInBackground(String cacheKey) {
+    Future.delayed(Duration.zero, () async {
+      try {
+        final response = await _get('$_baseUrl/trending/movie/day?api_key=$_apiKey');
+        if (response.statusCode == 200) {
+          final decoded = jsonDecode(response.body);
+          final results = decoded['results'] as List?;
+          if (results != null && results.isNotEmpty) {
+            await _cache.set(cacheKey, results);
+            debugPrint('[TmdbApi] Background refresh complete: trending');
+          }
+        }
+      } catch (e) {
+        debugPrint('[TmdbApi] Background refresh failed: $e');
+      }
+    });
   }
   
   /// Fallback movies when TMDB is unreachable
@@ -81,13 +130,47 @@ class TmdbApi {
   }
 
   Future<List<Movie>> getPopular() async {
+    final cacheKey = 'tmdb_movie_popular';
+    
+    // Try cache first
+    try {
+      final cached = await _cache.get(cacheKey, maxAge: const Duration(hours: 12));
+      if (cached != null) {
+        debugPrint('[TmdbApi] Cache HIT: popular');
+        final movies = (cached.data as List)
+            .map((json) => Movie.fromJson(json, mediaType: 'movie'))
+            .toList();
+        if (cached.isStale) _refreshPopularInBackground(cacheKey);
+        return movies;
+      }
+    } catch (e) {
+      debugPrint('[TmdbApi] Cache error: $e');
+    }
+    
+    // Fetch fresh
+    debugPrint('[TmdbApi] Cache MISS: popular');
     final response = await _get('$_baseUrl/movie/popular?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-      return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
+      final results = decoded['results'] as List;
+      await _cache.set(cacheKey, results);
+      return results.map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
     } else {
       throw Exception('Failed to load popular movies');
     }
+  }
+  
+  void _refreshPopularInBackground(String cacheKey) {
+    Future.delayed(Duration.zero, () async {
+      try {
+        final response = await _get('$_baseUrl/movie/popular?api_key=$_apiKey');
+        if (response.statusCode == 200) {
+          final decoded = jsonDecode(response.body);
+          await _cache.set(cacheKey, decoded['results']);
+          debugPrint('[TmdbApi] Background refresh: popular');
+        }
+      } catch (_) {}
+    });
   }
 
   Future<List<Movie>> getTopRated() async {
@@ -145,6 +228,33 @@ class TmdbApi {
   }
 
   Future<Movie> getMovieDetails(int movieId) async {
+    final cacheKey = 'tmdb_movie_details_$movieId';
+    
+    // Try cache first (24h TTL for details)
+    try {
+      final cached = await _cache.get(cacheKey, maxAge: const Duration(hours: 24));
+      if (cached != null) {
+        debugPrint('[TmdbApi] Cache HIT: movie details $movieId');
+        final movie = Movie.fromJson(cached.data, mediaType: 'movie');
+        if (cached.isStale) {
+          Future.delayed(Duration.zero, () async {
+            try {
+              final response = await _get('$_baseUrl/movie/$movieId?api_key=$_apiKey&append_to_response=images,external_ids');
+              if (response.statusCode == 200) {
+                await _cache.set(cacheKey, jsonDecode(response.body));
+                debugPrint('[TmdbApi] Background refresh: movie $movieId');
+              }
+            } catch (_) {}
+          });
+        }
+        return movie;
+      }
+    } catch (e) {
+      debugPrint('[TmdbApi] Cache error: $e');
+    }
+    
+    // Fetch fresh
+    debugPrint('[TmdbApi] Cache MISS: movie details $movieId');
     final response = await _get('$_baseUrl/movie/$movieId?api_key=$_apiKey&append_to_response=images,external_ids');
 
     if (response.statusCode == 200) {
