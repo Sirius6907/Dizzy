@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import '../api/kisskh_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 import '../widgets/hover_scale.dart';
 import 'asian_drama_details_screen.dart';
 
@@ -94,9 +95,7 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
 
   void _open(KdramaCard a) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AsianDramaDetailsScreen(drama: a),
-      ),
+      MaterialPageRoute(builder: (_) => AsianDramaDetailsScreen(drama: a)),
     );
   }
 
@@ -144,8 +143,7 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
               _buildFilterStrip(),
               const Divider(height: 1, color: Color(0x14FFFFFF)),
               Expanded(child: _buildGrid(isLandscape)),
-              if (!_loading && _error == null && _totalPages > 1)
-                _buildPager(),
+              if (!_loading && _error == null && _totalPages > 1) _buildPager(),
             ],
           ),
         );
@@ -250,8 +248,11 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
                   });
                   _reload();
                 },
-                icon: const Icon(Icons.refresh_rounded,
-                    color: Colors.white, size: 16),
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
                 label: const Text(
                   'Reset',
                   style: TextStyle(
@@ -384,13 +385,14 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
                         options[i],
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight:
-                              isSel ? FontWeight.w800 : FontWeight.w500,
+                          fontWeight: isSel ? FontWeight.w800 : FontWeight.w500,
                         ),
                       ),
                       trailing: isSel
-                          ? Icon(Icons.check_rounded,
-                              color: AppTheme.primaryColor)
+                          ? Icon(
+                              Icons.check_rounded,
+                              color: AppTheme.primaryColor,
+                            )
                           : null,
                       onTap: () => Navigator.of(ctx).pop(i),
                     );
@@ -414,54 +416,19 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
       );
     }
     if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline_rounded,
-                  color: AppTheme.primaryColor, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 14),
-              ElevatedButton.icon(
-                onPressed: _reload,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
+      return DizzyEmptyState(
+        title: 'Error Loading Content',
+        description: _error!,
+        icon: Icons.error_outline_rounded,
+        actionLabel: 'Retry',
+        onActionTap: _reload,
       );
     }
     if (_items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.inbox_outlined,
-                color: Colors.white.withValues(alpha: 0.25), size: 56),
-            const SizedBox(height: 10),
-            Text(
-              'No results match those filters',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
+      return DizzyEmptyState(
+        title: 'No Results',
+        description: 'No results match those filters',
+        icon: Icons.inbox_outlined,
       );
     }
     final cols = isLandscape ? 6 : 3;
@@ -496,12 +463,9 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
       child: Container(
         decoration: const BoxDecoration(
           color: Color(0xFF0E0F14),
-          border: Border(
-            top: BorderSide(color: Color(0x14FFFFFF), width: 1),
-          ),
+          border: Border(top: BorderSide(color: Color(0x14FFFFFF), width: 1)),
         ),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
             _pagerButton(
@@ -512,14 +476,14 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
             ),
             const Spacer(),
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.10),
-                    width: 1),
+                  color: Colors.white.withValues(alpha: 0.10),
+                  width: 1,
+                ),
               ),
               child: Text(
                 'Page $_page of $_totalPages',
@@ -565,8 +529,7 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
         borderRadius: BorderRadius.circular(20),
         onTap: enabled ? onTap : null,
         child: Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
@@ -578,22 +541,28 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
             mainAxisSize: MainAxisSize.min,
             children: trailing
                 ? [
-                    Text(label,
-                        style: TextStyle(
-                            color: fg,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700)),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: fg,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(width: 4),
                     Icon(icon, size: 18, color: fg),
                   ]
                 : [
                     Icon(icon, size: 18, color: fg),
                     const SizedBox(width: 4),
-                    Text(label,
-                        style: TextStyle(
-                            color: fg,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700)),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: fg,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ],
           ),
         ),
@@ -618,8 +587,7 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
                     CachedNetworkImage(
                       imageUrl: a.cover,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) =>
-                          Container(color: AppTheme.bgCard),
+                      placeholder: (_, _) => Container(color: AppTheme.bgCard),
                       errorWidget: (_, _, _) =>
                           Container(color: AppTheme.bgCard),
                     )
@@ -631,7 +599,9 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
                       top: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.65),
                           borderRadius: BorderRadius.circular(5),
@@ -652,7 +622,9 @@ class _AsianDramaExploreScreenState extends State<AsianDramaExploreScreen> {
                       top: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],

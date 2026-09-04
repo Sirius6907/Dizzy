@@ -7,6 +7,7 @@ import '../api/settings_service.dart';
 import '../models/movie.dart';
 import '../services/my_list_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 import 'details_screen.dart';
 import 'streaming_details_screen.dart';
 import 'main_screen.dart';
@@ -35,7 +36,8 @@ class SearchScreen extends StatefulWidget {
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClientMixin {
+class _SearchScreenState extends State<SearchScreen>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController _controller = TextEditingController();
   final TmdbApi _api = TmdbApi();
   final StremioService _stremio = StremioService();
@@ -152,22 +154,28 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
 
       setState(() {
         if (movies.isNotEmpty) {
-          _sections.insert(0, _SearchSection(
-            key: 'tmdb_movies',
-            title: 'TMDB Movies',
-            isTmdb: true,
-            results: movies,
-          ));
+          _sections.insert(
+            0,
+            _SearchSection(
+              key: 'tmdb_movies',
+              title: 'TMDB Movies',
+              isTmdb: true,
+              results: movies,
+            ),
+          );
         }
         if (shows.isNotEmpty) {
           // Insert after tmdb_movies if it exists, else at 0
           final idx = _sections.indexWhere((s) => s.key == 'tmdb_movies');
-          _sections.insert(idx >= 0 ? idx + 1 : 0, _SearchSection(
-            key: 'tmdb_shows',
-            title: 'TMDB Shows',
-            isTmdb: true,
-            results: shows,
-          ));
+          _sections.insert(
+            idx >= 0 ? idx + 1 : 0,
+            _SearchSection(
+              key: 'tmdb_shows',
+              title: 'TMDB Shows',
+              isTmdb: true,
+              results: shows,
+            ),
+          );
         }
       });
     } catch (e) {
@@ -175,7 +183,11 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
     }
   }
 
-  Future<void> _searchAddon(String query, Map<String, dynamic> provider, int gen) async {
+  Future<void> _searchAddon(
+    String query,
+    Map<String, dynamic> provider,
+    int gen,
+  ) async {
     final providerBaseUrl = provider['baseUrl'] as String;
     final providerName = provider['name'] as String;
     final providerIcon = provider['icon']?.toString() ?? '';
@@ -184,23 +196,25 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
     // Group results by type (movie / series)
     final Map<String, List<Map<String, dynamic>>> byType = {};
 
-    await Future.wait(catalogs.map((cat) async {
-      try {
-        final results = await _stremio.getCatalog(
-          baseUrl: cat['addonBaseUrl'],
-          type: cat['catalogType'],
-          id: cat['catalogId'],
-          search: query,
-        );
-        for (final r in results) {
-          r['_addonBaseUrl'] = providerBaseUrl;
-          r['_addonName'] = providerName;
-        }
-        final type = cat['catalogType']?.toString() ?? 'other';
-        byType.putIfAbsent(type, () => []);
-        byType[type]!.addAll(results);
-      } catch (_) {}
-    }));
+    await Future.wait(
+      catalogs.map((cat) async {
+        try {
+          final results = await _stremio.getCatalog(
+            baseUrl: cat['addonBaseUrl'],
+            type: cat['catalogType'],
+            id: cat['catalogId'],
+            search: query,
+          );
+          for (final r in results) {
+            r['_addonBaseUrl'] = providerBaseUrl;
+            r['_addonName'] = providerName;
+          }
+          final type = cat['catalogType']?.toString() ?? 'other';
+          byType.putIfAbsent(type, () => []);
+          byType[type]!.addAll(results);
+        } catch (_) {}
+      }),
+    );
 
     if (gen != _searchGeneration || !mounted) return;
 
@@ -217,13 +231,17 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
 
         if (deduped.isEmpty) continue;
 
-        final typeLabel = entry.key == 'series' ? 'Shows' : (entry.key == 'movie' ? 'Movies' : entry.key);
-        _sections.add(_SearchSection(
-          key: '${providerBaseUrl}_${entry.key}',
-          title: '$providerName $typeLabel',
-          icon: providerIcon,
-          results: deduped,
-        ));
+        final typeLabel = entry.key == 'series'
+            ? 'Shows'
+            : (entry.key == 'movie' ? 'Movies' : entry.key);
+        _sections.add(
+          _SearchSection(
+            key: '${providerBaseUrl}_${entry.key}',
+            title: '$providerName $typeLabel',
+            icon: providerIcon,
+            results: deduped,
+          ),
+        );
       }
     });
   }
@@ -237,9 +255,15 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
     final isStreaming = await settings.isStreamingModeEnabled();
     if (!mounted) return;
     if (isStreaming) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => StreamingDetailsScreen(movie: movie)));
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => StreamingDetailsScreen(movie: movie)),
+      );
     } else {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie)));
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie)),
+      );
     }
   }
 
@@ -253,9 +277,17 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
 
     if (!isCustomId && !isCollection) {
       try {
-        final movie = await _api.findByImdbId(id, mediaType: type == 'series' ? 'tv' : 'movie');
+        final movie = await _api.findByImdbId(
+          id,
+          mediaType: type == 'series' ? 'tv' : 'movie',
+        );
         if (movie != null && mounted) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie, stremioItem: item)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DetailsScreen(movie: movie, stremioItem: item),
+            ),
+          );
           return;
         }
       } catch (_) {}
@@ -269,14 +301,21 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
             (m) => m.title.toLowerCase() == name.toLowerCase(),
             orElse: () => results.first,
           );
-          Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(movie: match, stremioItem: item)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DetailsScreen(movie: match, stremioItem: item),
+            ),
+          );
           return;
         }
       } catch (_) {}
     }
 
     if (mounted) {
-      final actualType = isCollection ? 'collections' : (type == 'series' ? 'tv' : 'movie');
+      final actualType = isCollection
+          ? 'collections'
+          : (type == 'series' ? 'tv' : 'movie');
       final movie = Movie(
         id: id.hashCode,
         imdbId: id.startsWith('tt') ? id : null,
@@ -290,7 +329,12 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
       );
       final updatedItem = Map<String, dynamic>.from(item);
       if (isCollection) updatedItem['type'] = 'collections';
-      Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie, stremioItem: updatedItem)));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DetailsScreen(movie: movie, stremioItem: updatedItem),
+        ),
+      );
     }
   }
 
@@ -344,7 +388,9 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
   Widget _buildBody() {
     if (_query.isEmpty) return _buildEmpty();
     if (_sections.isEmpty && _isSearching) {
-      return Center(child: CircularProgressIndicator(color: AppTheme.current.primaryColor));
+      return Center(
+        child: CircularProgressIndicator(color: AppTheme.current.primaryColor),
+      );
     }
     if (_sections.isEmpty && !_isSearching) return _buildEmpty();
 
@@ -357,7 +403,16 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
           // Loading indicator at the bottom while more results are coming
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white24))),
+            child: Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white24,
+                ),
+              ),
+            ),
           );
         }
         final section = _sections[index];
@@ -375,40 +430,12 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header
+          // Section header → DizzySectionHeader
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                if (section.icon != null && section.icon!.isNotEmpty) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: CachedNetworkImage(
-                      imageUrl: section.icon!,
-                      width: 20, height: 20,
-                      errorWidget: (_, _, _) => const Icon(Icons.extension, size: 16, color: Colors.white38),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ] else if (section.isTmdb) ...[
-                  const Icon(Icons.movie, size: 18, color: Colors.amber),
-                  const SizedBox(width: 8),
-                ],
-                Text(
-                  section.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${section.results.length}',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 13),
-                ),
-              ],
+            child: DizzySectionHeader(
+              title: section.title,
+              subtitle: '${section.results.length} results',
             ),
           ),
           const SizedBox(height: 10),
@@ -422,13 +449,19 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
               if (item is Movie) {
                 return SizedBox(
                   width: cardWidth,
-                  child: _SearchCard(movie: item, onTap: () => _openDetails(item)),
+                  child: _SearchCard(
+                    movie: item,
+                    onTap: () => _openDetails(item),
+                  ),
                 );
               } else {
                 final map = item as Map<String, dynamic>;
                 return SizedBox(
                   width: cardWidth,
-                  child: _StremioSearchCard(item: map, onTap: () => _openStremioItem(map)),
+                  child: _StremioSearchCard(
+                    item: map,
+                    onTap: () => _openStremioItem(map),
+                  ),
                 );
               }
             },
@@ -439,18 +472,12 @@ class _SearchScreenState extends State<SearchScreen> with AutomaticKeepAliveClie
   }
 
   Widget _buildEmpty() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search, size: 80, color: Colors.white.withValues(alpha: 0.05)),
-          const SizedBox(height: 16),
-          Text(
-            _query.isEmpty ? "Search for your favorite content" : "No results found",
-            style: const TextStyle(color: Colors.white38),
-          ),
-        ],
-      ),
+    return DizzyEmptyState(
+      icon: Icons.search,
+      title: _query.isEmpty ? 'Search' : 'No results',
+      description: _query.isEmpty
+          ? 'Search for your favorite content'
+          : 'Try different keywords',
     );
   }
 }
@@ -501,7 +528,8 @@ class _ScrollableSliderState extends State<_ScrollableSlider> {
   }
 
   void _scroll(double direction) {
-    final target = _scrollController.offset + direction * (widget.cardWidth + 12) * 3;
+    final target =
+        _scrollController.offset + direction * (widget.cardWidth + 12) * 3;
     _scrollController.animateTo(
       target.clamp(0.0, _scrollController.position.maxScrollExtent),
       duration: const Duration(milliseconds: 300),
@@ -565,7 +593,11 @@ class _ArrowButton extends StatelessWidget {
   final VoidCallback onTap;
   final Alignment alignment;
 
-  const _ArrowButton({required this.icon, required this.onTap, required this.alignment});
+  const _ArrowButton({
+    required this.icon,
+    required this.onTap,
+    required this.alignment,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -576,8 +608,12 @@ class _ArrowButton extends StatelessWidget {
         alignment: alignment,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: alignment == Alignment.centerLeft ? Alignment.centerLeft : Alignment.centerRight,
-            end: alignment == Alignment.centerLeft ? Alignment.centerRight : Alignment.centerLeft,
+            begin: alignment == Alignment.centerLeft
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
+            end: alignment == Alignment.centerLeft
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
             colors: [
               AppTheme.bgDark.withValues(alpha: 0.9),
               AppTheme.bgDark.withValues(alpha: 0.0),
@@ -610,7 +646,9 @@ class _SearchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = movie.posterPath.isNotEmpty ? TmdbApi.getImageUrl(movie.posterPath) : '';
+    final imageUrl = movie.posterPath.isNotEmpty
+        ? TmdbApi.getImageUrl(movie.posterPath)
+        : '';
 
     return FocusableControl(
       onTap: onTap,
@@ -619,7 +657,13 @@ class _SearchCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.bgCard,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -630,29 +674,50 @@ class _SearchCard extends StatelessWidget {
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (_, _) => Container(color: AppTheme.bgCard),
-                errorWidget: (_, _, _) => const Center(child: Icon(Icons.broken_image, color: Colors.white24)),
+                errorWidget: (_, _, _) => const Center(
+                  child: Icon(Icons.broken_image, color: Colors.white24),
+                ),
               )
             else
-              Center(child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(movie.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
-              )),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    movie.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+              ),
 
             if (movie.voteAverage > 0)
               Positioned(
-                top: 6, right: 6,
+                top: 6,
+                right: 6,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(movie.voteAverage.toStringAsFixed(1), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.amber)),
+                  child: Text(
+                    movie.voteAverage.toStringAsFixed(1),
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
                 ),
               ),
 
             Positioned(
-              bottom: 0, left: 0, right: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(
@@ -672,7 +737,8 @@ class _SearchCard extends StatelessWidget {
             ),
 
             Positioned(
-              top: 6, left: 6,
+              top: 6,
+              left: 6,
               child: _AddToMyListButton(movie: movie),
             ),
           ],
@@ -702,7 +768,13 @@ class _StremioSearchCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.bgCard,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -716,34 +788,64 @@ class _StremioSearchCard extends StatelessWidget {
                 errorWidget: (_, _, _) => Center(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: Colors.white38)),
+                    child: Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.white38,
+                      ),
+                    ),
                   ),
                 ),
               )
             else
-              Center(child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11, color: Colors.white38)),
-              )),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11, color: Colors.white38),
+                  ),
+                ),
+              ),
 
             if (type.isNotEmpty)
               Positioned(
-                top: 5, left: 5,
+                top: 5,
+                left: 5,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
                   decoration: BoxDecoration(
-                    color: type == 'series' ? Colors.blue.withValues(alpha: 0.7) : AppTheme.current.primaryColor.withValues(alpha: 0.7),
+                    color: type == 'series'
+                        ? Colors.blue.withValues(alpha: 0.7)
+                        : AppTheme.current.primaryColor.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(3),
                   ),
-                  child: Text(type.toUpperCase(), style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: Text(
+                    type.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 7,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
 
             if (rating.isNotEmpty)
               Positioned(
-                top: 5, right: 5,
+                top: 5,
+                right: 5,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(4),
@@ -753,14 +855,23 @@ class _StremioSearchCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.star, size: 9, color: Colors.amber),
                       const SizedBox(width: 2),
-                      Text(rating, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.amber)),
+                      Text(
+                        rating,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
 
             Positioned(
-              bottom: 0, left: 0, right: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(
@@ -780,7 +891,8 @@ class _StremioSearchCard extends StatelessWidget {
             ),
 
             Positioned(
-              bottom: 30, right: 5,
+              bottom: 30,
+              right: 5,
               child: _AddToMyListStremioButton(item: item),
             ),
           ],
@@ -818,10 +930,14 @@ class _AddToMyListButton extends StatelessWidget {
             );
             if (context.mounted) {
               ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(added ? 'Added to My List' : 'Removed from My List'),
-                duration: const Duration(seconds: 1),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    added ? 'Added to My List' : 'Removed from My List',
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
             }
           },
           child: Container(
@@ -858,10 +974,14 @@ class _AddToMyListStremioButton extends StatelessWidget {
             final added = await MyListService().toggleStremioItem(item);
             if (context.mounted) {
               ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(added ? 'Added to My List' : 'Removed from My List'),
-                duration: const Duration(seconds: 1),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    added ? 'Added to My List' : 'Removed from My List',
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
             }
           },
           child: Container(

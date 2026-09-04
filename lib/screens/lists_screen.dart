@@ -4,6 +4,7 @@ import '../api/mdblist_service.dart';
 import '../api/tmdb_api.dart';
 import '../models/movie.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 import 'details_screen.dart';
 
 class ListsScreen extends StatefulWidget {
@@ -13,7 +14,8 @@ class ListsScreen extends StatefulWidget {
   State<ListsScreen> createState() => _ListsScreenState();
 }
 
-class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStateMixin {
+class _ListsScreenState extends State<ListsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TraktService _trakt = TraktService();
   final MdblistService _mdblist = MdblistService();
@@ -60,7 +62,11 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
   Future<void> _loadTraktLists() async {
     try {
       final lists = await _trakt.getUserLists();
-      if (mounted) setState(() { _traktLists = lists; _loadingTrakt = false; });
+      if (mounted)
+        setState(() {
+          _traktLists = lists;
+          _loadingTrakt = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _loadingTrakt = false);
     }
@@ -69,7 +75,11 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
   Future<void> _loadMdblistLists() async {
     try {
       final lists = await _mdblist.getUserLists();
-      if (mounted) setState(() { _mdblistLists = lists; _loadingMdblist = false; });
+      if (mounted)
+        setState(() {
+          _mdblistLists = lists;
+          _loadingMdblist = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _loadingMdblist = false);
     }
@@ -92,7 +102,10 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1A1A2E),
-          title: const Text('Create Trakt List', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Create Trakt List',
+            style: TextStyle(color: Colors.white),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -101,10 +114,15 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'List name',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -114,10 +132,15 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
                 maxLines: 2,
                 decoration: InputDecoration(
                   hintText: 'Description (optional)',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -128,25 +151,35 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
                 items: const [
                   DropdownMenuItem(value: 'private', child: Text('Private')),
                   DropdownMenuItem(value: 'friends', child: Text('Friends')),
                   DropdownMenuItem(value: 'public', child: Text('Public')),
                 ],
-                onChanged: (v) => setDialogState(() => privacy = v ?? 'private'),
+                onChanged: (v) =>
+                    setDialogState(() => privacy = v ?? 'private'),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Create', style: TextStyle(color: Color(0xFF00E5FF))),
+              child: const Text(
+                'Create',
+                style: TextStyle(color: Color(0xFF00E5FF)),
+              ),
             ),
           ],
         ),
@@ -156,15 +189,17 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
     if (result == true && nameController.text.trim().isNotEmpty) {
       final created = await _trakt.createList(
         name: nameController.text.trim(),
-        description: descController.text.trim().isEmpty ? null : descController.text.trim(),
+        description: descController.text.trim().isEmpty
+            ? null
+            : descController.text.trim(),
         privacy: privacy,
       );
       if (created != null) {
         _loadTraktLists();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('List created!')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('List created!')));
         }
       }
     }
@@ -178,22 +213,32 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
     final name = list['name']?.toString() ?? 'List';
     final itemCount = list['item_count'] as int? ?? 0;
 
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => _TraktListItemsScreen(
-        listId: slug,
-        listName: name,
-        itemCount: itemCount,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _TraktListItemsScreen(
+          listId: slug,
+          listName: name,
+          itemCount: itemCount,
+        ),
       ),
-    ));
+    );
   }
 
   void _openMdblistItems(Map<String, dynamic> list, {bool isUserList = false}) {
     final id = list['id'] as int? ?? 0;
     final name = list['name']?.toString() ?? 'List';
 
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => _MdblistItemsScreen(listId: id, listName: name, isUserList: isUserList),
-    ));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _MdblistItemsScreen(
+          listId: id,
+          listName: name,
+          isUserList: isUserList,
+        ),
+      ),
+    );
   }
 
   @override
@@ -202,7 +247,10 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
         backgroundColor: AppTheme.bgDark,
-        title: const Text('Lists', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+        title: const Text(
+          'Lists',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
@@ -218,11 +266,7 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildTraktTab(),
-          _buildMdblistTab(),
-          _buildTopListsTab(),
-        ],
+        children: [_buildTraktTab(), _buildMdblistTab(), _buildTopListsTab()],
       ),
     );
   }
@@ -230,11 +274,16 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
   Widget _buildTraktTab() {
     if (!_isTraktLoggedIn) {
       return const Center(
-        child: Text('Login to Trakt in Settings', style: TextStyle(color: Colors.white54, fontSize: 16)),
+        child: Text(
+          'Login to Trakt in Settings',
+          style: TextStyle(color: Colors.white54, fontSize: 16),
+        ),
       );
     }
     if (_loadingTrakt) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor));
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      );
     }
     return Column(
       children: [
@@ -249,7 +298,9 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 minimumSize: const Size(double.infinity, 48),
               ),
             ),
@@ -257,28 +308,32 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
         ),
         Expanded(
           child: _traktLists.isEmpty
-            ? const Center(child: Text('No lists yet', style: TextStyle(color: Colors.white38)))
-            : ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _traktLists.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final list = _traktLists[index];
-                  final name = list['name']?.toString() ?? 'Unnamed';
-                  final desc = list['description']?.toString() ?? '';
-                  final itemCount = list['item_count'] as int? ?? 0;
-                  final privacy = list['privacy']?.toString() ?? 'private';
+              ? const DizzyEmptyState(
+                  icon: Icons.list_rounded,
+                  title: 'No Lists',
+                  description: 'Create your first Trakt list to get started',
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _traktLists.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final list = _traktLists[index];
+                    final name = list['name']?.toString() ?? 'Unnamed';
+                    final desc = list['description']?.toString() ?? '';
+                    final itemCount = list['item_count'] as int? ?? 0;
+                    final privacy = list['privacy']?.toString() ?? 'private';
 
-                  return _listCard(
-                    name: name,
-                    subtitle: '$itemCount items • $privacy',
-                    description: desc,
-                    icon: Icons.list_rounded,
-                    color: const Color(0xFFED1C24),
-                    onTap: () => _openTraktListItems(list),
-                  );
-                },
-              ),
+                    return _listCard(
+                      name: name,
+                      subtitle: '$itemCount items • $privacy',
+                      description: desc,
+                      icon: Icons.list_rounded,
+                      color: const Color(0xFFED1C24),
+                      onTap: () => _openTraktListItems(list),
+                    );
+                  },
+                ),
         ),
       ],
     );
@@ -287,42 +342,56 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
   Widget _buildMdblistTab() {
     if (!_isMdblistConfigured) {
       return const Center(
-        child: Text('Configure MDBlist in Settings', style: TextStyle(color: Colors.white54, fontSize: 16)),
+        child: Text(
+          'Configure MDBlist in Settings',
+          style: TextStyle(color: Colors.white54, fontSize: 16),
+        ),
       );
     }
     if (_loadingMdblist) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor));
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      );
     }
     return _mdblistLists.isEmpty
-      ? const Center(child: Text('No lists yet', style: TextStyle(color: Colors.white38)))
-      : ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: _mdblistLists.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 8),
-          itemBuilder: (context, index) {
-            final list = _mdblistLists[index];
-            final name = list['name']?.toString() ?? 'Unnamed';
-            final itemCount = list['items'] as int? ?? 0;
+        ? const DizzyEmptyState(
+            icon: Icons.list_alt_rounded,
+            title: 'No Lists',
+            description: 'No MDBlist lists found',
+          )
+        : ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: _mdblistLists.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final list = _mdblistLists[index];
+              final name = list['name']?.toString() ?? 'Unnamed';
+              final itemCount = list['items'] as int? ?? 0;
 
-            return _listCard(
-              name: name,
-              subtitle: '$itemCount items',
-              icon: Icons.list_alt_rounded,
-              color: const Color(0xFF5799EF),
-              onTap: () => _openMdblistItems(list, isUserList: true),
-            );
-          },
-        );
+              return _listCard(
+                name: name,
+                subtitle: '$itemCount items',
+                icon: Icons.list_alt_rounded,
+                color: const Color(0xFF5799EF),
+                onTap: () => _openMdblistItems(list, isUserList: true),
+              );
+            },
+          );
   }
 
   Widget _buildTopListsTab() {
     if (!_isMdblistConfigured) {
       return const Center(
-        child: Text('Configure MDBlist in Settings', style: TextStyle(color: Colors.white54, fontSize: 16)),
+        child: Text(
+          'Configure MDBlist in Settings',
+          style: TextStyle(color: Colors.white54, fontSize: 16),
+        ),
       );
     }
     if (_mdblistTopLists.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor));
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      );
     }
     return ListView.separated(
       padding: const EdgeInsets.all(16),
@@ -377,18 +446,41 @@ class _ListsScreenState extends State<ListsScreen> with SingleTickerProviderStat
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 12,
+                    ),
+                  ),
                   if (description.isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    Text(description, maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 11)),
+                    Text(
+                      description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.35),
+                        fontSize: 11,
+                      ),
+                    ),
                   ],
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: Colors.white.withValues(alpha: 0.3)),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
           ],
         ),
       ),
@@ -430,15 +522,18 @@ class _TraktListItemsScreenState extends State<_TraktListItemsScreen> {
   Future<void> _loadItems() async {
     try {
       final items = await _trakt.getListItems(widget.listId);
-      final entries = items.map((item) {
-        final media = item['movie'] ?? item['show'];
-        if (media == null) return null;
-        final type = item.containsKey('show') ? 'tv' : 'movie';
-        final ids = media['ids'] as Map<String, dynamic>? ?? {};
-        final tmdbId = ids['tmdb'] as int?;
-        if (tmdbId == null) return null;
-        return (tmdbId: tmdbId, type: type);
-      }).whereType<({int tmdbId, String type})>().toList();
+      final entries = items
+          .map((item) {
+            final media = item['movie'] ?? item['show'];
+            if (media == null) return null;
+            final type = item.containsKey('show') ? 'tv' : 'movie';
+            final ids = media['ids'] as Map<String, dynamic>? ?? {};
+            final tmdbId = ids['tmdb'] as int?;
+            if (tmdbId == null) return null;
+            return (tmdbId: tmdbId, type: type);
+          })
+          .whereType<({int tmdbId, String type})>()
+          .toList();
 
       final movies = <Movie>[];
       for (var i = 0; i < entries.length; i += 5) {
@@ -449,12 +544,18 @@ class _TraktListItemsScreenState extends State<_TraktListItemsScreen> {
               return e.type == 'tv'
                   ? await _api.getTvDetails(e.tmdbId)
                   : await _api.getMovieDetails(e.tmdbId);
-            } catch (_) { return null; }
+            } catch (_) {
+              return null;
+            }
           }),
         );
         movies.addAll(results.whereType<Movie>());
       }
-      if (mounted) setState(() { _movies = movies; _loading = false; });
+      if (mounted)
+        setState(() {
+          _movies = movies;
+          _loading = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -472,13 +573,13 @@ class _TraktListItemsScreenState extends State<_TraktListItemsScreen> {
     );
     if (success && mounted) {
       setState(() => _movies.removeWhere((m) => m.id == movie.id));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Removed "${movie.title}"')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Removed "${movie.title}"')));
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to remove item')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to remove item')));
     }
   }
 
@@ -488,13 +589,25 @@ class _TraktListItemsScreenState extends State<_TraktListItemsScreen> {
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
         backgroundColor: AppTheme.bgDark,
-        title: Text(widget.listName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        title: Text(
+          widget.listName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _loading
-        ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-        : _movies.isEmpty
-          ? const Center(child: Text('No items', style: TextStyle(color: Colors.white38)))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            )
+          : _movies.isEmpty
+          ? const DizzyEmptyState(
+              icon: Icons.movie_outlined,
+              title: 'Empty List',
+              description: 'No items in this list',
+            )
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: _movies.length,
@@ -503,9 +616,12 @@ class _TraktListItemsScreenState extends State<_TraktListItemsScreen> {
                 final movie = _movies[index];
                 return _movieListTile(
                   movie: movie,
-                  onTap: () => Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => DetailsScreen(movie: movie),
-                  )),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DetailsScreen(movie: movie),
+                    ),
+                  ),
                   onRemove: () => _removeItem(movie),
                 );
               },
@@ -548,12 +664,15 @@ class _MdblistItemsScreenState extends State<_MdblistItemsScreen> {
   Future<void> _loadItems() async {
     try {
       final items = await _mdblist.getListItems(widget.listId);
-      final entries = items.map((item) {
-        final tmdbId = item['tmdb_id'] as int? ?? item['id'] as int?;
-        final mediaType = item['mediatype']?.toString() ?? 'movie';
-        if (tmdbId == null) return null;
-        return (tmdbId: tmdbId, type: mediaType);
-      }).whereType<({int tmdbId, String type})>().toList();
+      final entries = items
+          .map((item) {
+            final tmdbId = item['tmdb_id'] as int? ?? item['id'] as int?;
+            final mediaType = item['mediatype']?.toString() ?? 'movie';
+            if (tmdbId == null) return null;
+            return (tmdbId: tmdbId, type: mediaType);
+          })
+          .whereType<({int tmdbId, String type})>()
+          .toList();
 
       final movies = <Movie>[];
       for (var i = 0; i < entries.length; i += 5) {
@@ -564,12 +683,18 @@ class _MdblistItemsScreenState extends State<_MdblistItemsScreen> {
               return e.type == 'show'
                   ? await _api.getTvDetails(e.tmdbId)
                   : await _api.getMovieDetails(e.tmdbId);
-            } catch (_) { return null; }
+            } catch (_) {
+              return null;
+            }
           }),
         );
         movies.addAll(results.whereType<Movie>());
       }
-      if (mounted) setState(() { _movies = movies; _loading = false; });
+      if (mounted)
+        setState(() {
+          _movies = movies;
+          _loading = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -583,13 +708,13 @@ class _MdblistItemsScreenState extends State<_MdblistItemsScreen> {
     );
     if (success && mounted) {
       setState(() => _movies.removeWhere((m) => m.id == movie.id));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Removed "${movie.title}"')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Removed "${movie.title}"')));
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to remove item')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to remove item')));
     }
   }
 
@@ -599,13 +724,25 @@ class _MdblistItemsScreenState extends State<_MdblistItemsScreen> {
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
         backgroundColor: AppTheme.bgDark,
-        title: Text(widget.listName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        title: Text(
+          widget.listName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _loading
-        ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-        : _movies.isEmpty
-          ? const Center(child: Text('No items', style: TextStyle(color: Colors.white38)))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            )
+          : _movies.isEmpty
+          ? const DizzyEmptyState(
+              icon: Icons.movie_outlined,
+              title: 'Empty List',
+              description: 'No items in this list',
+            )
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: _movies.length,
@@ -614,9 +751,12 @@ class _MdblistItemsScreenState extends State<_MdblistItemsScreen> {
                 final movie = _movies[index];
                 return _movieListTile(
                   movie: movie,
-                  onTap: () => Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => DetailsScreen(movie: movie),
-                  )),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DetailsScreen(movie: movie),
+                    ),
+                  ),
                   onRemove: widget.isUserList ? () => _removeItem(movie) : null,
                 );
               },
@@ -652,37 +792,88 @@ Widget _movieListTile({
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: posterUrl.isNotEmpty
-              ? Image.network(posterUrl, width: 50, height: 75, fit: BoxFit.cover)
-              : Container(
-                  width: 50, height: 75,
-                  color: Colors.white10,
-                  child: const Icon(Icons.movie, color: Colors.white24, size: 24),
-                ),
+                ? Image.network(
+                    posterUrl,
+                    width: 50,
+                    height: 75,
+                    fit: BoxFit.cover,
+                  )
+                : Container(
+                    width: 50,
+                    height: 75,
+                    color: Colors.white10,
+                    child: const Icon(
+                      Icons.movie,
+                      color: Colors.white24,
+                      size: 24,
+                    ),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(movie.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(
+                  movie.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     if (movie.releaseDate.isNotEmpty)
-                      Text(movie.releaseDate.split('-').first,
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12)),
+                      Text(
+                        movie.releaseDate.split('-').first,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12,
+                        ),
+                      ),
                     if (movie.mediaType == 'tv') ...[
                       if (movie.releaseDate.isNotEmpty)
-                        Text('  •  ', style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12)),
-                      Text('TV', style: TextStyle(color: AppTheme.primaryColor.withValues(alpha: 0.8), fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(
+                          '  •  ',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            fontSize: 12,
+                          ),
+                        ),
+                      Text(
+                        'TV',
+                        style: TextStyle(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                     if (movie.voteAverage > 0) ...[
-                      Text('  •  ', style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 12)),
-                      const Icon(Icons.star_rounded, size: 13, color: Colors.amber),
+                      Text(
+                        '  •  ',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 13,
+                        color: Colors.amber,
+                      ),
                       const SizedBox(width: 2),
-                      Text(movie.voteAverage.toStringAsFixed(1),
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12)),
+                      Text(
+                        movie.voteAverage.toStringAsFixed(1),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -691,7 +882,11 @@ Widget _movieListTile({
           ),
           if (onRemove != null)
             IconButton(
-              icon: Icon(Icons.remove_circle_outline, color: Colors.redAccent.withValues(alpha: 0.7), size: 22),
+              icon: Icon(
+                Icons.remove_circle_outline,
+                color: Colors.redAccent.withValues(alpha: 0.7),
+                size: 22,
+              ),
               onPressed: onRemove,
             ),
         ],

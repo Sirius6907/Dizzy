@@ -34,7 +34,7 @@ import '../../api/simkl_service.dart';
 import '../../api/webstreamr_service.dart';
 import '../../api/site111477_service.dart';
 import '../../api/site111477_proxy.dart' as site111477_proxy;
-import '../../api/arabic_service.dart';
+
 import '../../api/stremio_service.dart';
 import '../../api/stream_providers.dart';
 import '../../api/settings_service.dart';
@@ -836,23 +836,7 @@ class _DesktopPlayerScreenState extends State<DesktopPlayerScreen>
         var source = _currentSources![i];
         debugPrint('[Player] Trying source ${i + 1}/${_currentSources!.length}: ${source.title}');
 
-        // Arabic embed sources need on-demand extraction first
-        if (_currentProvider == 'arabic' && source.type == 'arabic_embed') {
-          debugPrint('[Player] Extracting arabic embed: ${source.title}');
-          final result = await ArabicService.extractStreamUrl(source.url);
-          if (result == null) {
-            debugPrint('[Player] Arabic extract failed for ${source.title}');
-            _currentFallbackSourceIndex++;
-            continue;
-          }
-          // Update the source with the real stream URL
-          source = StreamSource(
-            url: result.url,
-            title: source.title,
-            type: result.url.contains('.m3u8') ? 'hls' : result.url.contains('.mpd') ? 'dash' : 'mp4',
-          );
-          _currentSources![i] = source;
-        }
+        // Arabic provider removed
         
         try {
           _subscribeToStreams();
@@ -2410,39 +2394,8 @@ class _DesktopPlayerScreenState extends State<DesktopPlayerScreen>
                         return;
                       }
 
-                      // Arabic provider: extract on-demand from embed URL
-                      if (_currentProvider == 'arabic' && source.type == 'arabic_embed') {
-                        messenger.showSnackBar(SnackBar(
-                          content: Text('Extracting ${source.title}...'),
-                          duration: const Duration(seconds: 30),
-                        ));
-                        final result = await ArabicService.extractStreamUrl(source.url);
-                        if (!mounted) return;
-                        messenger.hideCurrentSnackBar();
-                        if (result == null) {
-                          messenger.showSnackBar(SnackBar(
-                            content: Text('Failed to extract ${source.title}'),
-                            duration: const Duration(seconds: 2),
-                          ));
-                          return;
-                        }
-                        await _player.open(
-                          Media(result.url, httpHeaders: result.headers),
-                        );
-                        // Update the source entry with the extracted stream URL
-                        _currentSources![index] = StreamSource(
-                          url: result.url,
-                          title: source.title,
-                          type: result.url.contains('.m3u8') ? 'hls' : result.url.contains('.mpd') ? 'dash' : 'mp4',
-                        );
-                        setState(() {
-                          _currentUrl = result.url;
-                          _currentFallbackSourceIndex = 0;
-                          _hasError = false;
-                          _errorMessage = '';
-                        });
-                        _detectHlsQualities(result.url, result.headers);
-                      } else {
+                      // Arabic provider removed - skip to normal direct switch
+                      {
                         // Normal direct switch
                         await _player.open(
                           Media(source.url, httpHeaders: source.headers ?? widget.headers),

@@ -4,6 +4,7 @@ import 'package:dizzy/models/movie.dart';
 import 'package:dizzy/models/stream_source.dart';
 import '../services/external_player_service.dart';
 import '../api/settings_service.dart';
+import '../widgets/dizzy_components.dart';
 import 'player/mobile_player_screen.dart';
 import 'player/desktop_player_screen.dart';
 
@@ -36,7 +37,8 @@ class PlayerScreen extends StatefulWidget {
   /// watch history should be persisted (lifecycle pause, periodic tick,
   /// player exit). Used by anime / arabic flows that own their own
   /// per-source history store and don't go through `WatchHistoryService`.
-  final Future<void> Function(Duration position, Duration duration)? onSaveProgress;
+  final Future<void> Function(Duration position, Duration duration)?
+  onSaveProgress;
 
   const PlayerScreen({
     super.key,
@@ -236,120 +238,86 @@ class _ExternalPlayerWaitScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Icon
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF7C3AED).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.open_in_new_rounded,
-                    color: Color(0xFF7C3AED),
-                    size: 40,
-                  ),
-                ),
-                const SizedBox(height: 24),
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              DizzyEmptyState(
+                icon: Icons.open_in_new_rounded,
+                title: launched
+                    ? 'Playing in $playerName'
+                    : 'Launching $playerName...',
+                description:
+                    '$title\n\n${launched ? 'The stream is being kept alive.\nYou can go back when you\'re done watching.' : 'Opening the video in the external player...'}',
+              ),
+              const SizedBox(height: 40),
 
-                // Title
-                Text(
-                  launched ? 'Playing in $playerName' : 'Launching $playerName...',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-
-                // Subtitle
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.white54, fontSize: 14),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-
-                // Info text
-                Text(
-                  launched
-                      ? 'The stream is being kept alive.\nYou can go back when you\'re done watching.'
-                      : 'Opening the video in the external player...',
-                  style: const TextStyle(color: Colors.white38, fontSize: 13),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-
-                // Action buttons
-                if (launched) ...[
-                  // Re-launch button
-                  SizedBox(
-                    width: 260,
-                    child: OutlinedButton.icon(
-                      onPressed: onRelaunch,
-                      icon: const Icon(Icons.refresh_rounded, size: 20),
-                      label: Text('Re-launch in $playerName'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF7C3AED),
-                        side: const BorderSide(color: Color(0xFF7C3AED)),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 14, horizontal: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Switch to built-in button
-                  SizedBox(
-                    width: 260,
-                    child: TextButton.icon(
-                      onPressed: onSwitchBuiltIn,
-                      icon: const Icon(Icons.play_circle_outline, size: 20),
-                      label: const Text('Use Built-in Player Instead'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white54,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 14, horizontal: 20),
-                      ),
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 32),
-
-                // Back button
+              // Action buttons
+              if (launched) ...[
+                // Re-launch button
                 SizedBox(
                   width: 260,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                    label: const Text('Go Back'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7C3AED),
-                      foregroundColor: Colors.white,
+                  child: OutlinedButton.icon(
+                    onPressed: onRelaunch,
+                    icon: const Icon(Icons.refresh_rounded, size: 20),
+                    label: Text('Re-launch in $playerName'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF7C3AED),
+                      side: const BorderSide(color: Color(0xFF7C3AED)),
                       padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 20),
+                        vertical: 14,
+                        horizontal: 20,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+
+                // Switch to built-in button
+                SizedBox(
+                  width: 260,
+                  child: TextButton.icon(
+                    onPressed: onSwitchBuiltIn,
+                    icon: const Icon(Icons.play_circle_outline, size: 20),
+                    label: const Text('Use Built-in Player Instead'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white54,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 20,
+                      ),
+                    ),
+                  ),
+                ),
               ],
-            ),
+
+              const SizedBox(height: 32),
+
+              // Back button
+              SizedBox(
+                width: 260,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                  label: const Text('Go Back'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7C3AED),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 20,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

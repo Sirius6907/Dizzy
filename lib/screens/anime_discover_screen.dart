@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../api/anime_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 import '../widgets/hover_scale.dart';
 import 'anime_details_screen.dart';
 
@@ -30,15 +31,44 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
   Future<List<AnimeCard>>? _future;
 
   static const _genres = [
-    'Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fantasy',
-    'Hentai', 'Horror', 'Mahou Shoujo', 'Mecha', 'Music', 'Mystery',
-    'Psychological', 'Romance', 'Sci-Fi', 'Slice of Life',
-    'Sports', 'Supernatural', 'Thriller',
+    'Action',
+    'Adventure',
+    'Comedy',
+    'Drama',
+    'Ecchi',
+    'Fantasy',
+    'Hentai',
+    'Horror',
+    'Mahou Shoujo',
+    'Mecha',
+    'Music',
+    'Mystery',
+    'Psychological',
+    'Romance',
+    'Sci-Fi',
+    'Slice of Life',
+    'Sports',
+    'Supernatural',
+    'Thriller',
   ];
 
   static const _seasons = ['WINTER', 'SPRING', 'SUMMER', 'FALL'];
-  static const _formats = ['TV', 'TV_SHORT', 'MOVIE', 'OVA', 'ONA', 'SPECIAL', 'MUSIC'];
-  static const _statuses = ['RELEASING', 'FINISHED', 'NOT_YET_RELEASED', 'CANCELLED', 'HIATUS'];
+  static const _formats = [
+    'TV',
+    'TV_SHORT',
+    'MOVIE',
+    'OVA',
+    'ONA',
+    'SPECIAL',
+    'MUSIC',
+  ];
+  static const _statuses = [
+    'RELEASING',
+    'FINISHED',
+    'NOT_YET_RELEASED',
+    'CANCELLED',
+    'HIATUS',
+  ];
   static const _sorts = <String, String>{
     'TRENDING_DESC': 'Trending',
     'POPULARITY_DESC': 'Most Popular',
@@ -76,9 +106,9 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
   }
 
   void _open(AnimeCard a) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AnimeDetailsScreen(anime: a)),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => AnimeDetailsScreen(anime: a)));
   }
 
   Future<void> _pickFromList<T>({
@@ -116,21 +146,27 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                 child: Row(
                   children: [
-                    Text(title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        )),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     const Spacer(),
                     if (current != null)
                       TextButton(
-                        onPressed: () => Navigator.of(context)
-                            .pop(_PickResult<T>(null, true)),
-                        child: Text('Clear',
-                            style: TextStyle(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w700)),
+                        onPressed: () => Navigator.of(
+                          context,
+                        ).pop(_PickResult<T>(null, true)),
+                        child: Text(
+                          'Clear',
+                          style: TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -143,20 +179,25 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
                     final v = items[i];
                     final selected = v == current;
                     return ListTile(
-                      title: Text(label(v),
-                          style: TextStyle(
-                              color: selected
-                                  ? AppTheme.primaryColor
-                                  : Colors.white,
-                              fontWeight: selected
-                                  ? FontWeight.w800
-                                  : FontWeight.w500)),
+                      title: Text(
+                        label(v),
+                        style: TextStyle(
+                          color: selected
+                              ? AppTheme.primaryColor
+                              : Colors.white,
+                          fontWeight: selected
+                              ? FontWeight.w800
+                              : FontWeight.w500,
+                        ),
+                      ),
                       trailing: selected
-                          ? Icon(Icons.check_rounded,
-                              color: AppTheme.primaryColor)
+                          ? Icon(
+                              Icons.check_rounded,
+                              color: AppTheme.primaryColor,
+                            )
                           : null,
-                      onTap: () => Navigator.of(context)
-                          .pop(_PickResult<T>(v, false)),
+                      onTap: () =>
+                          Navigator.of(context).pop(_PickResult<T>(v, false)),
                     );
                   },
                 ),
@@ -194,8 +235,11 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
             backgroundColor: AppTheme.bgDark,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 18),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             title: const Text(
@@ -331,8 +375,7 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
           borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
@@ -345,9 +388,11 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (icon != null) ...[
-                  Icon(icon,
-                      size: 14,
-                      color: Colors.white.withValues(alpha: 0.7)),
+                  Icon(
+                    icon,
+                    size: 14,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
                   const SizedBox(width: 6),
                 ],
                 Text(
@@ -357,14 +402,15 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
                         ? Colors.white
                         : Colors.white.withValues(alpha: 0.8),
                     fontSize: 13,
-                    fontWeight:
-                        active ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: active ? FontWeight.w800 : FontWeight.w600,
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(Icons.expand_more_rounded,
-                    size: 14,
-                    color: Colors.white.withValues(alpha: 0.5)),
+                Icon(
+                  Icons.expand_more_rounded,
+                  size: 14,
+                  color: Colors.white.withValues(alpha: 0.5),
+                ),
               ],
             ),
           ),
@@ -379,50 +425,22 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
       builder: (context, snap) {
         if (!snap.hasData) {
           return Center(
-            child: CircularProgressIndicator(
-              color: AppTheme.primaryColor,
-            ),
+            child: CircularProgressIndicator(color: AppTheme.primaryColor),
           );
         }
         if (snap.hasError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.error_outline_rounded,
-                      color: AppTheme.primaryColor, size: 48),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Failed to load',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          return DizzyEmptyState(
+            icon: Icons.error_outline_rounded,
+            title: 'Failed to load',
+            description: '',
           );
         }
         final items = snap.data!;
         if (items.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.search_off_rounded,
-                    color: Colors.white.withValues(alpha: 0.3),
-                    size: 64),
-                const SizedBox(height: 12),
-                Text(
-                  'No results — try different filters',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                  ),
-                ),
-              ],
-            ),
+          return DizzyEmptyState(
+            icon: Icons.search_off_rounded,
+            title: 'No results — try different filters',
+            description: '',
           );
         }
 
@@ -430,10 +448,10 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
         final cross = w > 1200
             ? 6
             : w > 900
-                ? 5
-                : w > 600
-                    ? 4
-                    : 3;
+            ? 5
+            : w > 600
+            ? 4
+            : 3;
 
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -474,9 +492,7 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
               decoration: BoxDecoration(
                 color: AppTheme.bgCard,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.06),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.4),
@@ -492,12 +508,13 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
                     CachedNetworkImage(
                       imageUrl: a.coverUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) =>
-                          Container(color: AppTheme.bgCard),
+                      placeholder: (_, _) => Container(color: AppTheme.bgCard),
                       errorWidget: (_, _, _) => Container(
                         color: AppTheme.bgCard,
-                        child: const Icon(Icons.broken_image,
-                            color: Colors.white24),
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.white24,
+                        ),
                       ),
                     ),
                   if ((a.averageScore ?? 0) > 0)
@@ -506,7 +523,9 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
                       right: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(8),
@@ -514,12 +533,14 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded,
-                                color: Colors.amber, size: 11),
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber,
+                              size: 11,
+                            ),
                             const SizedBox(width: 2),
                             Text(
-                              ((a.averageScore ?? 0) / 10)
-                                  .toStringAsFixed(1),
+                              ((a.averageScore ?? 0) / 10).toStringAsFixed(1),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -567,8 +588,7 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
           ),
           const SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 18, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             decoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
@@ -613,9 +633,7 @@ class _AnimeDiscoverScreenState extends State<AnimeDiscoverScreen> {
           padding: const EdgeInsets.all(10),
           child: Icon(
             icon,
-            color: enabled
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.2),
+            color: enabled ? Colors.white : Colors.white.withValues(alpha: 0.2),
             size: 22,
           ),
         ),

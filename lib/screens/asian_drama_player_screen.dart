@@ -26,8 +26,7 @@ class AsianDramaPlayerScreen extends StatefulWidget {
   });
 
   @override
-  State<AsianDramaPlayerScreen> createState() =>
-      _AsianDramaPlayerScreenState();
+  State<AsianDramaPlayerScreen> createState() => _AsianDramaPlayerScreenState();
 }
 
 class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
@@ -112,8 +111,7 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
           : widget.episode.number.toInt(),
     );
 
-    final title =
-        '${widget.drama.title} • EP ${widget.episode.displayNumber}';
+    final title = '${widget.drama.title} • EP ${widget.episode.displayNumber}';
 
     KdramaEpisode? nextFromList;
     if (widget.allEpisodes.isNotEmpty) {
@@ -124,8 +122,7 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
         }
       }
     }
-    final hasNext =
-        widget.allEpisodes.isEmpty ? true : nextFromList != null;
+    final hasNext = widget.allEpisodes.isEmpty ? true : nextFromList != null;
 
     if (!mounted) return;
     final navigator = Navigator.of(context);
@@ -199,10 +196,7 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
             iconTheme: const IconThemeData(color: Colors.white),
             title: Text(
               '${widget.drama.title} • EP ${widget.episode.displayNumber}',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -245,8 +239,11 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
                     ),
                     const SizedBox(height: 22),
                   ] else if (_failedAll) ...[
-                    Icon(Icons.error_outline,
-                        color: theme.primaryColor, size: 56),
+                    Icon(
+                      Icons.error_outline,
+                      color: theme.primaryColor,
+                      size: 56,
+                    ),
                     const SizedBox(height: 14),
                   ],
                   Text(
@@ -301,7 +298,9 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
                           color: Colors.white.withValues(alpha: 0.3),
                         ),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 22, vertical: 12),
+                          horizontal: 22,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),

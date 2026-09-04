@@ -11,6 +11,7 @@ import 'package:palette_generator/palette_generator.dart';
 
 import '../api/kisskh_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 import '../widgets/horizontal_scroller.dart';
 import '../widgets/hover_scale.dart';
 import 'asian_drama_details_screen.dart';
@@ -102,8 +103,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
       final feed = results[0] as KdramaHomeFeed;
       setState(() {
         _feed = feed;
-        _continueWatching =
-            (results[1] as List<Map<String, dynamic>>).take(10).toList();
+        _continueWatching = (results[1] as List<Map<String, dynamic>>)
+            .take(10)
+            .toList();
         _loading = false;
       });
       final pool = _spotlight;
@@ -161,7 +163,8 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
       );
       if (!mounted) return;
       final p = palette.dominantColor?.color ?? AppTheme.primaryColor;
-      final s = palette.vibrantColor?.color ??
+      final s =
+          palette.vibrantColor?.color ??
           palette.lightVibrantColor?.color ??
           AppTheme.accentColor;
       _ambientCache[a.id] = (primary: p, secondary: s);
@@ -173,23 +176,23 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
   }
 
   void _openDetails(KdramaCard a) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => AsianDramaDetailsScreen(drama: a),
-      ),
-    ).then((_) => _refreshHistory());
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(builder: (_) => AsianDramaDetailsScreen(drama: a)),
+        )
+        .then((_) => _refreshHistory());
   }
 
   void _openSearch() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AsianDramaSearchScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AsianDramaSearchScreen()));
   }
 
   void _openExplore() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AsianDramaExploreScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AsianDramaExploreScreen()));
   }
 
   Future<void> _resumeWatch(Map<String, dynamic> entry) async {
@@ -205,8 +208,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
         final clamped = (durMs > 0 && posMs > durMs - 30000)
             ? (durMs - 30000)
             : posMs;
-        startPosition =
-            Duration(milliseconds: (clamped - 3000).clamp(0, 1 << 31));
+        startPosition = Duration(
+          milliseconds: (clamped - 3000).clamp(0, 1 << 31),
+        );
       }
 
       final card = KdramaCard(id: id, title: title, cover: cover);
@@ -225,16 +229,18 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
         );
         return;
       }
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => AsianDramaPlayerScreen(
-            drama: card,
-            episode: ep!,
-            allEpisodes: details.episodes,
-            startPosition: startPosition,
-          ),
-        ),
-      ).then((_) => _refreshHistory());
+      Navigator.of(context)
+          .push(
+            MaterialPageRoute(
+              builder: (_) => AsianDramaPlayerScreen(
+                drama: card,
+                episode: ep!,
+                allEpisodes: details.episodes,
+                startPosition: startPosition,
+              ),
+            ),
+          )
+          .then((_) => _refreshHistory());
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -268,120 +274,117 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                   ),
                 )
               : _error != null
-                  ? _buildError()
-                  : Stack(
-                      children: [
-                        _buildAmbientBackdrop(),
-                        RefreshIndicator(
-                          color: AppTheme.primaryColor,
-                          backgroundColor: AppTheme.bgCard,
-                          onRefresh: _load,
-                          child: CustomScrollView(
-                            controller: _scroll,
-                            physics: const BouncingScrollPhysics(
-                              parent: AlwaysScrollableScrollPhysics(),
+              ? _buildError()
+              : Stack(
+                  children: [
+                    _buildAmbientBackdrop(),
+                    RefreshIndicator(
+                      color: AppTheme.primaryColor,
+                      backgroundColor: AppTheme.bgCard,
+                      onRefresh: _load,
+                      child: CustomScrollView(
+                        controller: _scroll,
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        slivers: [
+                          SliverAppBar(
+                            pinned: false,
+                            floating: true,
+                            backgroundColor: Colors.transparent,
+                            elevation: 0,
+                            title: const Text(
+                              'Asian Drama',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.3,
+                              ),
                             ),
-                            slivers: [
-                              SliverAppBar(
-                                pinned: false,
-                                floating: true,
-                                backgroundColor: Colors.transparent,
-                                elevation: 0,
-                                title: const Text(
-                                  'Asian Drama',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.3,
-                                  ),
+                            actions: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.tune_rounded,
+                                  color: Colors.white,
                                 ),
-                                actions: [
-                                  IconButton(
-                                    icon: const Icon(Icons.tune_rounded,
-                                        color: Colors.white),
-                                    tooltip: 'Explore',
-                                    onPressed: _openExplore,
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.search,
-                                        color: Colors.white),
-                                    onPressed: _openSearch,
-                                  ),
-                                  const SizedBox(width: 4),
-                                ],
+                                tooltip: 'Explore',
+                                onPressed: _openExplore,
                               ),
-                              SliverToBoxAdapter(child: _buildHero()),
-                              if (_continueWatching.isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _buildContinueWatching(),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.search,
+                                  color: Colors.white,
                                 ),
-                              if ((_feed?.latest ?? const [])
-                                  .isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _buildEpisodeRail(
-                                    title: 'Latest Update',
-                                    subtitle: 'Newest episodes',
-                                    icon: Icons.skip_next_rounded,
-                                    items: _feed!.latest,
-                                  ),
-                                ),
-                              if ((_feed?.trending ?? const []).isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Trending',
-                                    icon: Icons.trending_up_rounded,
-                                    items: _feed!.trending,
-                                    onTap: _openDetails,
-                                  ),
-                                ),
-                              if ((_feed?.topRated ?? const [])
-                                  .isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Top Rated',
-                                    icon: Icons.leaderboard_rounded,
-                                    items: _feed!.topRated,
-                                    onTap: _openDetails,
-                                    showRank: true,
-                                  ),
-                                ),
-                              if ((_feed?.mostViewed ?? const [])
-                                  .isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Most Viewed',
-                                    icon: Icons.visibility_rounded,
-                                    items: _feed!.mostViewed,
-                                    onTap: _openDetails,
-                                  ),
-                                ),
-                              if ((_feed?.anime ?? const []).isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Anime',
-                                    icon: Icons.auto_awesome_rounded,
-                                    items: _feed!.anime,
-                                    onTap: _openDetails,
-                                  ),
-                                ),
-                              if ((_feed?.upcoming ?? const []).isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Upcoming',
-                                    icon: Icons.event_rounded,
-                                    items: _feed!.upcoming,
-                                    onTap: _openDetails,
-                                  ),
-                                ),
-                              const SliverToBoxAdapter(
-                                child: SizedBox(height: 80),
+                                onPressed: _openSearch,
                               ),
+                              const SizedBox(width: 4),
                             ],
                           ),
-                        ),
-                      ],
+                          SliverToBoxAdapter(child: _buildHero()),
+                          if (_continueWatching.isNotEmpty)
+                            SliverToBoxAdapter(child: _buildContinueWatching()),
+                          if ((_feed?.latest ?? const []).isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildEpisodeRail(
+                                title: 'Latest Update',
+                                subtitle: 'Newest episodes',
+                                icon: Icons.skip_next_rounded,
+                                items: _feed!.latest,
+                              ),
+                            ),
+                          if ((_feed?.trending ?? const []).isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _Rail(
+                                title: 'Trending',
+                                icon: Icons.trending_up_rounded,
+                                items: _feed!.trending,
+                                onTap: _openDetails,
+                              ),
+                            ),
+                          if ((_feed?.topRated ?? const []).isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _Rail(
+                                title: 'Top Rated',
+                                icon: Icons.leaderboard_rounded,
+                                items: _feed!.topRated,
+                                onTap: _openDetails,
+                                showRank: true,
+                              ),
+                            ),
+                          if ((_feed?.mostViewed ?? const []).isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _Rail(
+                                title: 'Most Viewed',
+                                icon: Icons.visibility_rounded,
+                                items: _feed!.mostViewed,
+                                onTap: _openDetails,
+                              ),
+                            ),
+                          if ((_feed?.anime ?? const []).isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _Rail(
+                                title: 'Anime',
+                                icon: Icons.auto_awesome_rounded,
+                                items: _feed!.anime,
+                                onTap: _openDetails,
+                              ),
+                            ),
+                          if ((_feed?.upcoming ?? const []).isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _Rail(
+                                title: 'Upcoming',
+                                icon: Icons.event_rounded,
+                                items: _feed!.upcoming,
+                                onTap: _openDetails,
+                              ),
+                            ),
+                          const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                        ],
+                      ),
                     ),
+                  ],
+                ),
         );
       },
     );
@@ -389,36 +392,12 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
 
   // ─── Error ────────────────────────────────────────────────────
   Widget _buildError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline_rounded,
-                color: AppTheme.primaryColor, size: 56),
-            const SizedBox(height: 14),
-            Text(
-              'Failed to load:\n$_error',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 18),
-            ElevatedButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return DizzyEmptyState(
+      title: 'Failed to Load',
+      description: _error ?? 'An error occurred',
+      icon: Icons.error_outline_rounded,
+      actionLabel: 'Retry',
+      onActionTap: _load,
     );
   }
 
@@ -585,13 +564,12 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                   if (a.label != null && a.label!.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFFFB300),
-                            Color(0xFFFF8F00),
-                          ],
+                          colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -607,7 +585,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                   if (a.episodesCount > 0)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.4),
@@ -637,12 +617,17 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                       onTap: () => _openDetails(a),
                       child: const Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 12),
+                          horizontal: 28,
+                          vertical: 12,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.play_arrow_rounded,
-                                color: Colors.black, size: 26),
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.black,
+                              size: 26,
+                            ),
                             SizedBox(width: 6),
                             Text(
                               'Watch',
@@ -687,8 +672,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -728,8 +712,11 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                     color: AppTheme.primaryColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.history_rounded,
-                      color: AppTheme.primaryColor, size: 18),
+                  child: Icon(
+                    Icons.history_rounded,
+                    color: AppTheme.primaryColor,
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 const Text(
@@ -822,8 +809,11 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                           color: Colors.black.withValues(alpha: 0.5),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.play_arrow_rounded,
-                            color: Colors.white, size: 28),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -831,7 +821,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                       top: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
                           borderRadius: BorderRadius.circular(6),
@@ -881,10 +873,10 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 3,
-                          backgroundColor:
-                              Colors.white.withValues(alpha: 0.2),
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
                           valueColor: AlwaysStoppedAnimation(
-                              AppTheme.primaryColor),
+                            AppTheme.primaryColor,
+                          ),
                         ),
                       ),
                   ],
@@ -930,8 +922,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                     color: AppTheme.primaryColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon,
-                      color: AppTheme.primaryColor, size: 18),
+                  child: Icon(icon, color: AppTheme.primaryColor, size: 18),
                 ),
                 const SizedBox(width: 10),
                 Column(
@@ -1020,7 +1011,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                         top: 8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryColor,
                             borderRadius: BorderRadius.circular(6),
@@ -1097,8 +1090,7 @@ class _Rail extends StatelessWidget {
                     color: AppTheme.primaryColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon,
-                      color: AppTheme.primaryColor, size: 18),
+                  child: Icon(icon, color: AppTheme.primaryColor, size: 18),
                 ),
                 const SizedBox(width: 10),
                 Text(
@@ -1141,11 +1133,7 @@ class _PosterCard extends StatelessWidget {
   final int? rank;
   final VoidCallback onTap;
 
-  const _PosterCard({
-    required this.card,
-    required this.onTap,
-    this.rank,
-  });
+  const _PosterCard({required this.card, required this.onTap, this.rank});
 
   @override
   Widget build(BuildContext context) {
@@ -1180,7 +1168,9 @@ class _PosterCard extends StatelessWidget {
                         top: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(6),
@@ -1201,13 +1191,12 @@ class _PosterCard extends StatelessWidget {
                         top: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFFFFB300),
-                                Color(0xFFFF8F00),
-                              ],
+                              colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],
                             ),
                             borderRadius: BorderRadius.circular(6),
                           ),

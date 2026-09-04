@@ -9,6 +9,7 @@ import '../api/music_storage_service.dart';
 import '../api/music_downloader_service.dart';
 import '../api/lyrics_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 
 enum PlayerView { art, lyrics, related }
 
@@ -19,7 +20,8 @@ class MusicPlayerScreen extends StatefulWidget {
   State<MusicPlayerScreen> createState() => _MusicPlayerScreenState();
 }
 
-class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+class _MusicPlayerScreenState extends State<MusicPlayerScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final MusicPlayerService player = MusicPlayerService();
   final MusicService _musicService = MusicService();
   final MusicStorageService _storage = MusicStorageService();
@@ -118,11 +120,16 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                   return IconButton(
                     icon: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+                      transitionBuilder: (child, animation) =>
+                          ScaleTransition(scale: animation, child: child),
                       child: Icon(
-                        isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        isLiked
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
                         key: ValueKey(isLiked),
-                        color: isLiked ? Colors.pinkAccent : Colors.white.withValues(alpha: 0.6),
+                        color: isLiked
+                            ? Colors.pinkAccent
+                            : Colors.white.withValues(alpha: 0.6),
                         size: 22,
                       ),
                     ),
@@ -145,17 +152,29 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
             builder: (context, track, _) {
               if (track == null) return const SizedBox.shrink();
               return IconButton(
-                icon: Icon(Icons.download_rounded, color: Colors.white.withValues(alpha: 0.6), size: 22),
+                icon: Icon(
+                  Icons.download_rounded,
+                  color: Colors.white.withValues(alpha: 0.6),
+                  size: 22,
+                ),
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
                   final success = await _downloader.downloadTrack(track);
                   if (mounted) {
-                    messenger.showSnackBar(SnackBar(
-                      content: Text(success ? 'Added to download queue...' : 'Already in download queue'),
-                      backgroundColor: const Color(0xFF1A1030),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ));
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? 'Added to download queue...'
+                              : 'Already in download queue',
+                        ),
+                        backgroundColor: const Color(0xFF1A1030),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    );
                   }
                 },
               );
@@ -168,24 +187,17 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
         valueListenable: player.currentTrack,
         builder: (context, track, child) {
           if (track == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.music_off_rounded, size: 48, color: Colors.white.withValues(alpha: 0.2)),
-                  const SizedBox(height: 16),
-                  Text('No song playing', style: TextStyle(color: Colors.white.withValues(alpha: 0.4))),
-                ],
-              ),
+            return DizzyEmptyState(
+              title: 'No song playing',
+              description: 'Select a track to start listening',
+              icon: Icons.music_off_rounded,
             );
           }
 
           return Stack(
             children: [
               // Background: blurred album art
-              Positioned.fill(
-                child: _buildCoverImage(track.cover),
-              ),
+              Positioned.fill(child: _buildCoverImage(track.cover)),
               Positioned.fill(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
@@ -226,10 +238,14 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                                 switchInCurve: Curves.easeOutCubic,
                                 switchOutCurve: Curves.easeInCubic,
                                 child: LayoutBuilder(
-                          builder: (context, innerConstraints) {
-                            return _buildCurrentView(track, availableWidth, innerConstraints.maxHeight);
-                          },
-                        ),
+                                  builder: (context, innerConstraints) {
+                                    return _buildCurrentView(
+                                      track,
+                                      availableWidth,
+                                      innerConstraints.maxHeight,
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             _buildPlayerControls(track),
@@ -280,14 +296,22 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.25) : Colors.transparent,
+          color: isSelected
+              ? AppTheme.primaryColor.withValues(alpha: 0.25)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          border: isSelected ? Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)) : null,
+          border: isSelected
+              ? Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3))
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: isSelected ? Colors.white : Colors.white38),
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected ? Colors.white : Colors.white38,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -304,7 +328,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
     );
   }
 
-  Widget _buildCurrentView(MusicTrack track, double availableWidth, [double? availableHeight]) {
+  Widget _buildCurrentView(
+    MusicTrack track,
+    double availableWidth, [
+    double? availableHeight,
+  ]) {
     switch (_currentView) {
       case PlayerView.art:
         return _buildArtView(track, availableWidth, availableHeight);
@@ -319,7 +347,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
   //  ART VIEW
   // ─────────────────────────────────────────────
 
-  Widget _buildArtView(MusicTrack track, double availableWidth, [double? availableHeight]) {
+  Widget _buildArtView(
+    MusicTrack track,
+    double availableWidth, [
+    double? availableHeight,
+  ]) {
     // Reserve enough vertical room for title (up to 2 lines) + artist + album
     // + spacing. Empirically: 24*1.2*2 + 8 + 16 + 4 + 13 + 24 ≈ 123, plus a
     // safety margin so an unusually tall font doesn't overflow.
@@ -345,7 +377,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.15 + (_glowController.value * 0.15)),
+                      color: AppTheme.primaryColor.withValues(
+                        alpha: 0.15 + (_glowController.value * 0.15),
+                      ),
                       blurRadius: 40 + (_glowController.value * 20),
                       spreadRadius: 5 + (_glowController.value * 10),
                     ),
@@ -363,7 +397,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
               tag: 'track-art',
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(28),
-                child: _buildCoverImage(track.cover, width: artSize, height: artSize),
+                child: _buildCoverImage(
+                  track.cover,
+                  width: artSize,
+                  height: artSize,
+                ),
               ),
             ),
           ),
@@ -372,7 +410,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
         // Track info
         Text(
           track.title,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5, height: 1.2),
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+            height: 1.2,
+          ),
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -380,7 +423,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
         const SizedBox(height: 8),
         Text(
           track.artist,
-          style: TextStyle(fontSize: 16, color: Colors.white.withValues(alpha: 0.5), letterSpacing: 0.2),
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white.withValues(alpha: 0.5),
+            letterSpacing: 0.2,
+          ),
           textAlign: TextAlign.center,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -389,7 +436,10 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
           const SizedBox(height: 4),
           Text(
             track.album,
-            style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.3)),
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -414,29 +464,31 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
-                  width: 36, height: 36,
+                  width: 36,
+                  height: 36,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
                     color: AppTheme.primaryColor.withValues(alpha: 0.6),
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text('Loading lyrics...', style: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 14)),
+                Text(
+                  'Loading lyrics...',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           );
         }
 
         if (lyricsList.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.lyrics_outlined, size: 48, color: Colors.white.withValues(alpha: 0.15)),
-                const SizedBox(height: 16),
-                Text('No lyrics available', style: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 15)),
-              ],
-            ),
+          return DizzyEmptyState(
+            title: 'No lyrics available',
+            description: 'Lyrics could not be found for this track',
+            icon: Icons.lyrics_outlined,
           );
         }
 
@@ -490,21 +542,37 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                       child: Container(
                         key: _lyricKeys[index],
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 16,
+                        ),
                         child: AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 400),
                           curve: Curves.easeOutCubic,
                           style: TextStyle(
                             fontSize: isActive ? 28 : 22,
                             fontWeight: FontWeight.w700,
-                            color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.12),
+                            color: isActive
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.12),
                             fontFamily: 'Poppins',
                             height: 1.35,
                             letterSpacing: -0.3,
                             shadows: isActive
                                 ? [
-                                    Shadow(color: AppTheme.primaryColor.withValues(alpha: 0.5), blurRadius: 20),
-                                    Shadow(color: Colors.black.withValues(alpha: 0.8), blurRadius: 10, offset: const Offset(0, 3)),
+                                    Shadow(
+                                      color: AppTheme.primaryColor.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      blurRadius: 20,
+                                    ),
+                                    Shadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
                                   ]
                                 : null,
                           ),
@@ -535,14 +603,18 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
                 color: AppTheme.primaryColor.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 16),
-            Text('Finding related tracks...', style: TextStyle(color: Colors.white.withValues(alpha: 0.35))),
+            Text(
+              'Finding related tracks...',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.35)),
+            ),
           ],
         ),
       );
@@ -554,9 +626,16 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.explore_off_rounded, size: 48, color: Colors.white.withValues(alpha: 0.15)),
+            Icon(
+              Icons.explore_off_rounded,
+              size: 48,
+              color: Colors.white.withValues(alpha: 0.15),
+            ),
             const SizedBox(height: 16),
-            Text('No related tracks found', style: TextStyle(color: Colors.white.withValues(alpha: 0.35))),
+            Text(
+              'No related tracks found',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.35)),
+            ),
           ],
         ),
       );
@@ -610,20 +689,36 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                     fit: BoxFit.cover,
                     errorWidget: (c, u, e) => Container(
                       color: Colors.white.withValues(alpha: 0.05),
-                      child: const Icon(Icons.music_note_rounded, color: Colors.white24),
+                      child: const Icon(
+                        Icons.music_note_rounded,
+                        color: Colors.white24,
+                      ),
                     ),
                   ),
                   // Play overlay
                   Positioned(
-                    bottom: 6, right: 6,
+                    bottom: 6,
+                    right: 6,
                     child: Container(
-                      width: 30, height: 30,
+                      width: 30,
+                      height: 30,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFF7C4DFF), Color(0xFF9C6FFF)]),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF7C4DFF), Color(0xFF9C6FFF)],
+                        ),
                         shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.4), blurRadius: 8)],
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                            blurRadius: 8,
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 18),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ],
@@ -634,11 +729,25 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(track.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                  Text(
+                    track.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
                   const SizedBox(height: 1),
-                  Text(track.artist, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.4))),
+                  Text(
+                    track.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white.withValues(alpha: 0.4),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -666,18 +775,25 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                 builder: (context, dur, child) {
                   final dValue = dur.inSeconds.toDouble();
                   final pValue = pos.inSeconds.toDouble();
-                  final safePValue = pValue.clamp(0.0, dValue > 0 ? dValue : 1.0);
+                  final safePValue = pValue.clamp(
+                    0.0,
+                    dValue > 0 ? dValue : 1.0,
+                  );
 
                   return Column(
                     children: [
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           activeTrackColor: AppTheme.primaryColor,
-                          inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+                          inactiveTrackColor: Colors.white.withValues(
+                            alpha: 0.1,
+                          ),
                           thumbColor: Colors.white,
                           trackHeight: 4,
                           overlayShape: SliderComponentShape.noOverlay,
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 7,
+                          ),
                         ),
                         child: Slider(
                           value: _dragValue ?? safePValue,
@@ -693,8 +809,22 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(_formatDuration(pos), style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.35), fontWeight: FontWeight.w500)),
-                          Text(_formatDuration(dur), style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.35), fontWeight: FontWeight.w500)),
+                          Text(
+                            _formatDuration(pos),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            _formatDuration(dur),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -719,22 +849,31 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                 ),
               ),
               // Previous
-              _buildControlIcon(Icons.skip_previous_rounded, onTap: () => player.previous(), size: 36),
+              _buildControlIcon(
+                Icons.skip_previous_rounded,
+                onTap: () => player.previous(),
+                size: 36,
+              ),
               // Play/Pause
               ValueListenableBuilder<bool>(
                 valueListenable: player.isBuffering,
                 builder: (context, buffering, _) {
                   if (buffering) {
                     return Container(
-                      width: 72, height: 72,
+                      width: 72,
+                      height: 72,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withValues(alpha: 0.1),
                       ),
                       child: const Center(
                         child: SizedBox(
-                          width: 28, height: 28,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     );
@@ -744,7 +883,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                     builder: (context, playing, _) => GestureDetector(
                       onTap: () => player.togglePlay(),
                       child: Container(
-                        width: 72, height: 72,
+                        width: 72,
+                        height: 72,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: const LinearGradient(
@@ -753,11 +893,19 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                             colors: [Color(0xFF8C5FFF), Color(0xFF6B3FDF)],
                           ),
                           boxShadow: [
-                            BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 6)),
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.4,
+                              ),
+                              blurRadius: 20,
+                              offset: const Offset(0, 6),
+                            ),
                           ],
                         ),
                         child: Icon(
-                          playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          playing
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
                           color: Colors.white,
                           size: 38,
                         ),
@@ -767,15 +915,25 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
                 },
               ),
               // Next
-              _buildControlIcon(Icons.skip_next_rounded, onTap: () => player.next(), size: 36),
+              _buildControlIcon(
+                Icons.skip_next_rounded,
+                onTap: () => player.next(),
+                size: 36,
+              ),
               // Loop
               ValueListenableBuilder<PlaylistMode>(
                 valueListenable: player.loopMode,
                 builder: (context, mode, _) {
                   IconData icon = Icons.repeat_rounded;
                   bool isActive = mode != PlaylistMode.none;
-                  if (mode == PlaylistMode.single) icon = Icons.repeat_one_rounded;
-                  return _buildControlIcon(icon, onTap: () => player.toggleLoop(), isActive: isActive, size: 22);
+                  if (mode == PlaylistMode.single)
+                    icon = Icons.repeat_one_rounded;
+                  return _buildControlIcon(
+                    icon,
+                    onTap: () => player.toggleLoop(),
+                    isActive: isActive,
+                    size: 22,
+                  );
                 },
               ),
             ],
@@ -785,7 +943,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
     );
   }
 
-  Widget _buildControlIcon(IconData icon, {required VoidCallback onTap, bool isActive = false, double size = 24}) {
+  Widget _buildControlIcon(
+    IconData icon, {
+    required VoidCallback onTap,
+    bool isActive = false,
+    double size = 24,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -793,7 +956,9 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
         child: Icon(
           icon,
           size: size,
-          color: isActive ? AppTheme.primaryColor : Colors.white.withValues(alpha: 0.65),
+          color: isActive
+              ? AppTheme.primaryColor
+              : Colors.white.withValues(alpha: 0.65),
         ),
       ),
     );
@@ -806,7 +971,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
   Widget _buildCoverImage(String cover, {double? width, double? height}) {
     if (cover.isEmpty) {
       return Container(
-        width: width, height: height,
+        width: width,
+        height: height,
         color: Colors.white.withValues(alpha: 0.05),
         child: const Icon(Icons.music_note_rounded, color: Colors.white24),
       );
@@ -814,10 +980,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
     if (cover.startsWith('http')) {
       return CachedNetworkImage(
         imageUrl: cover,
-        width: width, height: height,
+        width: width,
+        height: height,
         fit: BoxFit.cover,
         errorWidget: (c, u, e) => Container(
-          width: width, height: height,
+          width: width,
+          height: height,
           color: Colors.white.withValues(alpha: 0.05),
           child: const Icon(Icons.music_note_rounded, color: Colors.white24),
         ),
@@ -825,10 +993,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> with WidgetsBindi
     }
     return Image.file(
       File(cover),
-      width: width, height: height,
+      width: width,
+      height: height,
       fit: BoxFit.cover,
       errorBuilder: (c, e, s) => Container(
-        width: width, height: height,
+        width: width,
+        height: height,
         color: Colors.white.withValues(alpha: 0.05),
         child: const Icon(Icons.music_note_rounded, color: Colors.white24),
       ),
@@ -866,9 +1036,10 @@ class _PlayerHoverScaleCardState extends State<_PlayerHoverScaleCard>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _scale = Tween<double>(begin: 1.0, end: 1.04).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
-    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 1.04,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
   @override
