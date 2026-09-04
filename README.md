@@ -1,75 +1,118 @@
 # Dizzy
 
-Stream anything, anywhere. Movies, TV shows, music, manga, comics, audiobooks, live sports. All in one app.
+> Stream anything, anywhere. Movies, TV shows, music, manga, comics, audiobooks, live sports, anime, Asian dramas — all in one app.
 
-Made by **Sirius6907**. If you like it, star it or whatever.
+Made by **[Sirius6907](https://github.com/Sirius6907)**
 
-## What it does
+[![Build Status](https://github.com/Sirius6907/Dizzy/actions/workflows/build.yml/badge.svg)](https://github.com/Sirius6907/Dizzy/actions/workflows/build.yml)
+[![License: GPL-2.0](https://img.shields.io/badge/License-GPL--2.0-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/github/v/release/Sirius6907/Dizzy)](https://github.com/Sirius6907/Dizzy/releases/latest)
 
-### Movies & TV Shows
-- Search and browse movies/TV shows with TMDB metadata
-- Stream torrents directly with built-in libtorrent engine
-- Stremio addon support
-- Real-Debrid and TorBox integration
-- Auto-resume from where you left off
-- Watch history tracking
+---
+
+## Features
+
+### 🎬 Movies & TV Shows
+- Browse & stream movies/TV shows with full TMDB metadata
+- Built-in libtorrent engine (torrent streaming — no VLC needed)
+- Stremio addon ecosystem support
+- Real-Debrid & TorBox debrid integration
+- Subtitles via SubtitleCat / MySubs
+- Auto-resume, watch history, continue watching
 - Jellyfin server integration
 
-### Music
-- Search and stream music from Deezer
-- Fetches audio from YouTube
-- Synced lyrics
-- Create playlists
-- Download tracks for offline playback
-- Like songs and save albums
-- Full-featured player with shuffle, repeat, queue management
+### 🎵 Music
+- Stream music via Deezer catalog + YouTube audio backend
+- Synced lyrics, full player queue (shuffle, repeat, crossfade)
+- Playlists, liked songs, albums
+- Offline download to device storage
 
-### Manga & Comics
-- Read manga from multiple sources
-- Comics support
-- Chapter tracking and history
-- Page-by-page or continuous scroll reading
+### 📖 Manga, Comics & Books
+- Multi-source manga reader (page / continuous scroll)
+- Comics from ReadComicsOnline
+- Epub book reader
+- Chapter progress tracking
 
-### Audiobooks
-- Stream audiobooks
-- Chapter navigation
-- Playback speed control
+### 🎧 Audiobooks & Paper2Audio
+- Stream from LibriVox and other sources
+- Chapter navigation + speed control
+- Convert PDFs/papers to audio (Paper2Audio)
 
-### Live Sports
-- Watch live matches and events
-- Multiple stream sources
+### 📺 Anime
+- AllAnime + Miruro streaming
+- Arabic-dubbed anime
+- Asian drama streaming (KissKH)
+- Anime search & episode tracking
 
-### IPTV
-- Xtream Codes API support
-- M3U playlist support
-- Live TV and VOD
+### 🏆 Live Sports & IPTV
+- Live match streams from multiple sources
+- Xtream Codes API + M3U playlist IPTV
+- Live TV & VOD
 
-### Other
-- Torrent search with Prowlarr/Jackett integration
-- Auto-updates (checks on launch)
-- Cross-platform (Windows, Linux, macOS, Android)
-- Dark theme
+### ⚙️ More
+- Prowlarr / Jackett torrent indexer integration
+- Nuvio extension engine (custom scrapers)
+- Trakt & SIMKL scrobbling
+- Auto-update on launch (no need to manually check releases)
+- Magnet link player
+
+---
 
 ## Download
 
-Check the releases page for the latest builds.
+**[→ Latest Release](https://github.com/Sirius6907/Dizzy/releases/latest)**
 
-- Android: APK files
-- Windows: Installer
-- Linux: AppImage
-- macOS: Zip
+| Platform | File |
+|----------|------|
+| 🪟 Windows | `Dizzy-Windows-Setup.exe` (Installer) |
+| 🐧 Linux | `Dizzy-Linux-x86_64.AppImage` |
+| 🍎 macOS Apple Silicon | `Dizzy-macOS-arm64.dmg` |
+| 🍎 macOS Intel | `Dizzy-macOS-intel.dmg` |
+| 📱 iOS (sideload) | `Dizzy-iOS.ipa` |
+| 🤖 Android | APK (manual build / see CI) |
+| 🌐 Web | [dizzy.pages.dev](https://dizzy.pages.dev) |
+
+---
 
 ## Building
 
-You need Flutter and the usual build tools.
+You need Flutter stable and platform build tools.
 
 ```bash
+# Get dependencies
 flutter pub get
+
+# Build for your platform
 flutter build windows
 flutter build linux
+flutter build macos
 flutter build apk
+flutter build ios --no-codesign
+flutter build web
 ```
+
+---
+
+## CI/CD
+
+Every push to `main` and every `v*` tag triggers GitHub Actions:
+
+- **Windows** — Inno Setup installer
+- **Linux** — AppImage (x86_64)
+- **macOS** — DMG (Apple Silicon + Intel)
+- **iOS** — Sideloadable IPA
+- **Web** — Auto-deployed to **Cloudflare Pages** on every `main` push or tag
+
+Secrets required (`Settings → Secrets`):
+```
+TRAKT_CLIENT_ID / TRAKT_CLIENT_SECRET
+SIMKL_CLIENT_ID / SIMKL_CLIENT_SECRET
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
+```
+
+---
 
 ## License
 
-GPL-2.0 license. See [LICENSE](LICENSE) for details.
+[GPL-2.0](LICENSE) — Based on [PlayTorrioV2](https://github.com/AimesSoft/PlayTorrioV2), rebranded and maintained separately.
