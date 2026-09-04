@@ -96,7 +96,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
+    debugPrint('[HomeScreen] initState: Loading trending movies...');
     _trendingFuture = _api.getTrending().then((movies) {
+      debugPrint('[HomeScreen] Trending loaded: ${movies.length} movies');
       _fetchHeroLogos(movies.take(5).toList());
       // Pick tonight's randomized recommendation from a deeper pool
       if (movies.length > 6 && mounted) {
@@ -106,10 +108,13 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       // Prime ambient color for the first hero
       if (movies.isNotEmpty) _extractAmbientFor(movies.first);
       return movies;
+    }).catchError((e) {
+      debugPrint('[HomeScreen] Trending FAILED: $e');
+      return <Movie>[];
     });
-    _popularFuture = _api.getPopular();
-    _topRatedFuture = _api.getTopRated();
-    _nowPlayingFuture = _api.getNowPlaying();
+    _popularFuture = _api.getPopular().catchError((e) { debugPrint('[HomeScreen] Popular failed: $e'); return <Movie>[]; });
+    _topRatedFuture = _api.getTopRated().catchError((e) { debugPrint('[HomeScreen] TopRated failed: $e'); return <Movie>[]; });
+    _nowPlayingFuture = _api.getNowPlaying().catchError((e) { debugPrint('[HomeScreen] NowPlaying failed: $e'); return <Movie>[]; });
     _moodFuture = _loadMoodMovies(_selectedMood);
     
     _startHeroTimer();
