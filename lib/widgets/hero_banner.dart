@@ -52,7 +52,13 @@ class _HeroBannerState extends State<HeroBanner> {
               },
             ),
             items: featuredMovies.map((movie) {
-              final imageUrl = TmdbApi.getBackdropUrl(movie.backdropPath);
+              // Prefer backdrop, fallback to poster, skip if both empty
+              final rawPath = movie.backdropPath.isNotEmpty
+                  ? movie.backdropPath
+                  : movie.posterPath;
+              final imageUrl = rawPath.isNotEmpty
+                  ? TmdbApi.getBackdropUrl(rawPath)
+                  : '';
               return InkWell(
                 onTap: () => _navigateToDetails(movie),
                 focusColor: Colors.deepPurpleAccent.withValues(alpha: 0.1),
@@ -60,13 +66,15 @@ class _HeroBannerState extends State<HeroBanner> {
                   fit: StackFit.expand,
                   children: [
                     // 1. High-Res Background
-                    CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      placeholder: (context, url) => Container(color: const Color(0xFF0F0418)),
-                      errorWidget: (context, url, error) => Container(color: const Color(0xFF0F0418)),
-                    ),
+                    imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.topCenter,
+                            placeholder: (context, url) => Container(color: const Color(0xFF0F0418)),
+                            errorWidget: (context, url, error) => Container(color: const Color(0xFF0F0418)),
+                          )
+                        : Container(color: const Color(0xFF0F0418)),
                     
                     // 2. Cinematic Gradient Overlay
                     Container(

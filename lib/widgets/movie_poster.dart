@@ -84,16 +84,24 @@ class _MoviePosterState extends State<MoviePoster> {
               fit: StackFit.expand,
               children: [
                 // Background Image
-                CachedNetworkImage(
-                  imageUrl: TmdbApi.getImageUrl(widget.movie.posterPath),
-                  fit: BoxFit.cover,
-                  memCacheWidth: 340,
-                  placeholder: (context, url) => Container(
-                    color: const Color(0xFF2D0C3F),
-                    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  ),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
+                widget.movie.posterPath.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: TmdbApi.getImageUrl(widget.movie.posterPath),
+                      fit: BoxFit.cover,
+                      memCacheWidth: 340,
+                      placeholder: (context, url) => Container(
+                        color: const Color(0xFF2D0C3F),
+                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color(0xFF2D0C3F),
+                        child: const Icon(Icons.movie, color: Colors.white24, size: 48),
+                      ),
+                    )
+                  : Container(
+                      color: const Color(0xFF2D0C3F),
+                      child: const Center(child: Icon(Icons.movie, color: Colors.white24, size: 48)),
+                    ),
                 
                 // Content Overlay
                 AnimatedOpacity(
