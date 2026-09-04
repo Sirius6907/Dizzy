@@ -70,7 +70,7 @@ Made by **[Sirius6907](https://github.com/Sirius6907)**
 | 🍎 macOS Intel | `Dizzy-macOS-intel.dmg` |
 | 📱 iOS (sideload) | `Dizzy-iOS.ipa` |
 | 🤖 Android | APK (manual build / see CI) |
-| 🌐 Web | [dizzy.pages.dev](https://dizzy.pages.dev) |
+| 🌐 Web | [sirius-dizzy.pages.dev](https://sirius-dizzy.pages.dev) |
 
 ---
 
