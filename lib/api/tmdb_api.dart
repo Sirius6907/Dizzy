@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../models/movie.dart';
 
@@ -6,6 +7,14 @@ class TmdbApi {
   static const String _apiKey = 'ef0d35fe298492270fcd565215e1901c';
   static const String _baseUrl = 'https://api.themoviedb.org/3';
   static const String _imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
+  
+  // Increase timeout for slow networks
+  static const Duration _timeout = Duration(seconds: 15);
+  
+  /// Helper to make HTTP requests with timeout
+  Future<http.Response> _get(String url) async {
+    return await _get(url).timeout(_timeout);
+  }
 
   /// High-res backdrop for hero banners / full-width headers.
   static String getBackdropUrl(String path) => 'https://image.tmdb.org/t/p/w1280$path';
@@ -20,7 +29,7 @@ class TmdbApi {
   static String getOriginalUrl(String path) => 'https://image.tmdb.org/t/p/original$path';
 
   Future<List<Movie>> getTrending() async {
-    final response = await http.get(Uri.parse('$_baseUrl/trending/movie/day?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/trending/movie/day?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
@@ -30,7 +39,7 @@ class TmdbApi {
   }
 
   Future<List<Movie>> getPopular() async {
-    final response = await http.get(Uri.parse('$_baseUrl/movie/popular?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/movie/popular?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
@@ -40,7 +49,7 @@ class TmdbApi {
   }
 
   Future<List<Movie>> getTopRated() async {
-    final response = await http.get(Uri.parse('$_baseUrl/movie/top_rated?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/movie/top_rated?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
@@ -50,7 +59,7 @@ class TmdbApi {
   }
 
   Future<List<Movie>> getNowPlaying() async {
-    final response = await http.get(Uri.parse('$_baseUrl/movie/now_playing?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/movie/now_playing?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
@@ -60,7 +69,7 @@ class TmdbApi {
   }
 
   Future<List<String>> getBackdrops(int movieId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/movie/$movieId/images?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/movie/$movieId/images?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       final backdrops = decoded['backdrops'] as List;
@@ -94,7 +103,7 @@ class TmdbApi {
   }
 
   Future<Movie> getMovieDetails(int movieId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/movie/$movieId?api_key=$_apiKey&append_to_response=images,external_ids'));
+    final response = await _get('$_baseUrl/movie/$movieId?api_key=$_apiKey&append_to_response=images,external_ids');
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
@@ -134,7 +143,7 @@ class TmdbApi {
   }
 
   Future<Movie> getTvDetails(int tvId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/tv/$tvId?api_key=$_apiKey&append_to_response=images,external_ids'));
+    final response = await _get('$_baseUrl/tv/$tvId?api_key=$_apiKey&append_to_response=images,external_ids');
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
@@ -174,7 +183,7 @@ class TmdbApi {
   }
 
   Future<Map<String, dynamic>> getTvSeasonDetails(int tvId, int seasonNumber) async {
-    final response = await http.get(Uri.parse('$_baseUrl/tv/$tvId/season/$seasonNumber?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/tv/$tvId/season/$seasonNumber?api_key=$_apiKey');
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -216,7 +225,7 @@ class TmdbApi {
   }
 
   Future<List<Map<String, dynamic>>> getMovieGenres() async {
-    final response = await http.get(Uri.parse('$_baseUrl/genre/movie/list?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/genre/movie/list?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['genres'] as List).cast<Map<String, dynamic>>();
@@ -226,7 +235,7 @@ class TmdbApi {
   }
 
   Future<List<Map<String, dynamic>>> getTvGenres() async {
-    final response = await http.get(Uri.parse('$_baseUrl/genre/tv/list?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/genre/tv/list?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['genres'] as List).cast<Map<String, dynamic>>();
@@ -250,7 +259,7 @@ class TmdbApi {
       url += '&with_original_language=$language';
     }
     
-    final response = await http.get(Uri.parse(url));
+    final response = await _get(url);
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
@@ -274,7 +283,7 @@ class TmdbApi {
       url += '&with_original_language=$language';
     }
     
-    final response = await http.get(Uri.parse(url));
+    final response = await _get(url);
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'tv')).toList();
@@ -284,7 +293,7 @@ class TmdbApi {
   }
 
   Future<List<Movie>> getSimilarMovies(int movieId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/movie/$movieId/similar?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/movie/$movieId/similar?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
@@ -294,7 +303,7 @@ class TmdbApi {
   }
 
   Future<List<Movie>> getSimilarTvShows(int tvId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/tv/$tvId/similar?api_key=$_apiKey'));
+    final response = await _get('$_baseUrl/tv/$tvId/similar?api_key=$_apiKey');
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
       return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'tv')).toList();
