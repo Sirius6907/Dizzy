@@ -785,21 +785,27 @@ class _MusicScreenState extends State<MusicScreen>
           ),
         ),
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(0, 4, 0, 180),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: 0.72,
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 14,
-            ),
-            itemCount: _trendingTracks.length,
-            itemBuilder: (context, index) => _buildTrackCard(
-              _trendingTracks[index],
-              _trendingTracks,
-              index: index,
-            ),
-          ),
+          child: _trendingTracks.isEmpty
+              ? _buildEmptyState(
+                  Icons.music_off_rounded,
+                  'No music available',
+                  'Unable to load trending tracks. Check your connection and try again.',
+                )
+              : GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(0, 4, 0, 180),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 0.72,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                  ),
+                  itemCount: _trendingTracks.length,
+                  itemBuilder: (context, index) => _buildTrackCard(
+                    _trendingTracks[index],
+                    _trendingTracks,
+                    index: index,
+                  ),
+                ),
         ),
       ],
     );

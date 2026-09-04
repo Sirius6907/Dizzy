@@ -415,39 +415,7 @@ jobs:
           name: Dizzy-iOS
           path: Dizzy-iOS.ipa
 
-  # ─── Web (Flutter Web for Cloudflare Pages) ──────────────────────────────
-  web:
-    name:  Web Build
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: ${{ env.FLUTTER_CHANNEL }}
-
-      - run: flutter pub get
-      - run: >
-          flutter build web --release
-          --dart-define=TRAKT_CLIENT_ID=${{ secrets.TRAKT_CLIENT_ID }}
-          --dart-define=TRAKT_CLIENT_SECRET=${{ secrets.TRAKT_CLIENT_SECRET }}
-          --dart-define=SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
-          --dart-define=SIMKL_CLIENT_SECRET=${{ secrets.SIMKL_CLIENT_SECRET }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Dizzy-Web
-          path: build/web
-
-      # Deploy to Cloudflare Pages (only on main branch or tags)
-      - name: Deploy to Cloudflare Pages
-        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy build/web --project-name=sirius-dizzy
 
   # ─── Create GitHub Release ───────────────────────────────────────────────
   release:
