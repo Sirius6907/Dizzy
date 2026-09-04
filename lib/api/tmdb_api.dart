@@ -38,13 +38,46 @@ class TmdbApi {
   static String getOriginalUrl(String path) => 'https://image.tmdb.org/t/p/original$path';
 
   Future<List<Movie>> getTrending() async {
-    final response = await _get('$_baseUrl/trending/movie/day?api_key=$_apiKey');
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      return (decoded['results'] as List).map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
-    } else {
-      throw Exception('Failed to load trending movies');
+    try {
+      final response = await _get('$_baseUrl/trending/movie/day?api_key=$_apiKey');
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final results = decoded['results'] as List?;
+        if (results != null && results.isNotEmpty) {
+          return results.map((json) => Movie.fromJson(json, mediaType: 'movie')).toList();
+        }
+      }
+      debugPrint('[TmdbApi] getTrending failed (status ${response.statusCode}), using fallback');
+    } catch (e) {
+      debugPrint('[TmdbApi] getTrending exception: $e, using fallback');
     }
+    
+    // Fallback: return sample movies so app doesn't crash
+    return _getFallbackMovies();
+  }
+  
+  /// Fallback movies when TMDB is unreachable
+  List<Movie> _getFallbackMovies() {
+    return [
+      Movie.fromJson({
+        'id': 1,
+        'title': 'Sample Movie 1',
+        'overview': 'This is a sample movie. TMDB API is currently unavailable.',
+        'backdrop_path': '',
+        'poster_path': '',
+        'vote_average': 7.5,
+        'release_date': '2024-01-01',
+      }, mediaType: 'movie'),
+      Movie.fromJson({
+        'id': 2,
+        'title': 'Sample Movie 2',
+        'overview': 'Another sample movie for testing.',
+        'backdrop_path': '',
+        'poster_path': '',
+        'vote_average': 8.0,
+        'release_date': '2024-02-01',
+      }, mediaType: 'movie'),
+    ];
   }
 
   Future<List<Movie>> getPopular() async {
