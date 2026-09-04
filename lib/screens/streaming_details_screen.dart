@@ -13,6 +13,7 @@ import '../api/site111477_service.dart';
 import '../api/site111477_proxy.dart' as site111477_proxy;
 import '../api/videasy_extractor.dart';
 import '../api/vidsrc_extractor.dart';
+import '../api/multi_source_resolver.dart' as multi_source;
 import '../api/settings_service.dart';
 import '../widgets/loading_overlay.dart';
 import '../services/episode_watched_service.dart';
@@ -42,6 +43,7 @@ class _StreamingDetailsScreenState extends State<StreamingDetailsScreen> with At
   bool _extractionCancelled = false;
   String? _statusMessage;
   final StreamExtractor _extractor = StreamExtractor();
+  final multi_source.MultiSourceResolver _multiSourceResolver = multi_source.MultiSourceResolver();
   final StremioService _stremio = StremioService();
   final TmdbApi _api = TmdbApi();
   late Movie _movie;
@@ -386,6 +388,39 @@ class _StreamingDetailsScreenState extends State<StreamingDetailsScreen> with At
         streamUrl: first.url,
         headers: first.headers,
         sources: wsSources,
+      );
+      return true;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MULTI-SOURCE RESOLVER (v2.0) - Automatic 3-source fallback
+    // ═══════════════════════════════════════════════════════════════════════════
+    if (key == 'multi-source') {
+      if (mounted) setState(() => _statusMessage = 'Multi-Source: trying VidSrc → Videasy → Amri...');
+      
+      multi_source.StreamResult? result;
+      if (isTv) {
+        result = await _multiSourceResolver.resolveEpisodeStream(
+          tmdbId: _movie.id.toInt(),
+          season: _selectedSeason,
+          episode: _selectedEpisode,
+        );
+      } else {
+        result = await _multiSourceResolver.resolveMovieStream(
+          tmdbId: _movie.id.toInt(),
+          imdbId: _movie.imdbId,
+        );
+      }
+      
+      if (_extractionCancelled || result == null) return false;
+      if (!mounted) return false;
+      
+      // Store successful source for health tracking
+      await _settings.recordStreamSuccess(result.sourceName);
+      
+      pushPlayer(
+        streamUrl: result.url,
+        headers: result.headers,
       );
       return true;
     }
