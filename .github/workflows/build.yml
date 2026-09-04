@@ -451,7 +451,7 @@ jobs:
   # ─── Create GitHub Release ───────────────────────────────────────────────
   release:
     name:  Create Release
-    needs: [windows, linux-x64, macos-arm64, macos-intel, ios, web]
+    needs: [android, windows, linux-x64, macos-arm64, macos-intel, ios, web]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
@@ -464,6 +464,7 @@ jobs:
           draft: true
           generate_release_notes: true
           files: |
+            Dizzy-Android-APK/*.apk
             Dizzy-Windows-Installer/*.exe
             Dizzy-Linux-x64/*.AppImage
             Dizzy-macOS-arm64/*.dmg
