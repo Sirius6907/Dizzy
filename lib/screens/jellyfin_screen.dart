@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import '../services/jellyfin_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 import 'jellyfin_details_screen.dart';
 
 // ─── Jellyfin Palette ────────────────────────────────────────────────────────
@@ -72,7 +73,8 @@ class _JellyfinScreenState extends State<JellyfinScreen>
   List<JellyfinItem> _resumeItems = [];
   List<JellyfinItem> _nextUpItems = [];
   Map<String, List<JellyfinItem>> _latestByLibrary = {};
-  final TextEditingController _librarySearchController = TextEditingController();
+  final TextEditingController _librarySearchController =
+      TextEditingController();
   final FocusNode _librarySearchFocus = FocusNode();
   Timer? _librarySearchDebounce;
 
@@ -109,7 +111,8 @@ class _JellyfinScreenState extends State<JellyfinScreen>
   int get _libraryTotalCount => _librarySearchTerm.isEmpty
       ? _allLibraryItems.length
       : _libraryItems.length;
-  int get _totalPages => (_libraryTotalCount / _pageSize).ceil().clamp(1, 99999);
+  int get _totalPages =>
+      (_libraryTotalCount / _pageSize).ceil().clamp(1, 99999);
 
   @override
   bool get wantKeepAlive => true;
@@ -188,9 +191,11 @@ class _JellyfinScreenState extends State<JellyfinScreen>
     _heroTimer = Timer.periodic(const Duration(seconds: 7), (_) {
       if (!mounted || !_heroController.hasClients) return;
       _heroPage = (_heroPage + 1) % _featuredItems.length;
-      _heroController.animateToPage(_heroPage,
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOutCubic);
+      _heroController.animateToPage(
+        _heroPage,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+      );
     });
   }
 
@@ -208,8 +213,8 @@ class _JellyfinScreenState extends State<JellyfinScreen>
     final filtered = _librarySearchTerm.isEmpty
         ? _allLibraryItems
         : _allLibraryItems
-            .where((i) => i.name.toLowerCase().contains(_librarySearchTerm))
-            .toList();
+              .where((i) => i.name.toLowerCase().contains(_librarySearchTerm))
+              .toList();
     if (_librarySearchTerm.isNotEmpty) {
       _libraryItems = filtered;
     } else {
@@ -241,7 +246,8 @@ class _JellyfinScreenState extends State<JellyfinScreen>
         _allLibraryItems = cached;
       });
       _rebuildPage();
-      if (!_libraryCacheComplete.contains(key) && !_libraryCacheFetching.contains(key)) {
+      if (!_libraryCacheComplete.contains(key) &&
+          !_libraryCacheFetching.contains(key)) {
         _fetchLibraryItems(library, key);
       }
     } else {
@@ -265,11 +271,12 @@ class _JellyfinScreenState extends State<JellyfinScreen>
     final type = library.collectionType == 'movies'
         ? 'Movie'
         : library.collectionType == 'tvshows'
-            ? 'Series'
-            : null;
+        ? 'Series'
+        : null;
 
     bool valid() => _libraryFetchGen[key] == gen;
-    bool viewing() => _selectedLibraryId == library.id && _currentCacheKey == key;
+    bool viewing() =>
+        _selectedLibraryId == library.id && _currentCacheKey == key;
 
     try {
       // Fetch ALL items in a single request (no limit) — matches how
@@ -282,7 +289,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
         sortOrder: _librarySortOrder,
         startIndex: 0,
       );
-      if (!valid()) { _libraryCacheFetching.remove(key); return; }
+      if (!valid()) {
+        _libraryCacheFetching.remove(key);
+        return;
+      }
 
       _libraryCache[key] = List.of(result.items);
       _libraryCacheComplete.add(key);
@@ -303,7 +313,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
       debugPrint('[JellyfinScreen] Library fetch error: $e');
       _libraryCacheFetching.remove(key);
       if (viewing() && mounted) {
-        setState(() { _isLoadingLibrary = false; _isBackgroundLoading = false; });
+        setState(() {
+          _isLoadingLibrary = false;
+          _isBackgroundLoading = false;
+        });
       }
     }
   }
@@ -314,8 +327,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
   }
 
   void _openDetails(JellyfinItem item) {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (_) => JellyfinDetailsScreen(item: item))).then((_) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => JellyfinDetailsScreen(item: item)),
+    ).then((_) {
       // Refresh Continue Watching / Next Up after returning from details
       _jf.invalidatePlaybackCache();
       _loadHomeData();
@@ -339,7 +354,9 @@ class _JellyfinScreenState extends State<JellyfinScreen>
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => Dialog(
           backgroundColor: _jfSurfaceLight,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Container(
             width: 400,
             padding: const EdgeInsets.all(32),
@@ -348,32 +365,63 @@ class _JellyfinScreenState extends State<JellyfinScreen>
               children: [
                 // Icon
                 Container(
-                  width: 72, height: 72,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [_jfBlue.withValues(alpha: 0.25), _jfBlueDark.withValues(alpha: 0.15)],
+                      colors: [
+                        _jfBlue.withValues(alpha: 0.25),
+                        _jfBlueDark.withValues(alpha: 0.15),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(Icons.dns_rounded, size: 32, color: _jfBlue),
+                  child: const Icon(
+                    Icons.dns_rounded,
+                    size: 32,
+                    color: _jfBlue,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Connect Server',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700,
-                        color: Colors.white, letterSpacing: -0.5)),
+                const Text(
+                  'Connect Server',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text('Enter your Jellyfin server details',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 13)),
+                Text(
+                  'Enter your Jellyfin server details',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 28),
-                _dialogField(urlCtrl, 'Server URL', Icons.link_rounded,
-                    hint: 'https://jellyfin.example.com'),
+                _dialogField(
+                  urlCtrl,
+                  'Server URL',
+                  Icons.link_rounded,
+                  hint: 'https://jellyfin.example.com',
+                ),
                 const SizedBox(height: 14),
-                _dialogField(userCtrl, 'Username', Icons.person_outline_rounded),
+                _dialogField(
+                  userCtrl,
+                  'Username',
+                  Icons.person_outline_rounded,
+                ),
                 const SizedBox(height: 14),
-                _dialogField(passCtrl, 'Password', Icons.lock_outline_rounded,
-                    isPassword: true),
+                _dialogField(
+                  passCtrl,
+                  'Password',
+                  Icons.lock_outline_rounded,
+                  isPassword: true,
+                ),
                 if (dialogError != null) ...[
                   const SizedBox(height: 14),
                   Container(
@@ -381,14 +429,27 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 16),
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.redAccent,
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(dialogError!,
-                            style: const TextStyle(color: Colors.redAccent, fontSize: 12))),
+                        Expanded(
+                          child: Text(
+                            dialogError!,
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -401,36 +462,66 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                     onPressed: isLogging
                         ? null
                         : () async {
-                            if (urlCtrl.text.trim().isEmpty || userCtrl.text.trim().isEmpty) {
-                              setDialogState(() => dialogError = 'Please fill in all required fields');
+                            if (urlCtrl.text.trim().isEmpty ||
+                                userCtrl.text.trim().isEmpty) {
+                              setDialogState(
+                                () => dialogError =
+                                    'Please fill in all required fields',
+                              );
                               return;
                             }
-                            setDialogState(() { isLogging = true; dialogError = null; });
+                            setDialogState(() {
+                              isLogging = true;
+                              dialogError = null;
+                            });
                             try {
-                              await _jf.login(urlCtrl.text.trim(), userCtrl.text.trim(), passCtrl.text);
+                              await _jf.login(
+                                urlCtrl.text.trim(),
+                                userCtrl.text.trim(),
+                                passCtrl.text,
+                              );
                               if (ctx.mounted) Navigator.pop(ctx);
                               if (!mounted) return;
-                              setState(() { _isLoggedIn = true; _isLoading = true; });
+                              setState(() {
+                                _isLoggedIn = true;
+                                _isLoading = true;
+                              });
                               await _loadHomeData();
                               if (mounted) setState(() => _isLoading = false);
                             } catch (e) {
                               setDialogState(() {
                                 isLogging = false;
-                                dialogError = e.toString().replaceAll('Exception: ', '');
+                                dialogError = e.toString().replaceAll(
+                                  'Exception: ',
+                                  '',
+                                );
                               });
                             }
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _jfBlue,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       elevation: 0,
                     ),
                     child: isLogging
-                        ? const SizedBox(width: 22, height: 22,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text('Connect',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Connect',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -441,8 +532,13 @@ class _JellyfinScreenState extends State<JellyfinScreen>
     );
   }
 
-  Widget _dialogField(TextEditingController ctrl, String label, IconData icon,
-      {String? hint, bool isPassword = false}) {
+  Widget _dialogField(
+    TextEditingController ctrl,
+    String label,
+    IconData icon, {
+    String? hint,
+    bool isPassword = false,
+  }) {
     return TextField(
       controller: ctrl,
       obscureText: isPassword,
@@ -467,7 +563,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: _jfBlue, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -494,26 +593,45 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Handle bar
-                  Container(width: 40, height: 4,
-                      decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(2))),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     children: [
                       const Icon(Icons.dns_rounded, color: _jfBlue, size: 22),
                       const SizedBox(width: 12),
-                      const Expanded(child: Text('Accounts',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white))),
+                      const Expanded(
+                        child: Text(
+                          'Accounts',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                       _HoverCard(
-                        onTap: () { Navigator.pop(ctx); _showAddAccountDialog(); },
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          _showAddAccountDialog();
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: _jfBlue.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.add_rounded, color: _jfBlue, size: 20),
+                          child: const Icon(
+                            Icons.add_rounded,
+                            color: _jfBlue,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ],
@@ -522,63 +640,125 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                   if (accounts.isEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: Column(children: [
-                        Icon(Icons.cloud_off_rounded, size: 44, color: Colors.white.withValues(alpha: 0.15)),
-                        const SizedBox(height: 12),
-                        Text('No accounts', style: TextStyle(color: Colors.white.withValues(alpha: 0.35))),
-                      ]),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.cloud_off_rounded,
+                            size: 44,
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No accounts',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.35),
+                            ),
+                          ),
+                        ],
+                      ),
                     )
                   else
                     ...accounts.asMap().entries.map((entry) {
                       final idx = entry.key;
                       final acc = entry.value;
-                      final isActive = _jf.activeAccount?.normalizedUrl == acc.normalizedUrl &&
+                      final isActive =
+                          _jf.activeAccount?.normalizedUrl ==
+                              acc.normalizedUrl &&
                           _jf.activeAccount?.username == acc.username;
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: isActive ? _jfBlue.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.04),
+                          color: isActive
+                              ? _jfBlue.withValues(alpha: 0.1)
+                              : Colors.white.withValues(alpha: 0.04),
                           borderRadius: BorderRadius.circular(14),
-                          border: isActive ? Border.all(color: _jfBlue.withValues(alpha: 0.3), width: 1.5) : null,
+                          border: isActive
+                              ? Border.all(
+                                  color: _jfBlue.withValues(alpha: 0.3),
+                                  width: 1.5,
+                                )
+                              : null,
                         ),
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          leading: CircleAvatar(
-                            backgroundColor: isActive ? _jfBlue : Colors.white.withValues(alpha: 0.08),
-                            radius: 20,
-                            child: Icon(Icons.person_rounded, color: isActive ? Colors.white : Colors.white38, size: 20),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
                           ),
-                          title: Text(acc.username,
-                              style: TextStyle(color: Colors.white,
-                                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500, fontSize: 14)),
-                          subtitle: Text(acc.normalizedUrl,
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 11)),
+                          leading: CircleAvatar(
+                            backgroundColor: isActive
+                                ? _jfBlue
+                                : Colors.white.withValues(alpha: 0.08),
+                            radius: 20,
+                            child: Icon(
+                              Icons.person_rounded,
+                              color: isActive ? Colors.white : Colors.white38,
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(
+                            acc.username,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: isActive
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            acc.normalizedUrl,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontSize: 11,
+                            ),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (!isActive)
                                 IconButton(
-                                  icon: const Icon(Icons.login_rounded, color: _jfBlue, size: 20),
+                                  icon: const Icon(
+                                    Icons.login_rounded,
+                                    color: _jfBlue,
+                                    size: 20,
+                                  ),
                                   onPressed: () async {
                                     Navigator.pop(ctx);
                                     if (!mounted) return;
                                     setState(() => _isLoading = true);
                                     try {
-                                      await _jf.login(acc.serverUrl, acc.username, acc.password);
+                                      await _jf.login(
+                                        acc.serverUrl,
+                                        acc.username,
+                                        acc.password,
+                                      );
                                       _isLoggedIn = true;
                                       await _loadHomeData();
-                                    } catch (e) { _error = e.toString(); }
-                                    if (mounted) setState(() => _isLoading = false);
+                                    } catch (e) {
+                                      _error = e.toString();
+                                    }
+                                    if (mounted)
+                                      setState(() => _isLoading = false);
                                   },
                                 ),
                               IconButton(
-                                icon: Icon(Icons.delete_outline_rounded,
-                                    color: Colors.redAccent.withValues(alpha: 0.6), size: 20),
+                                icon: Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: Colors.redAccent.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                  size: 20,
+                                ),
                                 onPressed: () async {
                                   await _jf.removeAccount(idx);
                                   final updated = await _jf.getSavedAccounts();
-                                  setSheetState(() => accounts..clear()..addAll(updated));
-                                  if (!_jf.isLoggedIn) setState(() => _isLoggedIn = false);
+                                  setSheetState(
+                                    () => accounts
+                                      ..clear()
+                                      ..addAll(updated),
+                                  );
+                                  if (!_jf.isLoggedIn)
+                                    setState(() => _isLoggedIn = false);
                                 },
                               ),
                             ],
@@ -630,16 +810,21 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                 alignment: Alignment.center,
                 children: [
                   Container(
-                    width: 160, height: 160,
+                    width: 160,
+                    height: 160,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
-                        colors: [_jfBlue.withValues(alpha: 0.2), Colors.transparent],
+                        colors: [
+                          _jfBlue.withValues(alpha: 0.2),
+                          Colors.transparent,
+                        ],
                       ),
                     ),
                   ),
                   Container(
-                    width: 88, height: 88,
+                    width: 88,
+                    height: 88,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
@@ -648,20 +833,39 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                       ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
-                        BoxShadow(color: _jfBlue.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 2),
+                        BoxShadow(
+                          color: _jfBlue.withValues(alpha: 0.3),
+                          blurRadius: 30,
+                          spreadRadius: 2,
+                        ),
                       ],
                     ),
-                    child: const Icon(Icons.play_arrow_rounded, size: 44, color: Colors.white),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 44,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              const Text('Jellyfin',
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.w800,
-                      color: Colors.white, letterSpacing: -1.5)),
+              const Text(
+                'Jellyfin',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -1.5,
+                ),
+              ),
               const SizedBox(height: 8),
-              Text('Stream your media, anywhere',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 15)),
+              Text(
+                'Stream your media, anywhere',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 15,
+                ),
+              ),
               const SizedBox(height: 48),
               SizedBox(
                 width: double.infinity,
@@ -672,7 +876,9 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                     backgroundColor: _jfBlue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 32),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     elevation: 0,
                   ),
                   child: const Row(
@@ -680,7 +886,13 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                     children: [
                       Icon(Icons.add_rounded, size: 22),
                       SizedBox(width: 10),
-                      Text('Connect Server', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                      Text(
+                        'Connect Server',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -688,8 +900,13 @@ class _JellyfinScreenState extends State<JellyfinScreen>
               const SizedBox(height: 16),
               TextButton(
                 onPressed: _showAccountManager,
-                child: Text('Manage Accounts',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 13)),
+                child: Text(
+                  'Manage Accounts',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 13,
+                  ),
+                ),
               ),
             ],
           ),
@@ -723,12 +940,19 @@ class _JellyfinScreenState extends State<JellyfinScreen>
               title: Row(
                 children: [
                   Container(
-                    width: 36, height: 36,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [_jfBlue, _jfBlueDark]),
+                      gradient: const LinearGradient(
+                        colors: [_jfBlue, _jfBlueDark],
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.play_arrow_rounded, size: 20, color: Colors.white),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 20,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -736,12 +960,25 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_jf.activeAccount?.username ?? 'Jellyfin',
-                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700,
-                                color: Colors.white, letterSpacing: -0.3)),
                         Text(
-                          _jf.activeAccount?.normalizedUrl.replaceAll(RegExp(r'https?://'), '') ?? '',
-                          style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.3)),
+                          _jf.activeAccount?.username ?? 'Jellyfin',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          _jf.activeAccount?.normalizedUrl.replaceAll(
+                                RegExp(r'https?://'),
+                                '',
+                              ) ??
+                              '',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -751,7 +988,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
               ),
               actions: [
                 IconButton(
-                  icon: Icon(Icons.manage_accounts_rounded, color: Colors.white.withValues(alpha: 0.6)),
+                  icon: Icon(
+                    Icons.manage_accounts_rounded,
+                    color: Colors.white.withValues(alpha: 0.6),
+                  ),
                   onPressed: _showAccountManager,
                   tooltip: 'Accounts',
                 ),
@@ -769,24 +1009,45 @@ class _JellyfinScreenState extends State<JellyfinScreen>
 
             // Continue Watching
             if (_resumeItems.isNotEmpty)
-              SliverToBoxAdapter(child: _buildLandscapeSection(
-                  'Continue Watching', _resumeItems, showProgress: true)),
+              SliverToBoxAdapter(
+                child: _buildLandscapeSection(
+                  'Continue Watching',
+                  _resumeItems,
+                  showProgress: true,
+                ),
+              ),
 
             // Next Up
             if (_nextUpItems.isNotEmpty)
-              SliverToBoxAdapter(child: _buildLandscapeSection(
-                  'Next Up', _nextUpItems, showEpisodeInfo: true)),
+              SliverToBoxAdapter(
+                child: _buildLandscapeSection(
+                  'Next Up',
+                  _nextUpItems,
+                  showEpisodeInfo: true,
+                ),
+              ),
 
             // Latest per library
-            ..._latestByLibrary.entries.map((entry) =>
-              SliverToBoxAdapter(child: _buildPosterSection('Latest in ${entry.key}', entry.value))),
+            ..._latestByLibrary.entries.map(
+              (entry) => SliverToBoxAdapter(
+                child: _buildPosterSection(
+                  'Latest in ${entry.key}',
+                  entry.value,
+                ),
+              ),
+            ),
 
             // Error
             if (_error != null)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Center(child: Text(_error!, style: const TextStyle(color: Colors.redAccent))),
+                  child: Center(
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
                 ),
               ),
 
@@ -814,10 +1075,17 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             itemBuilder: (context, index) {
               final item = _featuredItems[index];
               final backdropUrl = item.backdropImageTags.isNotEmpty
-                  ? _jf.getBackdropUrl(item.id, tag: item.backdropImageTags.first)
+                  ? _jf.getBackdropUrl(
+                      item.id,
+                      tag: item.backdropImageTags.first,
+                    )
                   : (item.imageTags.containsKey('Primary')
-                      ? _jf.getPosterUrl(item.id, tag: item.imageTags['Primary'], maxWidth: 1200)
-                      : null);
+                        ? _jf.getPosterUrl(
+                            item.id,
+                            tag: item.imageTags['Primary'],
+                            maxWidth: 1200,
+                          )
+                        : null);
 
               return _HoverCard(
                 onTap: () => _openDetails(item),
@@ -837,9 +1105,12 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                           imageUrl: backdropUrl,
                           fit: BoxFit.cover,
                           placeholder: (c, u) => Shimmer.fromColors(
-                            baseColor: _jfSurface, highlightColor: _jfSurfaceLight,
-                            child: Container(color: _jfSurface)),
-                          errorWidget: (c, u, e) => Container(color: _jfSurface),
+                            baseColor: _jfSurface,
+                            highlightColor: _jfSurfaceLight,
+                            child: Container(color: _jfSurface),
+                          ),
+                          errorWidget: (c, u, e) =>
+                              Container(color: _jfSurface),
                         )
                       else
                         Container(color: _jfSurface),
@@ -863,30 +1134,49 @@ class _JellyfinScreenState extends State<JellyfinScreen>
 
                       // Content at bottom
                       Positioned(
-                        bottom: 20, left: 20, right: 20,
+                        bottom: 20,
+                        left: 20,
+                        right: 20,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Type badge
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: _jfBlue.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: _jfBlue.withValues(alpha: 0.3)),
+                                border: Border.all(
+                                  color: _jfBlue.withValues(alpha: 0.3),
+                                ),
                               ),
                               child: Text(
                                 item.type == 'Series' ? 'SERIES' : 'MOVIE',
-                                style: const TextStyle(color: _jfBlue, fontSize: 10,
-                                    fontWeight: FontWeight.w700, letterSpacing: 1),
+                                style: const TextStyle(
+                                  color: _jfBlue,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 10),
                             // Title
-                            Text(item.name,
-                                maxLines: 2, overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800,
-                                    color: Colors.white, letterSpacing: -0.5, height: 1.15)),
+                            Text(
+                              item.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                                height: 1.15,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             // Meta row
                             Row(
@@ -895,7 +1185,9 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                                   _heroBadge('${item.productionYear}'),
                                 if (item.communityRating != null) ...[
                                   const SizedBox(width: 8),
-                                  _heroBadge('★ ${item.communityRating!.toStringAsFixed(1)}'),
+                                  _heroBadge(
+                                    '★ ${item.communityRating!.toStringAsFixed(1)}',
+                                  ),
                                 ],
                                 if (item.runtime.isNotEmpty) ...[
                                   const SizedBox(width: 8),
@@ -919,14 +1211,17 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             padding: const EdgeInsets.only(top: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_featuredItems.length, (i) =>
-                AnimatedContainer(
+              children: List.generate(
+                _featuredItems.length,
+                (i) => AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   width: i == _heroPage ? 24 : 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: i == _heroPage ? _jfBlue : Colors.white.withValues(alpha: 0.2),
+                    color: i == _heroPage
+                        ? _jfBlue
+                        : Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
@@ -945,17 +1240,28 @@ class _JellyfinScreenState extends State<JellyfinScreen>
         color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(text,
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.85),
-              fontSize: 11, fontWeight: FontWeight.w600)),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.85),
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
   // ─── Library Row ────────────────────────────────────────────────────────
 
   Widget _buildLibraryRow() {
-    final videoLibs = _libraries.where((l) =>
-        l.collectionType == 'movies' || l.collectionType == 'tvshows' || l.collectionType == null).toList();
+    final videoLibs = _libraries
+        .where(
+          (l) =>
+              l.collectionType == 'movies' ||
+              l.collectionType == 'tvshows' ||
+              l.collectionType == null,
+        )
+        .toList();
     if (videoLibs.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -971,26 +1277,41 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             final icon = lib.collectionType == 'movies'
                 ? Icons.movie_rounded
                 : lib.collectionType == 'tvshows'
-                    ? Icons.live_tv_rounded
-                    : Icons.video_library_rounded;
+                ? Icons.live_tv_rounded
+                : Icons.video_library_rounded;
             return _HoverCard(
               onTap: () => _openLibrary(lib),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.06),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(icon, size: 18, color: _jfBlue),
                     const SizedBox(width: 10),
-                    Text(lib.name, style: const TextStyle(color: Colors.white,
-                        fontSize: 13, fontWeight: FontWeight.w600)),
+                    Text(
+                      lib.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(width: 4),
-                    Icon(Icons.chevron_right_rounded, size: 16, color: Colors.white.withValues(alpha: 0.3)),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 16,
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
                   ],
                 ),
               ),
@@ -1009,16 +1330,23 @@ class _JellyfinScreenState extends State<JellyfinScreen>
       child: Row(
         children: [
           Container(
-            width: 4, height: 18,
+            width: 4,
+            height: 18,
             decoration: BoxDecoration(
               color: _jfBlue,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(width: 10),
-          Text(title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700,
-                  color: Colors.white, letterSpacing: -0.3)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: -0.3,
+            ),
+          ),
         ],
       ),
     );
@@ -1026,8 +1354,12 @@ class _JellyfinScreenState extends State<JellyfinScreen>
 
   // ─── Landscape Section (Continue Watching / Next Up) ───────────────────
 
-  Widget _buildLandscapeSection(String title, List<JellyfinItem> items,
-      {bool showProgress = false, bool showEpisodeInfo = false}) {
+  Widget _buildLandscapeSection(
+    String title,
+    List<JellyfinItem> items, {
+    bool showProgress = false,
+    bool showEpisodeInfo = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1040,8 +1372,11 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             itemCount: items.length,
             itemBuilder: (_, i) => Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: _buildLandscapeCard(items[i],
-                  showProgress: showProgress, showEpisodeInfo: showEpisodeInfo),
+              child: _buildLandscapeCard(
+                items[i],
+                showProgress: showProgress,
+                showEpisodeInfo: showEpisodeInfo,
+              ),
             ),
           ),
         ),
@@ -1049,21 +1384,38 @@ class _JellyfinScreenState extends State<JellyfinScreen>
     );
   }
 
-  Widget _buildLandscapeCard(JellyfinItem item,
-      {bool showProgress = false, bool showEpisodeInfo = false}) {
+  Widget _buildLandscapeCard(
+    JellyfinItem item, {
+    bool showProgress = false,
+    bool showEpisodeInfo = false,
+  }) {
     // Use backdrop or primary image
     final imageUrl = item.backdropImageTags.isNotEmpty
-        ? _jf.getBackdropUrl(item.id, tag: item.backdropImageTags.first, maxWidth: 600)
+        ? _jf.getBackdropUrl(
+            item.id,
+            tag: item.backdropImageTags.first,
+            maxWidth: 600,
+          )
         : (item.imageTags.containsKey('Primary')
-            ? _jf.getPosterUrl(item.id, tag: item.imageTags['Primary'], maxWidth: 500)
-            : (item.seriesId != null
-                ? _jf.getPosterUrl(item.seriesId!, maxWidth: 500)
-                : null));
+              ? _jf.getPosterUrl(
+                  item.id,
+                  tag: item.imageTags['Primary'],
+                  maxWidth: 500,
+                )
+              : (item.seriesId != null
+                    ? _jf.getPosterUrl(item.seriesId!, maxWidth: 500)
+                    : null));
 
     return _HoverCard(
       onTap: () {
         if (item.type == 'Episode' && item.seriesId != null) {
-          _openDetails(JellyfinItem(id: item.seriesId!, name: item.seriesName ?? item.name, type: 'Series'));
+          _openDetails(
+            JellyfinItem(
+              id: item.seriesId!,
+              name: item.seriesName ?? item.name,
+              type: 'Series',
+            ),
+          );
         } else {
           _openDetails(item);
         }
@@ -1089,8 +1441,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                         imageUrl: imageUrl,
                         fit: BoxFit.cover,
                         placeholder: (c, u) => Shimmer.fromColors(
-                          baseColor: _jfSurface, highlightColor: _jfSurfaceLight,
-                          child: Container(color: _jfSurface)),
+                          baseColor: _jfSurface,
+                          highlightColor: _jfSurfaceLight,
+                          child: Container(color: _jfSurface),
+                        ),
                         errorWidget: (c, u, e) => _emptyThumb(item),
                       )
                     else
@@ -1098,13 +1452,19 @@ class _JellyfinScreenState extends State<JellyfinScreen>
 
                     // Bottom gradient
                     Positioned(
-                      bottom: 0, left: 0, right: 0, height: 60,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: 60,
                       child: Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.8),
+                            ],
                           ),
                         ),
                       ),
@@ -1117,39 +1477,60 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.5),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
                         ),
-                        child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                     ),
 
                     // Played badge
                     if (item.isPlayed)
                       Positioned(
-                        top: 8, right: 8,
+                        top: 8,
+                        right: 8,
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             color: _jfBlue,
                             shape: BoxShape.circle,
-                            boxShadow: [BoxShadow(color: _jfBlue.withValues(alpha: 0.4), blurRadius: 8)],
+                            boxShadow: [
+                              BoxShadow(
+                                color: _jfBlue.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.check_rounded, size: 10, color: Colors.white),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            size: 10,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
 
                     // Progress
                     if (showProgress && item.playbackProgress > 0)
                       Positioned(
-                        bottom: 0, left: 0, right: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
                         child: ClipRRect(
                           borderRadius: const BorderRadius.only(
                             bottomLeft: Radius.circular(14),
-                            bottomRight: Radius.circular(14)),
+                            bottomRight: Radius.circular(14),
+                          ),
                           child: LinearProgressIndicator(
                             value: item.playbackProgress,
                             minHeight: 3,
-                            backgroundColor: Colors.white.withValues(alpha: 0.1),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.1,
+                            ),
                             valueColor: const AlwaysStoppedAnimation(_jfBlue),
                           ),
                         ),
@@ -1161,19 +1542,35 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             const SizedBox(height: 8),
             // Title
             Text(
-              showEpisodeInfo && item.seriesName != null ? item.seriesName! : item.name,
-              maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+              showEpisodeInfo && item.seriesName != null
+                  ? item.seriesName!
+                  : item.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             if (showEpisodeInfo && item.type == 'Episode')
               Text(
                 'S${item.parentIndexNumber ?? '?'}E${item.indexNumber ?? '?'} · ${item.name}',
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontSize: 11,
+                ),
               )
             else if (item.productionYear != null)
-              Text('${item.productionYear}',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 11)),
+              Text(
+                '${item.productionYear}',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.35),
+                  fontSize: 11,
+                ),
+              ),
           ],
         ),
       ),
@@ -1183,8 +1580,12 @@ class _JellyfinScreenState extends State<JellyfinScreen>
   Widget _emptyThumb(JellyfinItem item) {
     return Center(
       child: Icon(
-        item.type == 'Series' || item.type == 'Episode' ? Icons.live_tv_rounded : Icons.movie_rounded,
-        size: 32, color: Colors.white.withValues(alpha: 0.15)),
+        item.type == 'Series' || item.type == 'Episode'
+            ? Icons.live_tv_rounded
+            : Icons.movie_rounded,
+        size: 32,
+        color: Colors.white.withValues(alpha: 0.15),
+      ),
     );
   }
 
@@ -1216,12 +1617,20 @@ class _JellyfinScreenState extends State<JellyfinScreen>
   Widget _buildPosterCard(JellyfinItem item, {bool inGrid = false}) {
     final imageUrl = item.imageTags.containsKey('Primary')
         ? _jf.getPosterUrl(item.id, tag: item.imageTags['Primary'])
-        : (item.seriesId != null ? _jf.getPosterUrl(item.seriesId!, maxWidth: 300) : null);
+        : (item.seriesId != null
+              ? _jf.getPosterUrl(item.seriesId!, maxWidth: 300)
+              : null);
 
     return _HoverCard(
       onTap: () {
         if (item.type == 'Episode' && item.seriesId != null) {
-          _openDetails(JellyfinItem(id: item.seriesId!, name: item.seriesName ?? item.name, type: 'Series'));
+          _openDetails(
+            JellyfinItem(
+              id: item.seriesId!,
+              name: item.seriesName ?? item.name,
+              type: 'Series',
+            ),
+          );
         } else {
           _openDetails(item);
         }
@@ -1236,7 +1645,11 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                 color: _jfSurface,
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4)),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: Stack(
@@ -1247,8 +1660,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
                       placeholder: (c, u) => Shimmer.fromColors(
-                        baseColor: _jfSurface, highlightColor: _jfSurfaceLight,
-                        child: Container(color: _jfSurface)),
+                        baseColor: _jfSurface,
+                        highlightColor: _jfSurfaceLight,
+                        child: Container(color: _jfSurface),
+                      ),
                       errorWidget: (c, u, e) => _emptyThumb(item),
                     )
                   else
@@ -1256,13 +1671,19 @@ class _JellyfinScreenState extends State<JellyfinScreen>
 
                   // Subtle bottom gradient for text readability
                   Positioned(
-                    bottom: 0, left: 0, right: 0, height: 50,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 50,
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          begin: Alignment.topCenter
-                          , end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.6)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.6),
+                          ],
                         ),
                       ),
                     ),
@@ -1271,22 +1692,37 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                   // Rating badge
                   if (item.communityRating != null)
                     Positioned(
-                      top: 8, right: 8,
+                      top: 8,
+                      right: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.65),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded, size: 11, color: Color(0xFFFFD700)),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 11,
+                              color: Color(0xFFFFD700),
+                            ),
                             const SizedBox(width: 3),
-                            Text(item.communityRating!.toStringAsFixed(1),
-                                style: const TextStyle(color: Colors.white, fontSize: 10,
-                                    fontWeight: FontWeight.w700)),
+                            Text(
+                              item.communityRating!.toStringAsFixed(1),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -1295,31 +1731,50 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                   // Played indicator
                   if (item.isPlayed)
                     Positioned(
-                      top: 8, left: 8,
+                      top: 8,
+                      left: 8,
                       child: Container(
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           color: _jfBlue,
                           shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: _jfBlue.withValues(alpha: 0.4), blurRadius: 6)],
+                          boxShadow: [
+                            BoxShadow(
+                              color: _jfBlue.withValues(alpha: 0.4),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
-                        child: const Icon(Icons.check_rounded, size: 10, color: Colors.white),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          size: 10,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
 
                   // Unplayed count badge
                   if (!item.isPlayed && item.unplayedCount > 0)
                     Positioned(
-                      top: 8, right: 8,
+                      top: 8,
+                      right: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: _jfBlue,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text('${item.unplayedCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 10,
-                                fontWeight: FontWeight.w700)),
+                        child: Text(
+                          '${item.unplayedCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -1327,11 +1782,24 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             ),
           ),
           const SizedBox(height: 8),
-          Text(item.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text(
+            item.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           if (item.productionYear != null)
-            Text('${item.productionYear}',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 10)),
+            Text(
+              '${item.productionYear}',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.35),
+                fontSize: 10,
+              ),
+            ),
         ],
       ),
     );
@@ -1354,7 +1822,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    icon: const Icon(
+                      Icons.arrow_back_rounded,
+                      color: Colors.white,
+                    ),
                     onPressed: () {
                       _librarySearchController.clear();
                       _librarySearchDebounce?.cancel();
@@ -1375,30 +1846,48 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_selectedLibraryName ?? 'Library',
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700,
-                                color: Colors.white, letterSpacing: -0.3)),
+                        Text(
+                          _selectedLibraryName ?? 'Library',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
                         if (_allLibraryItems.isNotEmpty)
                           Text(
                             _librarySearchTerm.isNotEmpty
                                 ? '${_libraryItems.length} of ${_allLibraryItems.length} items'
                                 : '${_allLibraryItems.length} items',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 11),
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.35),
+                              fontSize: 11,
+                            ),
                           ),
                       ],
                     ),
                   ),
                   PopupMenuButton<String>(
-                    icon: Icon(Icons.sort_rounded, color: Colors.white.withValues(alpha: 0.6)),
+                    icon: Icon(
+                      Icons.sort_rounded,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
                     color: _jfSurfaceLight,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     onSelected: (val) {
                       final parts = val.split('|');
                       _librarySortBy = parts[0];
                       _librarySortOrder = parts[1];
                       if (_selectedLibraryId != null) {
-                        final lib = _libraries.firstWhere((l) => l.id == _selectedLibraryId);
-                        final oldKeys = _libraryCache.keys.where((k) => k.startsWith('${lib.id}|')).toList();
+                        final lib = _libraries.firstWhere(
+                          (l) => l.id == _selectedLibraryId,
+                        );
+                        final oldKeys = _libraryCache.keys
+                            .where((k) => k.startsWith('${lib.id}|'))
+                            .toList();
                         for (final k in oldKeys) {
                           _libraryCache.remove(k);
                           _libraryCacheComplete.remove(k);
@@ -1426,9 +1915,13 @@ class _JellyfinScreenState extends State<JellyfinScreen>
 
           // Loading bar
           if (_isBackgroundLoading)
-            LinearProgressIndicator(minHeight: 2,
-                backgroundColor: Colors.transparent,
-                valueColor: AlwaysStoppedAnimation(_jfBlue.withValues(alpha: 0.5))),
+            LinearProgressIndicator(
+              minHeight: 2,
+              backgroundColor: Colors.transparent,
+              valueColor: AlwaysStoppedAnimation(
+                _jfBlue.withValues(alpha: 0.5),
+              ),
+            ),
 
           // Search
           Padding(
@@ -1449,11 +1942,21 @@ class _JellyfinScreenState extends State<JellyfinScreen>
                 hintText: _isBackgroundLoading
                     ? 'Loading items... (${_allLibraryItems.length} so far)'
                     : 'Search ${_selectedLibraryName ?? 'library'}...',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.25)),
-                prefixIcon: const Icon(Icons.search_rounded, color: _jfBlue, size: 20),
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.25),
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: _jfBlue,
+                  size: 20,
+                ),
                 suffixIcon: _librarySearchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Colors.white38, size: 18),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white38,
+                          size: 18,
+                        ),
                         onPressed: () {
                           _librarySearchController.clear();
                           _librarySearchFocus.unfocus();
@@ -1477,74 +1980,87 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             child: _isLoadingLibrary
                 ? const Center(child: CircularProgressIndicator(color: _jfBlue))
                 : _libraryItems.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.search_off_rounded, size: 48,
-                                color: Colors.white.withValues(alpha: 0.1)),
-                            const SizedBox(height: 12),
-                            Text(
-                              _librarySearchTerm.isNotEmpty
-                                  ? 'No results for "$_librarySearchTerm"'
-                                  : 'No items found',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.35)),
-                            ),
-                          ],
-                        ),
-                      )
-                    : LayoutBuilder(
-                        builder: (context, constraints) {
-                          final crossAxisCount = constraints.maxWidth > 1200 ? 8
-                              : constraints.maxWidth > 900 ? 6
-                              : constraints.maxWidth > 600 ? 4 : 3;
+                ? DizzyEmptyState(
+                    icon: Icons.search_off_rounded,
+                    title: _librarySearchTerm.isNotEmpty
+                        ? 'No results for "$_librarySearchTerm"'
+                        : 'No items found',
+                    description: '',
+                  )
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossAxisCount = constraints.maxWidth > 1200
+                          ? 8
+                          : constraints.maxWidth > 900
+                          ? 6
+                          : constraints.maxWidth > 600
+                          ? 4
+                          : 3;
 
-                          return GridView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: crossAxisCount,
-                              childAspectRatio: 0.55,
-                              mainAxisSpacing: 14,
-                              crossAxisSpacing: 12,
-                            ),
-                            itemCount: _libraryItems.length,
-                            itemBuilder: (_, i) => _buildPosterCard(_libraryItems[i], inGrid: true),
-                          );
-                        },
-                      ),
+                      return GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          childAspectRatio: 0.55,
+                          mainAxisSpacing: 14,
+                          crossAxisSpacing: 12,
+                        ),
+                        itemCount: _libraryItems.length,
+                        itemBuilder: (_, i) =>
+                            _buildPosterCard(_libraryItems[i], inGrid: true),
+                      );
+                    },
+                  ),
           ),
 
           // Pagination
-          if (!_isLoadingLibrary && _librarySearchTerm.isEmpty && _allLibraryItems.length > _pageSize)
+          if (!_isLoadingLibrary &&
+              _librarySearchTerm.isEmpty &&
+              _allLibraryItems.length > _pageSize)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: _jfSurface.withValues(alpha: 0.8),
-                border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.04))),
+                border: Border(
+                  top: BorderSide(color: Colors.white.withValues(alpha: 0.04)),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _paginationButton(Icons.chevron_left_rounded,
-                      enabled: _libraryPage > 0,
-                      onTap: () => _loadLibraryPage(_libraryPage - 1)),
+                  _paginationButton(
+                    Icons.chevron_left_rounded,
+                    enabled: _libraryPage > 0,
+                    onTap: () => _loadLibraryPage(_libraryPage - 1),
+                  ),
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () => _showPageJumpDialog(_totalPages),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text('$currentPage / $_totalPages',
-                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+                      child: Text(
+                        '$currentPage / $_totalPages',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  _paginationButton(Icons.chevron_right_rounded,
-                      enabled: currentPage < _totalPages,
-                      onTap: () => _loadLibraryPage(_libraryPage + 1)),
+                  _paginationButton(
+                    Icons.chevron_right_rounded,
+                    enabled: currentPage < _totalPages,
+                    onTap: () => _loadLibraryPage(_libraryPage + 1),
+                  ),
                 ],
               ),
             ),
@@ -1553,13 +2069,19 @@ class _JellyfinScreenState extends State<JellyfinScreen>
     );
   }
 
-  Widget _paginationButton(IconData icon, {required bool enabled, required VoidCallback onTap}) {
+  Widget _paginationButton(
+    IconData icon, {
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
     return _HoverCard(
       onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: enabled ? _jfBlue.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.03),
+          color: enabled
+              ? _jfBlue.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.03),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: enabled ? _jfBlue : Colors.white24, size: 22),
@@ -1574,7 +2096,10 @@ class _JellyfinScreenState extends State<JellyfinScreen>
       builder: (ctx) => AlertDialog(
         backgroundColor: _jfSurfaceLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Go to page', style: TextStyle(color: Colors.white, fontSize: 18)),
+        title: const Text(
+          'Go to page',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
         content: TextField(
           controller: ctrl,
           keyboardType: TextInputType.number,
@@ -1585,16 +2110,27 @@ class _JellyfinScreenState extends State<JellyfinScreen>
             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.25)),
             filled: true,
             fillColor: Colors.white.withValues(alpha: 0.05),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
           ),
           onSubmitted: (v) => Navigator.pop(ctx, int.tryParse(v)),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: TextStyle(color: Colors.white.withValues(alpha: 0.5)))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+            ),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, int.tryParse(ctrl.text)),
-            child: const Text('Go', style: TextStyle(color: _jfBlue, fontWeight: FontWeight.w700)),
+            child: const Text(
+              'Go',
+              style: TextStyle(color: _jfBlue, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -1608,12 +2144,14 @@ class _JellyfinScreenState extends State<JellyfinScreen>
     final isActive = value == '$_librarySortBy|$_librarySortOrder';
     return PopupMenuItem(
       value: value,
-      child: Text(label,
-          style: TextStyle(
-            color: isActive ? _jfBlue : Colors.white,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
-            fontSize: 13,
-          )),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isActive ? _jfBlue : Colors.white,
+          fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+          fontSize: 13,
+        ),
+      ),
     );
   }
 }

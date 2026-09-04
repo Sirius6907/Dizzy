@@ -437,7 +437,7 @@ class SettingsService {
   static const List<String> allNavIds = [
     'home', 'discover', 'similar', 'search', 'mylist', 'downloader', 'magnet', 'live_matches',
     'iptv', 'audiobooks', 'books', 'music', 'comics', 'manga',
-    'jellyfin', 'anime', 'anime_arabic', 'asian_drama', 'arabic',
+    'jellyfin', 'anime', 'asian_drama',
   ];
 
   /// Returns the ordered list of visible nav item IDs.

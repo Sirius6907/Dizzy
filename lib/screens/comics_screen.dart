@@ -6,6 +6,7 @@ import 'comic_details_screen.dart';
 import 'comic_reader_screen.dart';
 import '../api/comics_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 
 class ComicsScreen extends StatefulWidget {
   final String? initialSearch;
@@ -49,7 +50,9 @@ class _ComicsScreenState extends State<ComicsScreen> {
     final historyJson = prefs.getStringList(_historyKey) ?? [];
     if (mounted) {
       setState(() {
-        _history = historyJson.map((e) => jsonDecode(e) as Map<String, dynamic>).toList();
+        _history = historyJson
+            .map((e) => jsonDecode(e) as Map<String, dynamic>)
+            .toList();
       });
     }
   }
@@ -57,7 +60,10 @@ class _ComicsScreenState extends State<ComicsScreen> {
   Future<void> _removeFromHistory(String comicUrl) async {
     final prefs = await SharedPreferences.getInstance();
     _history.removeWhere((h) => h['comic']['url'] == comicUrl);
-    await prefs.setStringList(_historyKey, _history.map((e) => jsonEncode(e)).toList());
+    await prefs.setStringList(
+      _historyKey,
+      _history.map((e) => jsonEncode(e)).toList(),
+    );
     setState(() {});
   }
 
@@ -65,11 +71,15 @@ class _ComicsScreenState extends State<ComicsScreen> {
     final comic = Comic.fromJson(progress['comic']);
     final chapterIndex = progress['chapterIndex'] as int;
     final pageIndex = progress['pageIndex'] as int;
-    final chapters = (progress['chapters'] as List).map((e) => ComicChapter(
-      title: e['title'],
-      url: e['url'],
-      dateAdded: e['dateAdded'],
-    )).toList();
+    final chapters = (progress['chapters'] as List)
+        .map(
+          (e) => ComicChapter(
+            title: e['title'],
+            url: e['url'],
+            dateAdded: e['dateAdded'],
+          ),
+        )
+        .toList();
 
     Navigator.push(
       context,
@@ -143,7 +153,11 @@ class _ComicsScreenState extends State<ComicsScreen> {
 
   void _scrollToTop() {
     if (_scrollController.hasClients) {
-      _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -186,14 +200,18 @@ class _ComicsScreenState extends State<ComicsScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     children: [
-                      if (_history.isNotEmpty && !_isShowingLiked && _currentSearchQuery.isEmpty) _buildHistoryCarousel(),
+                      if (_history.isNotEmpty &&
+                          !_isShowingLiked &&
+                          _currentSearchQuery.isEmpty)
+                        _buildHistoryCarousel(),
                       _buildBody(),
                     ],
                   ),
                 ),
               ),
             ),
-            if (!_isShowingLiked && _currentSearchQuery.isEmpty) _buildPagination(),
+            if (!_isShowingLiked && _currentSearchQuery.isEmpty)
+              _buildPagination(),
           ],
         ),
       ),
@@ -208,7 +226,11 @@ class _ComicsScreenState extends State<ComicsScreen> {
         children: [
           const Text(
             'Comics',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+            ),
           ),
           IconButton(
             icon: Icon(
@@ -241,11 +263,21 @@ class _ComicsScreenState extends State<ComicsScreen> {
           prefixIcon: const Icon(Icons.search, color: Colors.white54),
           filled: true,
           fillColor: Colors.white.withValues(alpha: 0.05),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.white54, size: 18),
+                  icon: const Icon(
+                    Icons.clear,
+                    color: Colors.white54,
+                    size: 18,
+                  ),
                   onPressed: () {
                     _searchController.clear();
                     _currentSearchQuery = '';
@@ -261,8 +293,10 @@ class _ComicsScreenState extends State<ComicsScreen> {
 
   Widget _buildHistoryCarousel() {
     final isDesktop = MediaQuery.of(context).size.width > 600;
-    final pageController = PageController(viewportFraction: isDesktop ? 0.45 : 0.9);
-    
+    final pageController = PageController(
+      viewportFraction: isDesktop ? 0.45 : 0.9,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -271,7 +305,15 @@ class _ComicsScreenState extends State<ComicsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('CONTINUE READING', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 12)),
+              const Text(
+                'CONTINUE READING',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                  fontSize: 12,
+                ),
+              ),
               if (isDesktop && _history.length > 1)
                 Row(
                   children: [
@@ -323,7 +365,9 @@ class _ComicsScreenState extends State<ComicsScreen> {
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+                          border: Border.all(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -331,8 +375,11 @@ class _ComicsScreenState extends State<ComicsScreen> {
                               borderRadius: BorderRadius.circular(8),
                               child: CachedNetworkImage(
                                 imageUrl: comic.poster,
-                                width: 60, height: 60, fit: BoxFit.cover,
-                                errorWidget: (c, u, e) => const Icon(Icons.book),
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                                errorWidget: (c, u, e) =>
+                                    const Icon(Icons.book),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -341,25 +388,52 @@ class _ComicsScreenState extends State<ComicsScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(comic.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text(
+                                    comic.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text('Chapter $chapterIdx • Page $pageIdx', style: const TextStyle(color: AppTheme.primaryColor, fontSize: 13, fontWeight: FontWeight.w500)),
+                                  Text(
+                                    'Chapter $chapterIdx • Page $pageIdx',
+                                    style: const TextStyle(
+                                      color: AppTheme.primaryColor,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.menu_book, color: AppTheme.primaryColor, size: 40),
+                            const Icon(
+                              Icons.menu_book,
+                              color: AppTheme.primaryColor,
+                              size: 40,
+                            ),
                           ],
                         ),
                       ),
                     ),
                     Positioned(
-                      top: 4, right: 4,
+                      top: 4,
+                      right: 4,
                       child: GestureDetector(
                         onTap: () => _removeFromHistory(comic.url),
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                          child: const Icon(Icons.close, size: 16, color: Colors.white70),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: 16,
+                            color: Colors.white70,
+                          ),
                         ),
                       ),
                     ),
@@ -382,13 +456,22 @@ class _ComicsScreenState extends State<ComicsScreen> {
         children: [
           ElevatedButton(
             onPressed: _currentPage > 1 ? _prevPage : null,
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.white10, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white10,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Previous'),
           ),
-          Text('Page $_currentPage', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            'Page $_currentPage',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           ElevatedButton(
             onPressed: _nextPage,
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Next Page'),
           ),
         ],
@@ -399,28 +482,22 @@ class _ComicsScreenState extends State<ComicsScreen> {
   Widget _buildEmptyState() {
     return Padding(
       padding: const EdgeInsets.only(top: 100),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _isShowingLiked ? Icons.favorite_border : Icons.search_off,
-              size: 64,
-              color: Colors.white24,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _isShowingLiked ? 'No liked comics yet' : 'No comics found',
-              style: const TextStyle(color: Colors.white70, fontSize: 18),
-            ),
-          ],
-        ),
+      child: DizzyEmptyState(
+        icon: _isShowingLiked ? Icons.favorite_border : Icons.search_off,
+        title: _isShowingLiked ? 'No liked comics yet' : 'No comics found',
+        description: '',
       ),
     );
   }
 
   Widget _buildBody() {
-    if (_isLoading) return const Padding(padding: EdgeInsets.only(top: 100), child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)));
+    if (_isLoading)
+      return const Padding(
+        padding: EdgeInsets.only(top: 100),
+        child: Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryColor),
+        ),
+      );
     if (_comics.isEmpty) return _buildEmptyState();
 
     final screenWidth = MediaQuery.of(context).size.width;
@@ -467,7 +544,11 @@ class _ComicCard extends StatefulWidget {
   final bool isLiked;
   final VoidCallback onLikeChanged;
 
-  const _ComicCard({required this.comic, required this.isLiked, required this.onLikeChanged});
+  const _ComicCard({
+    required this.comic,
+    required this.isLiked,
+    required this.onLikeChanged,
+  });
 
   @override
   State<_ComicCard> createState() => _ComicCardState();
@@ -516,10 +597,13 @@ class _ComicCardState extends State<_ComicCard> {
                     imageUrl: widget.comic.poster,
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    placeholder: (context, url) => Container(color: Colors.white10),
+                    placeholder: (context, url) =>
+                        Container(color: Colors.white10),
                     errorWidget: (context, url, error) => Container(
                       color: Colors.white10,
-                      child: const Center(child: Icon(Icons.broken_image, color: Colors.white24)),
+                      child: const Center(
+                        child: Icon(Icons.broken_image, color: Colors.white24),
+                      ),
                     ),
                   ),
                 ),
@@ -532,7 +616,10 @@ class _ComicCardState extends State<_ComicCard> {
                         widget.comic.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(

@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'comic_reader_screen.dart';
 import '../api/comics_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 
 class ComicDetailsScreen extends StatefulWidget {
   final Comic comic;
@@ -49,10 +50,17 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-        : _details == null
-          ? const Center(child: Text('Failed to load details', style: TextStyle(color: Colors.white)))
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            )
+          : _details == null
+          ? const Center(
+              child: Text(
+                'Failed to load details',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
           : CustomScrollView(
               slivers: [
                 _buildAppBar(),
@@ -66,15 +74,7 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
                         const SizedBox(height: 32),
                         _buildSummary(),
                         const SizedBox(height: 32),
-                        const Text(
-                          'CHAPTERS',
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
-                            fontSize: 14,
-                          ),
-                        ),
+                        const DizzySectionHeader(title: 'CHAPTERS'),
                         const SizedBox(height: 16),
                         _buildChaptersList(),
                         const SizedBox(height: 100),
@@ -102,7 +102,10 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
       ),
       actions: [
         IconButton(
-          icon: Icon(_isLiked ? Icons.favorite : Icons.favorite_border, color: _isLiked ? Colors.redAccent : Colors.white),
+          icon: Icon(
+            _isLiked ? Icons.favorite : Icons.favorite_border,
+            color: _isLiked ? Colors.redAccent : Colors.white,
+          ),
           onPressed: _toggleLike,
         ),
       ],
@@ -136,7 +139,8 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              if (_details!.otherName != 'None' && _details!.otherName != widget.comic.title)
+              if (_details!.otherName != 'None' &&
+                  _details!.otherName != widget.comic.title)
                 Text(
                   _details!.otherName,
                   style: const TextStyle(color: Colors.white54, fontSize: 14),
@@ -145,14 +149,25 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: _details!.genres.map((g) => _buildGenreChip(g)).toList(),
+                children: _details!.genres
+                    .map((g) => _buildGenreChip(g))
+                    .toList(),
               ),
               const SizedBox(height: 16),
               _buildMetaItem(Icons.business, 'Publisher', _details!.publisher),
               _buildMetaItem(Icons.edit, 'Writer', _details!.writer),
               _buildMetaItem(Icons.palette, 'Artist', _details!.artist),
-              _buildMetaItem(Icons.calendar_today, 'Published', _details!.publicationDate),
-              _buildMetaItem(Icons.info_outline, 'Status', widget.comic.status, color: AppTheme.primaryColor),
+              _buildMetaItem(
+                Icons.calendar_today,
+                'Published',
+                _details!.publicationDate,
+              ),
+              _buildMetaItem(
+                Icons.info_outline,
+                'Status',
+                widget.comic.status,
+                color: AppTheme.primaryColor,
+              ),
             ],
           ),
         ),
@@ -170,12 +185,21 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
       ),
       child: Text(
         label,
-        style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          color: AppTheme.primaryColor,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 
-  Widget _buildMetaItem(IconData icon, String label, String value, {Color? color}) {
+  Widget _buildMetaItem(
+    IconData icon,
+    String label,
+    String value, {
+    Color? color,
+  }) {
     if (value == 'Unknown' || value.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -183,11 +207,18 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
         children: [
           Icon(icon, size: 14, color: Colors.white54),
           const SizedBox(width: 8),
-          Text('$label: ', style: const TextStyle(color: Colors.white54, fontSize: 13)),
+          Text(
+            '$label: ',
+            style: const TextStyle(color: Colors.white54, fontSize: 13),
+          ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: color ?? Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: color ?? Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -201,19 +232,15 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'SUMMARY',
-          style: TextStyle(
-            color: Colors.white54,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-            fontSize: 14,
-          ),
-        ),
+        const DizzySectionHeader(title: 'SUMMARY'),
         const SizedBox(height: 12),
         Text(
           widget.comic.summary,
-          style: const TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 15,
+            height: 1.5,
+          ),
         ),
       ],
     );
@@ -225,28 +252,44 @@ class _ComicDetailsScreenState extends State<ComicDetailsScreen> {
       physics: const NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       itemCount: _details!.chapters.length,
-      separatorBuilder: (_, _) => Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+      separatorBuilder: (_, _) =>
+          Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
       itemBuilder: (context, index) {
         final chapter = _details!.chapters[index];
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.menu_book, color: AppTheme.primaryColor, size: 20),
+            child: const Icon(
+              Icons.menu_book,
+              color: AppTheme.primaryColor,
+              size: 20,
+            ),
           ),
           title: Text(
             chapter.title,
-            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           subtitle: Text(
             chapter.dateAdded,
             style: const TextStyle(color: Colors.white54, fontSize: 12),
           ),
-          trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 14),
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white24,
+            size: 14,
+          ),
           onTap: () {
             Navigator.push(
               context,

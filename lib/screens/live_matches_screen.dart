@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:http/http.dart' as http;
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 
 // ─── Models ──────────────────────────────────────────────────────────────────
 
@@ -42,18 +43,18 @@ class _PpvStream {
   });
 
   factory _PpvStream.fromJson(Map<String, dynamic> j) => _PpvStream(
-        id:              (j['id'] as num?)?.toInt() ?? 0,
-        name:            (j['name'] ?? '').toString(),
-        tag:             (j['tag'] ?? '').toString(),
-        poster:          j['poster'] as String?,
-        uriName:         (j['uri_name'] ?? '').toString(),
-        startsAt:        (j['starts_at'] as num?)?.toInt() ?? 0,
-        endsAt:          (j['ends_at'] as num?)?.toInt() ?? 0,
-        alwaysLive:      (j['always_live'] as num?)?.toInt() == 1,
-        category:        (j['category_name'] ?? '').toString(),
-        iframe:          j['iframe'] as String?,
-        allowPastStreams: (j['allowpaststreams'] as num?)?.toInt() == 1,
-      );
+    id: (j['id'] as num?)?.toInt() ?? 0,
+    name: (j['name'] ?? '').toString(),
+    tag: (j['tag'] ?? '').toString(),
+    poster: j['poster'] as String?,
+    uriName: (j['uri_name'] ?? '').toString(),
+    startsAt: (j['starts_at'] as num?)?.toInt() ?? 0,
+    endsAt: (j['ends_at'] as num?)?.toInt() ?? 0,
+    alwaysLive: (j['always_live'] as num?)?.toInt() == 1,
+    category: (j['category_name'] ?? '').toString(),
+    iframe: j['iframe'] as String?,
+    allowPastStreams: (j['allowpaststreams'] as num?)?.toInt() == 1,
+  );
 
   String get timeLabel {
     if (alwaysLive) return '🔴 Always Live';
@@ -61,7 +62,7 @@ class _PpvStream {
     if (now >= startsAt && now <= endsAt) return '🔴 Live Now';
     if (startsAt > now) {
       final dt = DateTime.fromMillisecondsSinceEpoch(startsAt * 1000);
-      return '⏰ ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}';
+      return '⏰ ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     }
     return '';
   }
@@ -85,13 +86,13 @@ class _CdnChannel {
   });
 
   factory _CdnChannel.fromJson(Map<String, dynamic> j) => _CdnChannel(
-        name:    (j['name'] ?? '').toString(),
-        code:    (j['code'] ?? '').toString(),
-        url:     (j['url'] ?? '').toString(),
-        image:   (j['image'] ?? '').toString(),
-        status:  (j['status'] ?? 'offline').toString(),
-        viewers: (j['viewers'] as num?)?.toInt() ?? 0,
-      );
+    name: (j['name'] ?? '').toString(),
+    code: (j['code'] ?? '').toString(),
+    url: (j['url'] ?? '').toString(),
+    image: (j['image'] ?? '').toString(),
+    status: (j['status'] ?? 'offline').toString(),
+    viewers: (j['viewers'] as num?)?.toInt() ?? 0,
+  );
 }
 
 class _CdnSportEvent {
@@ -126,22 +127,22 @@ class _CdnSportEvent {
   });
 
   factory _CdnSportEvent.fromJson(Map<String, dynamic> j) => _CdnSportEvent(
-        gameID:      (j['gameID'] ?? '').toString(),
-        homeTeam:    (j['homeTeam'] ?? '').toString(),
-        awayTeam:    (j['awayTeam'] ?? '').toString(),
-        homeTeamIMG: (j['homeTeamIMG'] ?? '').toString(),
-        awayTeamIMG: (j['awayTeamIMG'] ?? '').toString(),
-        time:        (j['time'] ?? '').toString(),
-        tournament:  (j['tournament'] ?? '').toString(),
-        country:     (j['country'] ?? '').toString(),
-        countryIMG:  (j['countryIMG'] ?? '').toString(),
-        status:      (j['status'] ?? '').toString(),
-        start:       (j['start'] ?? '').toString(),
-        end:         (j['end'] ?? '').toString(),
-        channels:    (j['channels'] as List? ?? [])
-            .map((c) => _CdnChannel.fromJson(c as Map<String, dynamic>))
-            .toList(),
-      );
+    gameID: (j['gameID'] ?? '').toString(),
+    homeTeam: (j['homeTeam'] ?? '').toString(),
+    awayTeam: (j['awayTeam'] ?? '').toString(),
+    homeTeamIMG: (j['homeTeamIMG'] ?? '').toString(),
+    awayTeamIMG: (j['awayTeamIMG'] ?? '').toString(),
+    time: (j['time'] ?? '').toString(),
+    tournament: (j['tournament'] ?? '').toString(),
+    country: (j['country'] ?? '').toString(),
+    countryIMG: (j['countryIMG'] ?? '').toString(),
+    status: (j['status'] ?? '').toString(),
+    start: (j['start'] ?? '').toString(),
+    end: (j['end'] ?? '').toString(),
+    channels: (j['channels'] as List? ?? [])
+        .map((c) => _CdnChannel.fromJson(c as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class _DamiTvStream {
@@ -181,7 +182,7 @@ class _DamiTvStream {
     final teams = j['teams'] as Map<String, dynamic>?;
     final home = teams?['home'] as Map<String, dynamic>?;
     final away = teams?['away'] as Map<String, dynamic>?;
-    
+
     String p = (j['poster'] ?? '').toString();
     if (p.startsWith('/')) p = 'https://dami-tv.pro$p';
 
@@ -190,7 +191,7 @@ class _DamiTvStream {
 
     String ab = (away?['badge'] ?? '').toString();
     if (ab.startsWith('/')) ab = 'https://dami-tv.pro$ab';
-    
+
     return _DamiTvStream(
       id: (j['id'] ?? '').toString(),
       name: (j['name'] ?? '').toString(),
@@ -214,7 +215,7 @@ class _DamiTvStream {
     if (now >= startsAt && now <= endsAt) return '🔴 Live Now';
     if (startsAt > now) {
       final dt = DateTime.fromMillisecondsSinceEpoch(startsAt * 1000);
-      return '⏰ ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}';
+      return '⏰ ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     }
     return '';
   }
@@ -222,22 +223,28 @@ class _DamiTvStream {
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
 
-const _ua = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'};
+const _ua = {
+  'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+};
 
 Future<List<_DamiTvStream>> _fetchDamiTvStreams() async {
   try {
-    final resp = await http.get(Uri.parse('https://dami-tv.pro/papi/api/streams'), headers: _ua)
+    final resp = await http
+        .get(Uri.parse('https://dami-tv.pro/papi/api/streams'), headers: _ua)
         .timeout(const Duration(seconds: 12));
     if (resp.statusCode != 200) return [];
     final body = jsonDecode(resp.body) as Map<String, dynamic>;
     if (body['success'] != true) return [];
-    
+
     final result = <_DamiTvStream>[];
     final categories = body['streams'] as List? ?? [];
     for (final cat in categories) {
       final streams = cat['streams'] as List? ?? [];
       for (final s in streams) {
-        try { result.add(_DamiTvStream.fromJson(s as Map<String, dynamic>)); } catch (_) {}
+        try {
+          result.add(_DamiTvStream.fromJson(s as Map<String, dynamic>));
+        } catch (_) {}
       }
     }
     return result;
@@ -247,7 +254,8 @@ Future<List<_DamiTvStream>> _fetchDamiTvStreams() async {
 }
 
 Future<List<_PpvStream>> _fetchPpvStreams() async {
-  final resp = await http.get(Uri.parse('https://old.ppv.to/api/streams'), headers: _ua)
+  final resp = await http
+      .get(Uri.parse('https://old.ppv.to/api/streams'), headers: _ua)
       .timeout(const Duration(seconds: 12));
   if (resp.statusCode != 200) return [];
   final body = jsonDecode(resp.body) as Map<String, dynamic>;
@@ -256,14 +264,22 @@ Future<List<_PpvStream>> _fetchPpvStreams() async {
   for (final cat in categories) {
     final streams = (cat['streams'] as List? ?? []);
     for (final s in streams) {
-      try { result.add(_PpvStream.fromJson(s as Map<String, dynamic>)); } catch (_) {}
+      try {
+        result.add(_PpvStream.fromJson(s as Map<String, dynamic>));
+      } catch (_) {}
     }
   }
   return result;
 }
 
 Future<List<_CdnChannel>> _fetchCdnChannels() async {
-  final resp = await http.get(Uri.parse('https://api.cdn-live.tv/api/v1/channels/?user=cdnlivetv&plan=free'), headers: _ua)
+  final resp = await http
+      .get(
+        Uri.parse(
+          'https://api.cdn-live.tv/api/v1/channels/?user=cdnlivetv&plan=free',
+        ),
+        headers: _ua,
+      )
       .timeout(const Duration(seconds: 12));
   if (resp.statusCode != 200) return [];
   final body = jsonDecode(resp.body) as Map<String, dynamic>;
@@ -273,18 +289,26 @@ Future<List<_CdnChannel>> _fetchCdnChannels() async {
 }
 
 Future<List<_CdnSportEvent>> _fetchCdnSports() async {
-  final resp = await http.get(Uri.parse('https://api.cdn-live.tv/api/v1/events/sports/?user=cdnlivetv&plan=free'), headers: _ua)
+  final resp = await http
+      .get(
+        Uri.parse(
+          'https://api.cdn-live.tv/api/v1/events/sports/?user=cdnlivetv&plan=free',
+        ),
+        headers: _ua,
+      )
       .timeout(const Duration(seconds: 12));
   if (resp.statusCode != 200) return [];
   final body = jsonDecode(resp.body) as Map<String, dynamic>;
   final cdnData = body['cdn-live-tv'] as Map<String, dynamic>?;
   if (cdnData == null) return [];
-  
+
   final result = <_CdnSportEvent>[];
   for (final key in ['Soccer', 'NFL', 'NBA', 'NHL']) {
     final events = (cdnData[key] as List?) ?? [];
     for (final e in events) {
-      try { result.add(_CdnSportEvent.fromJson(e as Map<String, dynamic>)); } catch (_) {}
+      try {
+        result.add(_CdnSportEvent.fromJson(e as Map<String, dynamic>));
+      } catch (_) {}
     }
   }
   return result;
@@ -326,7 +350,11 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; _sportFilter = 'all'; });
+    setState(() {
+      _loading = true;
+      _error = null;
+      _sportFilter = 'all';
+    });
     if (_provider == _DataProvider.damiTv) {
       await _loadDamiTv();
       return;
@@ -370,7 +398,11 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
         if (mounted) setState(() => _tabController = newCtrl);
       }
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _error = e.toString(); });
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _error = e.toString();
+        });
     }
   }
 
@@ -404,7 +436,11 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
         if (mounted) setState(() => _tabController = newCtrl);
       }
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _error = e.toString(); });
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _error = e.toString();
+        });
     }
   }
 
@@ -416,7 +452,7 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
       ]);
       final channels = results[0] as List<_CdnChannel>;
       final sports = results[1] as List<_CdnSportEvent>;
-      
+
       // Build categories from sports
       final seenCats = <String>{};
       final cats = <_Sport>[];
@@ -425,7 +461,7 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
           cats.add(_Sport(id: s.tournament, name: s.tournament));
         }
       }
-      
+
       if (mounted) {
         final oldCtrl = _tabController;
         setState(() {
@@ -446,7 +482,11 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
         if (mounted) setState(() => _tabController = newCtrl);
       }
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _error = e.toString(); });
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _error = e.toString();
+        });
     }
   }
 
@@ -491,11 +531,19 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
       padding: const EdgeInsets.fromLTRB(24, 48, 24, 12),
       child: Row(
         children: [
-          const Icon(Icons.sports_soccer_rounded, color: AppTheme.primaryColor, size: 28),
+          const Icon(
+            Icons.sports_soccer_rounded,
+            color: AppTheme.primaryColor,
+            size: 28,
+          ),
           const SizedBox(width: 10),
           const Text(
             'Live Matches',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           const Spacer(),
           IconButton(
@@ -520,7 +568,9 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
               active: _provider == _DataProvider.damiTv,
               onTap: () {
                 if (_provider == _DataProvider.damiTv) return;
-                setState(() { _provider = _DataProvider.damiTv; });
+                setState(() {
+                  _provider = _DataProvider.damiTv;
+                });
                 _load();
               },
             ),
@@ -530,7 +580,9 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
               active: _provider == _DataProvider.ppv,
               onTap: () {
                 if (_provider == _DataProvider.ppv) return;
-                setState(() { _provider = _DataProvider.ppv; });
+                setState(() {
+                  _provider = _DataProvider.ppv;
+                });
                 _load();
               },
             ),
@@ -540,7 +592,6 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
     );
   }
 
- 
   Widget _buildSportTabs() {
     final tabs = [
       const Tab(text: 'All'),
@@ -560,7 +611,9 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor));
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      );
     }
     if (_error != null) {
       return Center(
@@ -575,7 +628,9 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
               onPressed: _load,
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+              ),
             ),
           ],
         ),
@@ -591,82 +646,71 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
   Widget _buildDamiTvBody() {
     final streams = _filteredDamiTv;
     if (streams.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.sports_rounded, color: Colors.white24, size: 64),
-            SizedBox(height: 16),
-            Text('No streams available', style: TextStyle(color: Colors.white38, fontSize: 16)),
-          ],
-        ),
+      return const DizzyEmptyState(
+        icon: Icons.sports_rounded,
+        title: 'No Streams',
+        description: 'No streams available at the moment',
       );
     }
-    return LayoutBuilder(builder: (context, constraints) {
-      final crossCount = (constraints.maxWidth / 300).floor().clamp(1, 6);
-      return GridView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossCount,
-          mainAxisExtent: 200,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        itemCount: streams.length,
-        itemBuilder: (context, i) => _DamiTvMatchCard(
-          stream: streams[i],
-          onTap: () => _openDamiTvStream(streams[i]),
-        ),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossCount = (constraints.maxWidth / 300).floor().clamp(1, 6);
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossCount,
+            mainAxisExtent: 200,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: streams.length,
+          itemBuilder: (context, i) => _DamiTvMatchCard(
+            stream: streams[i],
+            onTap: () => _openDamiTvStream(streams[i]),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildPpvBody() {
     final streams = _filteredPpv;
     if (streams.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.sports_rounded, color: Colors.white24, size: 64),
-            SizedBox(height: 16),
-            Text('No streams available', style: TextStyle(color: Colors.white38, fontSize: 16)),
-          ],
-        ),
+      return const DizzyEmptyState(
+        icon: Icons.sports_rounded,
+        title: 'No Streams',
+        description: 'No streams available at the moment',
       );
     }
-    return LayoutBuilder(builder: (context, constraints) {
-      final crossCount = (constraints.maxWidth / 300).floor().clamp(1, 6);
-      return GridView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossCount,
-          mainAxisExtent: 200,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        itemCount: streams.length,
-        itemBuilder: (context, i) => _PpvMatchCard(
-          stream: streams[i],
-          onTap: () => _openPpvStream(streams[i]),
-        ),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossCount = (constraints.maxWidth / 300).floor().clamp(1, 6);
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossCount,
+            mainAxisExtent: 200,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: streams.length,
+          itemBuilder: (context, i) => _PpvMatchCard(
+            stream: streams[i],
+            onTap: () => _openPpvStream(streams[i]),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildCdnBody() {
     if (_cdnShowChannels) {
       final channels = _cdnChannels.where((c) => c.status == 'online').toList();
       if (channels.isEmpty) {
-        return const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.tv_rounded, color: Colors.white24, size: 64),
-              SizedBox(height: 16),
-              Text('No channels available', style: TextStyle(color: Colors.white38, fontSize: 16)),
-            ],
-          ),
+        return const DizzyEmptyState(
+          icon: Icons.tv_rounded,
+          title: 'No Channels',
+          description: 'No channels available at the moment',
         );
       }
       return Column(
@@ -675,30 +719,43 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               children: [
-                _ModeChip(label: '📺 Channels', active: _cdnShowChannels, onTap: () => setState(() => _cdnShowChannels = true)),
+                _ModeChip(
+                  label: '📺 Channels',
+                  active: _cdnShowChannels,
+                  onTap: () => setState(() => _cdnShowChannels = true),
+                ),
                 const SizedBox(width: 8),
-                _ModeChip(label: '⚽ Sports', active: !_cdnShowChannels, onTap: () => setState(() => _cdnShowChannels = false)),
+                _ModeChip(
+                  label: '⚽ Sports',
+                  active: !_cdnShowChannels,
+                  onTap: () => setState(() => _cdnShowChannels = false),
+                ),
               ],
             ),
           ),
           Expanded(
-            child: LayoutBuilder(builder: (context, constraints) {
-              final crossCount = (constraints.maxWidth / 280).floor().clamp(1, 6);
-              return GridView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossCount,
-                  mainAxisExtent: 160,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemCount: channels.length,
-                itemBuilder: (context, i) => _CdnChannelCard(
-                  channel: channels[i],
-                  onTap: () => _openCdnChannel(channels[i]),
-                ),
-              );
-            }),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final crossCount = (constraints.maxWidth / 280).floor().clamp(
+                  1,
+                  6,
+                );
+                return GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossCount,
+                    mainAxisExtent: 160,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: channels.length,
+                  itemBuilder: (context, i) => _CdnChannelCard(
+                    channel: channels[i],
+                    onTap: () => _openCdnChannel(channels[i]),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       );
@@ -707,15 +764,10 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
           ? _cdnSports
           : _cdnSports.where((s) => s.tournament == _sportFilter).toList();
       if (sports.isEmpty) {
-        return const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.sports_rounded, color: Colors.white24, size: 64),
-              SizedBox(height: 16),
-              Text('No sports events available', style: TextStyle(color: Colors.white38, fontSize: 16)),
-            ],
-          ),
+        return const DizzyEmptyState(
+          icon: Icons.sports_rounded,
+          title: 'No Events',
+          description: 'No sports events available at the moment',
         );
       }
       return Column(
@@ -724,30 +776,43 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               children: [
-                _ModeChip(label: '📺 Channels', active: _cdnShowChannels, onTap: () => setState(() => _cdnShowChannels = true)),
+                _ModeChip(
+                  label: '📺 Channels',
+                  active: _cdnShowChannels,
+                  onTap: () => setState(() => _cdnShowChannels = true),
+                ),
                 const SizedBox(width: 8),
-                _ModeChip(label: '⚽ Sports', active: !_cdnShowChannels, onTap: () => setState(() => _cdnShowChannels = false)),
+                _ModeChip(
+                  label: '⚽ Sports',
+                  active: !_cdnShowChannels,
+                  onTap: () => setState(() => _cdnShowChannels = false),
+                ),
               ],
             ),
           ),
           Expanded(
-            child: LayoutBuilder(builder: (context, constraints) {
-              final crossCount = (constraints.maxWidth / 300).floor().clamp(1, 6);
-              return GridView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossCount,
-                  mainAxisExtent: 200,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemCount: sports.length,
-                itemBuilder: (context, i) => _CdnSportCard(
-                  event: sports[i],
-                  onTap: () => _openCdnSportEvent(sports[i]),
-                ),
-              );
-            }),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final crossCount = (constraints.maxWidth / 300).floor().clamp(
+                  1,
+                  6,
+                );
+                return GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossCount,
+                    mainAxisExtent: 200,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: sports.length,
+                  itemBuilder: (context, i) => _CdnSportCard(
+                    event: sports[i],
+                    onTap: () => _openCdnSportEvent(sports[i]),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       );
@@ -757,19 +822,25 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
   void _openDamiTvStream(_DamiTvStream s) {
     if (s.iframe.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stream not yet available for this event')),
+        const SnackBar(
+          content: Text('Stream not yet available for this event'),
+        ),
       );
       return;
     }
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => _DamiTvPlayerScreen(stream: s),
-    ));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => _DamiTvPlayerScreen(stream: s)),
+    );
   }
 
   void _openCdnChannel(_CdnChannel channel) {
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => _CdnPlayerScreen(url: channel.url, title: channel.name),
-    ));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _CdnPlayerScreen(url: channel.url, title: channel.name),
+      ),
+    );
   }
 
   void _openCdnSportEvent(_CdnSportEvent event) {
@@ -788,7 +859,8 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
       context: context,
       backgroundColor: const Color(0xFF1A1A2E),
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => _CdnChannelSheet(
         event: event,
         onChannelSelected: (ch) {
@@ -802,13 +874,16 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen>
   void _openPpvStream(_PpvStream s) {
     if (s.iframe == null || s.iframe!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stream not yet available for this event')),
+        const SnackBar(
+          content: Text('Stream not yet available for this event'),
+        ),
       );
       return;
     }
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => _PpvPlayerScreen(stream: s),
-    ));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => _PpvPlayerScreen(stream: s)),
+    );
   }
 
   // End of screen state
@@ -822,7 +897,11 @@ class _ModeChip extends StatelessWidget {
   final String label;
   final bool active;
   final VoidCallback onTap;
-  const _ModeChip({required this.label, required this.active, required this.onTap});
+  const _ModeChip({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -835,19 +914,23 @@ class _ModeChip extends StatelessWidget {
           color: active ? AppTheme.primaryColor : Colors.white10,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-              color: active ? AppTheme.primaryColor : Colors.white24, width: 1.5),
+            color: active ? AppTheme.primaryColor : Colors.white24,
+            width: 1.5,
+          ),
         ),
-        child: Text(label,
-            style: TextStyle(
-                color: active ? Colors.white : Colors.white60,
-                fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                fontSize: 13)),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? Colors.white : Colors.white60,
+            fontWeight: active ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
+        ),
       ),
     );
   }
 }
 
- 
 class _TeamBadge extends StatelessWidget {
   final String? badge;
   final String name;
@@ -863,23 +946,35 @@ class _TeamBadge extends StatelessWidget {
           child: badge != null && badge!.isNotEmpty
               ? CachedNetworkImage(
                   imageUrl: badge!,
-                  width: 38, height: 38, fit: BoxFit.contain,
+                  width: 38,
+                  height: 38,
+                  fit: BoxFit.contain,
                   errorWidget: (_, _, _) => Text(
                     name.isNotEmpty ? name[0] : '?',
-                    style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 )
-              : Text(name.isNotEmpty ? name[0] : '?',
-                  style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+              : Text(
+                  name.isNotEmpty ? name[0] : '?',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
         const SizedBox(height: 4),
         SizedBox(
           width: 60,
-          child: Text(name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70, fontSize: 9.5)),
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 9.5),
+          ),
         ),
       ],
     );
@@ -908,20 +1003,30 @@ class _PpvMatchCardState extends State<_PpvMatchCard> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
-      onExit:  (_) => setState(() => _hovered = false),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: _hovered ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.06),
+            color: _hovered
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.06),
             border: Border.all(
-              color: _hovered ? AppTheme.primaryColor.withValues(alpha: 0.6) : Colors.white12,
+              color: _hovered
+                  ? AppTheme.primaryColor.withValues(alpha: 0.6)
+                  : Colors.white12,
               width: 1.5,
             ),
             boxShadow: _hovered
-                ? [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.25), blurRadius: 16, spreadRadius: 2)]
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ]
                 : null,
           ),
           child: ClipRRect(
@@ -964,15 +1069,24 @@ class _PpvMatchCardState extends State<_PpvMatchCard> {
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      if (s.tag.isNotEmpty) ...[  
+                      if (s.tag.isNotEmpty) ...[
                         const SizedBox(height: 6),
-                        Text(s.tag,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.white54, fontSize: 10.5)),
+                        Text(
+                          s.tag,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 10.5,
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -980,43 +1094,76 @@ class _PpvMatchCardState extends State<_PpvMatchCard> {
                 // time label top-right
                 if (s.timeLabel.isNotEmpty)
                   Positioned(
-                    top: 10, right: 10,
+                    top: 10,
+                    right: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
-                        color: s.timeLabel.contains('Live') ? Colors.red.shade700 : Colors.black54,
+                        color: s.timeLabel.contains('Live')
+                            ? Colors.red.shade700
+                            : Colors.black54,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(s.timeLabel,
-                          style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        s.timeLabel,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 // category top-left
                 Positioned(
-                  top: 10, left: 10,
+                  top: 10,
+                  left: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(s.category.toUpperCase(),
-                        style: const TextStyle(color: Colors.white60, fontSize: 9, letterSpacing: 0.8)),
+                    child: Text(
+                      s.category.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 9,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
                   ),
                 ),
                 // no iframe warning bottom
                 if (!hasIframe)
                   Positioned(
-                    bottom: 8, left: 0, right: 0,
+                    bottom: 8,
+                    left: 0,
+                    right: 0,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text('Not yet available',
-                            style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          'Not yet available',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1027,9 +1174,14 @@ class _PpvMatchCardState extends State<_PpvMatchCard> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.85),
-                            shape: BoxShape.circle),
-                        child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.85),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ),
@@ -1082,29 +1234,44 @@ class _PpvPlayerScreenState extends State<_PpvPlayerScreen> {
     final embedUrl = widget.stream.iframe!;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: _isFullscreen ? null : AppBar(
-        backgroundColor: Colors.black,
-        title: Text(widget.stream.name,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                    color: Colors.teal.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.teal)),
-                child: const Text('PPV.to', style: TextStyle(color: Colors.teal, fontSize: 10, fontWeight: FontWeight.bold)),
+      appBar: _isFullscreen
+          ? null
+          : AppBar(
+              backgroundColor: Colors.black,
+              title: Text(
+                widget.stream.name,
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              iconTheme: const IconThemeData(color: Colors.white),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.teal),
+                      ),
+                      child: const Text(
+                        'PPV.to',
+                        style: TextStyle(
+                          color: Colors.teal,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           InAppWebView(
@@ -1117,33 +1284,39 @@ class _PpvPlayerScreenState extends State<_PpvPlayerScreen> {
               supportMultipleWindows: false,
             ),
             onLoadStart: (_, _) => setState(() => _loading = true),
-            onLoadStop:  (_, _) => setState(() => _loading = false),
+            onLoadStop: (_, _) => setState(() => _loading = false),
             onEnterFullscreen: (_) => _enterFullscreen(),
-            onExitFullscreen:  (_) => _exitFullscreen(),
+            onExitFullscreen: (_) => _exitFullscreen(),
             shouldOverrideUrlLoading: (ctrl, action) async {
               final url = action.request.url?.toString() ?? '';
               final embedHost = Uri.tryParse(embedUrl)?.host ?? '';
               if (embedHost.isNotEmpty && !url.contains(embedHost)) {
-                http.get(Uri.parse(url), headers: {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/122.0.0.0 Safari/537.36',
-                  'Referer': embedUrl,
-                }).catchError((_) => http.Response('', 200));
+                http
+                    .get(
+                      Uri.parse(url),
+                      headers: {
+                        'User-Agent':
+                            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                            'AppleWebKit/537.36 (KHTML, like Gecko) '
+                            'Chrome/122.0.0.0 Safari/537.36',
+                        'Referer': embedUrl,
+                      },
+                    )
+                    .catchError((_) => http.Response('', 200));
                 return NavigationActionPolicy.CANCEL;
               }
               return NavigationActionPolicy.ALLOW;
             },
           ),
           if (_loading)
-            const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+            const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            ),
         ],
       ),
     );
   }
 }
-
- 
 
 // ─── CDN Channel Card ─────────────────────────────────────────────────────────
 
@@ -1165,20 +1338,30 @@ class _CdnChannelCardState extends State<_CdnChannelCard> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
-      onExit:  (_) => setState(() => _hovered = false),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: _hovered ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.06),
+            color: _hovered
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.06),
             border: Border.all(
-              color: _hovered ? AppTheme.primaryColor.withValues(alpha: 0.6) : Colors.white12,
+              color: _hovered
+                  ? AppTheme.primaryColor.withValues(alpha: 0.6)
+                  : Colors.white12,
               width: 1.5,
             ),
             boxShadow: _hovered
-                ? [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.25), blurRadius: 16, spreadRadius: 2)]
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ]
                 : null,
           ),
           child: ClipRRect(
@@ -1196,38 +1379,63 @@ class _CdnChannelCardState extends State<_CdnChannelCard> {
                           imageUrl: c.image,
                           height: 60,
                           fit: BoxFit.contain,
-                          errorWidget: (_, _, _) => const Icon(Icons.tv_rounded, color: Colors.white38, size: 48),
+                          errorWidget: (_, _, _) => const Icon(
+                            Icons.tv_rounded,
+                            color: Colors.white38,
+                            size: 48,
+                          ),
                         )
                       else
-                        const Icon(Icons.tv_rounded, color: Colors.white38, size: 48),
+                        const Icon(
+                          Icons.tv_rounded,
+                          color: Colors.white38,
+                          size: 48,
+                        ),
                       const SizedBox(height: 12),
                       Text(
                         c.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       if (c.viewers > 0) ...[
                         const SizedBox(height: 4),
                         Text(
                           '${c.viewers} viewers',
-                          style: const TextStyle(color: Colors.white54, fontSize: 10),
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 10,
+                          ),
                         ),
                       ],
                     ],
                   ),
                 ),
                 Positioned(
-                  top: 10, right: 10,
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.shade700,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text('● LIVE',
-                        style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      '● LIVE',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
                 if (_hovered)
@@ -1236,9 +1444,14 @@ class _CdnChannelCardState extends State<_CdnChannelCard> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.85),
-                            shape: BoxShape.circle),
-                        child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.85),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ),
@@ -1271,20 +1484,30 @@ class _CdnSportCardState extends State<_CdnSportCard> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
-      onExit:  (_) => setState(() => _hovered = false),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: _hovered ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.06),
+            color: _hovered
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.06),
             border: Border.all(
-              color: _hovered ? AppTheme.primaryColor.withValues(alpha: 0.6) : Colors.white12,
+              color: _hovered
+                  ? AppTheme.primaryColor.withValues(alpha: 0.6)
+                  : Colors.white12,
               width: 1.5,
             ),
             boxShadow: _hovered
-                ? [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.25), blurRadius: 16, spreadRadius: 2)]
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ]
                 : null,
           ),
           child: ClipRRect(
@@ -1305,44 +1528,79 @@ class _CdnSportCardState extends State<_CdnSportCard> {
                               if (e.homeTeamIMG.isNotEmpty)
                                 CachedNetworkImage(
                                   imageUrl: e.homeTeamIMG,
-                                  width: 40, height: 40,
-                                  errorWidget: (_, _, _) => const Icon(Icons.sports_rounded, color: Colors.white38, size: 32),
+                                  width: 40,
+                                  height: 40,
+                                  errorWidget: (_, _, _) => const Icon(
+                                    Icons.sports_rounded,
+                                    color: Colors.white38,
+                                    size: 32,
+                                  ),
                                 )
                               else
-                                const Icon(Icons.sports_rounded, color: Colors.white38, size: 32),
+                                const Icon(
+                                  Icons.sports_rounded,
+                                  color: Colors.white38,
+                                  size: 32,
+                                ),
                               const SizedBox(height: 4),
                               SizedBox(
                                 width: 60,
-                                child: Text(e.homeTeam, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                                child: Text(
+                                  e.homeTeam,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text('VS',
-                                style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.7),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800)),
+                            child: Text(
+                              'VS',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
                           ),
                           Column(
                             children: [
                               if (e.awayTeamIMG.isNotEmpty)
                                 CachedNetworkImage(
                                   imageUrl: e.awayTeamIMG,
-                                  width: 40, height: 40,
-                                  errorWidget: (_, _, _) => const Icon(Icons.sports_rounded, color: Colors.white38, size: 32),
+                                  width: 40,
+                                  height: 40,
+                                  errorWidget: (_, _, _) => const Icon(
+                                    Icons.sports_rounded,
+                                    color: Colors.white38,
+                                    size: 32,
+                                  ),
                                 )
                               else
-                                const Icon(Icons.sports_rounded, color: Colors.white38, size: 32),
+                                const Icon(
+                                  Icons.sports_rounded,
+                                  color: Colors.white38,
+                                  size: 32,
+                                ),
                               const SizedBox(height: 4),
                               SizedBox(
                                 width: 60,
-                                child: Text(e.awayTeam, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                                child: Text(
+                                  e.awayTeam,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -1354,21 +1612,37 @@ class _CdnSportCardState extends State<_CdnSportCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Positioned(
-                  top: 10, right: 10,
+                  top: 10,
+                  right: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
-                      color: e.status == 'live' ? Colors.red.shade700 : Colors.orange.shade700,
+                      color: e.status == 'live'
+                          ? Colors.red.shade700
+                          : Colors.orange.shade700,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(e.status == 'live' ? '● LIVE' : e.status.toUpperCase(),
-                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      e.status == 'live' ? '● LIVE' : e.status.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
                 if (_hovered)
@@ -1377,9 +1651,14 @@ class _CdnSportCardState extends State<_CdnSportCard> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.85),
-                            shape: BoxShape.circle),
-                        child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.85),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ),
@@ -1397,7 +1676,10 @@ class _CdnSportCardState extends State<_CdnSportCard> {
 class _CdnChannelSheet extends StatelessWidget {
   final _CdnSportEvent event;
   final void Function(_CdnChannel) onChannelSelected;
-  const _CdnChannelSheet({required this.event, required this.onChannelSelected});
+  const _CdnChannelSheet({
+    required this.event,
+    required this.onChannelSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1407,27 +1689,65 @@ class _CdnChannelSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(child: Container(width: 40, height: 4,
-              decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
           const SizedBox(height: 20),
-          Text('${event.homeTeam} vs ${event.awayTeam}',
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            '${event.homeTeam} vs ${event.awayTeam}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 6),
-          const Text('Choose a channel:', style: TextStyle(color: Colors.white54, fontSize: 13)),
+          const Text(
+            'Choose a channel:',
+            style: TextStyle(color: Colors.white54, fontSize: 13),
+          ),
           const SizedBox(height: 16),
-          ...event.channels.map((ch) => ListTile(
-            onTap: () => onChannelSelected(ch),
-            leading: ch.image.isNotEmpty
-                ? CachedNetworkImage(imageUrl: ch.image, width: 32, height: 32, fit: BoxFit.contain,
-                    errorWidget: (_, _, _) => const Icon(Icons.tv_rounded, color: AppTheme.primaryColor))
-                : const Icon(Icons.tv_rounded, color: AppTheme.primaryColor),
-            title: Text(ch.name,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-            subtitle: ch.viewers > 0
-                ? Text('${ch.viewers} viewers', style: const TextStyle(color: Colors.white38, fontSize: 11))
-                : null,
-            trailing: const Icon(Icons.chevron_right, color: Colors.white38),
-          )),
+          ...event.channels.map(
+            (ch) => ListTile(
+              onTap: () => onChannelSelected(ch),
+              leading: ch.image.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: ch.image,
+                      width: 32,
+                      height: 32,
+                      fit: BoxFit.contain,
+                      errorWidget: (_, _, _) => const Icon(
+                        Icons.tv_rounded,
+                        color: AppTheme.primaryColor,
+                      ),
+                    )
+                  : const Icon(Icons.tv_rounded, color: AppTheme.primaryColor),
+              title: Text(
+                ch.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: ch.viewers > 0
+                  ? Text(
+                      '${ch.viewers} viewers',
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 11,
+                      ),
+                    )
+                  : null,
+              trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+            ),
+          ),
         ],
       ),
     );
@@ -1474,29 +1794,44 @@ class _CdnPlayerScreenState extends State<_CdnPlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: _isFullscreen ? null : AppBar(
-        backgroundColor: Colors.black,
-        title: Text(widget.title,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.blue)),
-                child: const Text('CDN Live', style: TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
+      appBar: _isFullscreen
+          ? null
+          : AppBar(
+              backgroundColor: Colors.black,
+              title: Text(
+                widget.title,
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              iconTheme: const IconThemeData(color: Colors.white),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.blue),
+                      ),
+                      child: const Text(
+                        'CDN Live',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           InAppWebView(
@@ -1509,26 +1844,34 @@ class _CdnPlayerScreenState extends State<_CdnPlayerScreen> {
               supportMultipleWindows: false,
             ),
             onLoadStart: (_, _) => setState(() => _loading = true),
-            onLoadStop:  (_, _) => setState(() => _loading = false),
+            onLoadStop: (_, _) => setState(() => _loading = false),
             onEnterFullscreen: (_) => _enterFullscreen(),
-            onExitFullscreen:  (_) => _exitFullscreen(),
+            onExitFullscreen: (_) => _exitFullscreen(),
             shouldOverrideUrlLoading: (ctrl, action) async {
               final url = action.request.url?.toString() ?? '';
               final embedHost = Uri.tryParse(widget.url)?.host ?? '';
               if (embedHost.isNotEmpty && !url.contains(embedHost)) {
-                http.get(Uri.parse(url), headers: {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/122.0.0.0 Safari/537.36',
-                  'Referer': widget.url,
-                }).catchError((_) => http.Response('', 200));
+                http
+                    .get(
+                      Uri.parse(url),
+                      headers: {
+                        'User-Agent':
+                            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                            'AppleWebKit/537.36 (KHTML, like Gecko) '
+                            'Chrome/122.0.0.0 Safari/537.36',
+                        'Referer': widget.url,
+                      },
+                    )
+                    .catchError((_) => http.Response('', 200));
                 return NavigationActionPolicy.CANCEL;
               }
               return NavigationActionPolicy.ALLOW;
             },
           ),
           if (_loading)
-            const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+            const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            ),
         ],
       ),
     );
@@ -1558,20 +1901,30 @@ class _DamiTvMatchCardState extends State<_DamiTvMatchCard> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
-      onExit:  (_) => setState(() => _hovered = false),
+      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: _hovered ? Colors.white.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.06),
+            color: _hovered
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.06),
             border: Border.all(
-              color: _hovered ? AppTheme.primaryColor.withValues(alpha: 0.6) : Colors.white12,
+              color: _hovered
+                  ? AppTheme.primaryColor.withValues(alpha: 0.6)
+                  : Colors.white12,
               width: 1.5,
             ),
             boxShadow: _hovered
-                ? [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.25), blurRadius: 16, spreadRadius: 2)]
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ]
                 : null,
           ),
           child: ClipRRect(
@@ -1615,13 +1968,18 @@ class _DamiTvMatchCardState extends State<_DamiTvMatchCard> {
                           children: [
                             _TeamBadge(badge: s.homeBadge, name: s.homeTeam!),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('VS',
-                                  style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 2)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Text(
+                                'VS',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2,
+                                ),
+                              ),
                             ),
                             _TeamBadge(badge: s.awayBadge, name: s.awayTeam!),
                           ],
@@ -1633,15 +1991,24 @@ class _DamiTvMatchCardState extends State<_DamiTvMatchCard> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      if (s.league.isNotEmpty) ...[  
+                      if (s.league.isNotEmpty) ...[
                         const SizedBox(height: 6),
-                        Text(s.league,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.white54, fontSize: 10.5)),
+                        Text(
+                          s.league,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 10.5,
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -1649,43 +2016,76 @@ class _DamiTvMatchCardState extends State<_DamiTvMatchCard> {
                 // time label top-right
                 if (s.timeLabel.isNotEmpty)
                   Positioned(
-                    top: 10, right: 10,
+                    top: 10,
+                    right: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
-                        color: s.timeLabel.contains('Live') ? Colors.red.shade700 : Colors.black54,
+                        color: s.timeLabel.contains('Live')
+                            ? Colors.red.shade700
+                            : Colors.black54,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(s.timeLabel,
-                          style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        s.timeLabel,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 // category top-left
                 Positioned(
-                  top: 10, left: 10,
+                  top: 10,
+                  left: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text(s.categoryName.toUpperCase(),
-                        style: const TextStyle(color: Colors.white60, fontSize: 9, letterSpacing: 0.8)),
+                    child: Text(
+                      s.categoryName.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white60,
+                        fontSize: 9,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
                   ),
                 ),
                 // no iframe warning bottom
                 if (!hasIframe)
                   Positioned(
-                    bottom: 8, left: 0, right: 0,
+                    bottom: 8,
+                    left: 0,
+                    right: 0,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text('Not yet available',
-                            style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          'Not yet available',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1696,9 +2096,14 @@ class _DamiTvMatchCardState extends State<_DamiTvMatchCard> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.85),
-                            shape: BoxShape.circle),
-                        child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.85),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ),
@@ -1751,29 +2156,44 @@ class _DamiTvPlayerScreenState extends State<_DamiTvPlayerScreen> {
     final embedUrl = widget.stream.iframe;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: _isFullscreen ? null : AppBar(
-        backgroundColor: Colors.black,
-        title: Text(widget.stream.name,
-            style: const TextStyle(color: Colors.white, fontSize: 15),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.blue)),
-                child: const Text('Dami TV', style: TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
+      appBar: _isFullscreen
+          ? null
+          : AppBar(
+              backgroundColor: Colors.black,
+              title: Text(
+                widget.stream.name,
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              iconTheme: const IconThemeData(color: Colors.white),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.blue),
+                      ),
+                      child: const Text(
+                        'Dami TV',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       body: Stack(
         children: [
           InAppWebView(
@@ -1786,26 +2206,34 @@ class _DamiTvPlayerScreenState extends State<_DamiTvPlayerScreen> {
               supportMultipleWindows: false,
             ),
             onLoadStart: (_, _) => setState(() => _loading = true),
-            onLoadStop:  (_, _) => setState(() => _loading = false),
+            onLoadStop: (_, _) => setState(() => _loading = false),
             onEnterFullscreen: (_) => _enterFullscreen(),
-            onExitFullscreen:  (_) => _exitFullscreen(),
+            onExitFullscreen: (_) => _exitFullscreen(),
             shouldOverrideUrlLoading: (ctrl, action) async {
               final url = action.request.url?.toString() ?? '';
               final embedHost = Uri.tryParse(embedUrl)?.host ?? '';
               if (embedHost.isNotEmpty && !url.contains(embedHost)) {
-                http.get(Uri.parse(url), headers: {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/122.0.0.0 Safari/537.36',
-                  'Referer': embedUrl,
-                }).catchError((_) => http.Response('', 200));
+                http
+                    .get(
+                      Uri.parse(url),
+                      headers: {
+                        'User-Agent':
+                            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                            'AppleWebKit/537.36 (KHTML, like Gecko) '
+                            'Chrome/122.0.0.0 Safari/537.36',
+                        'Referer': embedUrl,
+                      },
+                    )
+                    .catchError((_) => http.Response('', 200));
                 return NavigationActionPolicy.CANCEL;
               }
               return NavigationActionPolicy.ALLOW;
             },
           ),
           if (_loading)
-            const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+            const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            ),
         ],
       ),
     );

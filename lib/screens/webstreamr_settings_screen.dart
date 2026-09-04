@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api/webstreamr_service.dart';
 import '../api/webstreamr_settings.dart';
+import '../widgets/dizzy_components.dart';
 
 /// Settings UI for the local WebStreamr port — country toggles, MFP,
 /// FlareSolverr, per-extractor disable, resolution exclusion, TMDB token.
@@ -48,8 +49,12 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
 
   Future<void> _save() async {
     await WebStreamrSettings.setEnabledCountryCodes(_enabledCountries.toList());
-    await WebStreamrSettings.setDisabledExtractors(_disabledExtractors.toList());
-    await WebStreamrSettings.setExcludedResolutions(_excludedResolutions.toList());
+    await WebStreamrSettings.setDisabledExtractors(
+      _disabledExtractors.toList(),
+    );
+    await WebStreamrSettings.setExcludedResolutions(
+      _excludedResolutions.toList(),
+    );
     await WebStreamrSettings.setMediaFlowProxyUrl(_mfpUrl.text.trim());
     await WebStreamrSettings.setMediaFlowProxyPassword(_mfpPwd.text);
     await WebStreamrSettings.setFlareSolverrUrl(_flareUrl.text.trim());
@@ -57,9 +62,9 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
     // Re-apply env (TMDB token / flare URL).
     await WebStreamrService.init();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('WebStreamr settings saved.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('WebStreamr settings saved.')));
   }
 
   @override
@@ -89,8 +94,10 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _section('Country Sources',
-                    'Pick which language/region sources to query.'),
+                const DizzySectionHeader(
+                  title: 'Country Sources',
+                  subtitle: 'Pick which language/region sources to query.',
+                ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -110,8 +117,11 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                _section('Disabled Extractors',
-                    'Tap to disable. The "external" fallback always stays on.'),
+                const DizzySectionHeader(
+                  title: 'Disabled Extractors',
+                  subtitle:
+                      'Tap to disable. The "external" fallback always stays on.',
+                ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -131,8 +141,11 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                _section('Excluded Resolutions',
-                    'Streams matching these resolutions are filtered out.'),
+                const DizzySectionHeader(
+                  title: 'Excluded Resolutions',
+                  subtitle:
+                      'Streams matching these resolutions are filtered out.',
+                ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -152,7 +165,11 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                _section('MediaFlow Proxy', 'Optional — enables MFP-routed extractors (Voe etc.).'),
+                const DizzySectionHeader(
+                  title: 'MediaFlow Proxy',
+                  subtitle:
+                      'Optional — enables MFP-routed extractors (Voe etc.).',
+                ),
                 TextField(
                   controller: _mfpUrl,
                   decoration: const InputDecoration(
@@ -167,8 +184,10 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
                   decoration: const InputDecoration(labelText: 'MFP Password'),
                 ),
                 const SizedBox(height: 24),
-                _section('FlareSolverr',
-                    'Optional — used for Cloudflare-protected hosts.'),
+                const DizzySectionHeader(
+                  title: 'FlareSolverr',
+                  subtitle: 'Optional — used for Cloudflare-protected hosts.',
+                ),
                 TextField(
                   controller: _flareUrl,
                   decoration: const InputDecoration(
@@ -177,8 +196,11 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _section('TMDB Access Token',
-                    'Required for sources that translate IMDb→TMDB locally.'),
+                const DizzySectionHeader(
+                  title: 'TMDB Access Token',
+                  subtitle:
+                      'Required for sources that translate IMDb→TMDB locally.',
+                ),
                 TextField(
                   controller: _tmdbTok,
                   obscureText: true,
@@ -187,31 +209,14 @@ class _WebStreamrSettingsScreenState extends State<WebStreamrSettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save'),
-                  onPressed: _save,
+                DizzyButton(
+                  label: 'Save',
+                  icon: Icons.save,
+                  onTap: _save,
+                  isFullWidth: true,
                 ),
               ],
             ),
     );
   }
-
-  Widget _section(String title, String subtitle) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    )),
-            Text(subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white70,
-                    )),
-            const SizedBox(height: 8),
-          ],
-        ),
-      );
 }

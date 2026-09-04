@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../api/anime_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/dizzy_components.dart';
 import '../widgets/hover_scale.dart';
 import 'anime_details_screen.dart';
 
@@ -81,9 +82,9 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
   }
 
   void _open(AnimeCard a) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AnimeDetailsScreen(anime: a)),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => AnimeDetailsScreen(anime: a)));
   }
 
   @override
@@ -97,8 +98,11 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
             backgroundColor: AppTheme.bgDark,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white, size: 18),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
               onPressed: () => Navigator.of(context).pop(),
             ),
             titleSpacing: 0,
@@ -124,8 +128,10 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
             actions: [
               if (_controller.text.isNotEmpty)
                 IconButton(
-                  icon: Icon(Icons.close_rounded,
-                      color: Colors.white.withValues(alpha: 0.7)),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
                   onPressed: () {
                     _controller.clear();
                     _onChanged('');
@@ -141,22 +147,10 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
 
   Widget _buildBody() {
     if (_query.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.search_rounded,
-                color: Colors.white.withValues(alpha: 0.2), size: 80),
-            const SizedBox(height: 16),
-            Text(
-              'Search anime by title…',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
+      return DizzyEmptyState(
+        icon: Icons.search_rounded,
+        title: 'Search Anime',
+        description: 'Search anime by title…',
       );
     }
     if (_loading) {
@@ -168,28 +162,15 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
       return Center(
         child: Text(
           _error!,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.6),
-          ),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
         ),
       );
     }
     if (_results.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.search_off_rounded,
-                color: Colors.white.withValues(alpha: 0.2), size: 80),
-            const SizedBox(height: 16),
-            Text(
-              'No results for "$_query"',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-              ),
-            ),
-          ],
-        ),
+      return DizzyEmptyState(
+        icon: Icons.search_off_rounded,
+        title: 'No Results',
+        description: 'No results for "$_query"',
       );
     }
 
@@ -197,10 +178,10 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
     final cross = w > 1200
         ? 6
         : w > 900
-            ? 5
-            : w > 600
-                ? 4
-                : 3;
+        ? 5
+        : w > 600
+        ? 4
+        : 3;
 
     return GridView.builder(
       physics: const BouncingScrollPhysics(),
@@ -229,9 +210,7 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
               decoration: BoxDecoration(
                 color: AppTheme.bgCard,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.06),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.4),
@@ -247,12 +226,13 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
                     CachedNetworkImage(
                       imageUrl: a.coverUrl,
                       fit: BoxFit.cover,
-                      placeholder: (_, _) =>
-                          Container(color: AppTheme.bgCard),
+                      placeholder: (_, _) => Container(color: AppTheme.bgCard),
                       errorWidget: (_, _, _) => Container(
                         color: AppTheme.bgCard,
-                        child: const Icon(Icons.broken_image,
-                            color: Colors.white24),
+                        child: const Icon(
+                          Icons.broken_image,
+                          color: Colors.white24,
+                        ),
                       ),
                     ),
                   if ((a.averageScore ?? 0) > 0)
@@ -261,7 +241,9 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
                       right: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 3),
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(8),
@@ -269,12 +251,14 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded,
-                                color: Colors.amber, size: 11),
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber,
+                              size: 11,
+                            ),
                             const SizedBox(width: 2),
                             Text(
-                              ((a.averageScore ?? 0) / 10)
-                                  .toStringAsFixed(1),
+                              ((a.averageScore ?? 0) / 10).toStringAsFixed(1),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -291,10 +275,11 @@ class _AnimeSearchScreenState extends State<AnimeSearchScreen> {
                       left: 6,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 2),
+                          horizontal: 5,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor
-                              .withValues(alpha: 0.85),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(

@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../api/site111477_service.dart';
 import '../api/tmdb_api.dart';
 import '../models/movie.dart';
+import '../widgets/dizzy_components.dart';
 
 class MediaDownloaderScreen extends StatefulWidget {
   const MediaDownloaderScreen({super.key});
@@ -159,8 +160,8 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
     });
     try {
       final data = await TmdbApi().getTvSeasonDetails(_selected!.id, n);
-      final eps = (data['episodes'] as List?)
-              ?.cast<Map<String, dynamic>>() ??
+      final eps =
+          (data['episodes'] as List?)?.cast<Map<String, dynamic>>() ??
           const <Map<String, dynamic>>[];
       if (!mounted) return;
       setState(() {
@@ -232,9 +233,9 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
     if (uri == null) return;
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open ${m.fileName}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not open ${m.fileName}')));
     }
   }
 
@@ -273,9 +274,8 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _blobCtrl,
-              builder: (_, _) => CustomPaint(
-                painter: _LiquidBlobsPainter(_blobCtrl.value),
-              ),
+              builder: (_, _) =>
+                  CustomPaint(painter: _LiquidBlobsPainter(_blobCtrl.value)),
             ),
           ),
           Positioned.fill(
@@ -417,16 +417,18 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
                   ShaderMask(
                     shaderCallback: (r) => const LinearGradient(
                       colors: [Color(0xFF7B61FF), Color(0xFF38C7FF)],
                     ).createShader(r),
-                    child: const Icon(Icons.search_rounded,
-                        color: Colors.white, size: 22),
+                    child: const Icon(
+                      Icons.search_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -460,8 +462,11 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
                       },
                       child: const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 6),
-                        child: Icon(Icons.close_rounded,
-                            color: Colors.white60, size: 20),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white60,
+                          size: 20,
+                        ),
                       ),
                     ),
                 ],
@@ -480,7 +485,9 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
           width: 28,
           height: 28,
           child: CircularProgressIndicator(
-              strokeWidth: 2.4, color: Colors.white),
+            strokeWidth: 2.4,
+            color: Colors.white,
+          ),
         ),
       );
     }
@@ -505,14 +512,14 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
         final cols = w >= 1500
             ? 7
             : w >= 1200
-                ? 6
-                : w >= 900
-                    ? 5
-                    : w >= 700
-                        ? 4
-                        : w >= 480
-                            ? 3
-                            : 2;
+            ? 6
+            : w >= 900
+            ? 5
+            : w >= 700
+            ? 4
+            : w >= 480
+            ? 3
+            : 2;
         return GridView.builder(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -522,51 +529,21 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
             crossAxisSpacing: 14,
           ),
           itemCount: _results.length,
-          itemBuilder: (_, i) =>
-              _PosterCard(item: _results[i], onTap: () => _selectMedia(_results[i])),
+          itemBuilder: (_, i) => _PosterCard(
+            item: _results[i],
+            onTap: () => _selectMedia(_results[i]),
+          ),
         );
       },
     );
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ShaderMask(
-              shaderCallback: (r) => const LinearGradient(
-                colors: [Color(0xFF7B61FF), Color(0xFF38C7FF)],
-              ).createShader(r),
-              child: const Icon(Icons.cloud_download_outlined,
-                  size: 80, color: Colors.white),
-            ),
-            const SizedBox(height: 18),
-            const Text(
-              'Find anything to download',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Search a movie or show, pick a quality, open in your\n'
-              'browser or any download manager.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.55),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return DizzyEmptyState(
+      icon: Icons.cloud_download_outlined,
+      title: 'Find anything to download',
+      description:
+          'Search a movie or show, pick a quality, open in your\nbrowser or any download manager.',
     );
   }
 
@@ -630,9 +607,7 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         children: [
@@ -646,9 +621,11 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
                       imageUrl: TmdbApi.getImageUrl(m.posterPath),
                       fit: BoxFit.cover,
                       placeholder: (_, _) => Container(
-                          color: Colors.white.withValues(alpha: 0.05)),
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                       errorWidget: (_, _, _) => Container(
-                          color: Colors.white.withValues(alpha: 0.05)),
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     )
                   : Container(color: Colors.white.withValues(alpha: 0.05)),
             ),
@@ -745,7 +722,9 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
             width: 22,
             height: 22,
             child: CircularProgressIndicator(
-                strokeWidth: 2.2, color: Colors.white),
+              strokeWidth: 2.2,
+              color: Colors.white,
+            ),
           ),
         ),
       );
@@ -783,11 +762,12 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
                 boxShadow: sel
                     ? [
                         BoxShadow(
-                          color: const Color(0xFF7B61FF)
-                              .withValues(alpha: 0.35),
+                          color: const Color(
+                            0xFF7B61FF,
+                          ).withValues(alpha: 0.35),
                           blurRadius: 18,
                           spreadRadius: -2,
-                        )
+                        ),
                       ]
                     : const [],
               ),
@@ -801,9 +781,11 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
                         imageUrl: TmdbApi.getStillUrl(still),
                         fit: BoxFit.cover,
                         placeholder: (_, _) => Container(
-                            color: Colors.white.withValues(alpha: 0.05)),
+                          color: Colors.white.withValues(alpha: 0.05),
+                        ),
                         errorWidget: (_, _, _) => Container(
-                            color: Colors.white.withValues(alpha: 0.05)),
+                          color: Colors.white.withValues(alpha: 0.05),
+                        ),
                       )
                     else
                       Container(color: Colors.white.withValues(alpha: 0.05)),
@@ -872,7 +854,9 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
                 width: 28,
                 height: 28,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2.4, color: Colors.white),
+                  strokeWidth: 2.4,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 14),
               Text(
@@ -894,8 +878,11 @@ class _MediaDownloaderScreenState extends State<MediaDownloaderScreen>
         child: Center(
           child: Column(
             children: [
-              Icon(Icons.cloud_off_rounded,
-                  color: Colors.white.withValues(alpha: 0.4), size: 44),
+              Icon(
+                Icons.cloud_off_rounded,
+                color: Colors.white.withValues(alpha: 0.4),
+                size: 44,
+              ),
               const SizedBox(height: 10),
               Text(
                 _linksError ?? 'Pick an episode to start',
@@ -964,11 +951,10 @@ class _PosterCardState extends State<_PosterCard> {
             boxShadow: _hover
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF7B61FF)
-                          .withValues(alpha: 0.35),
+                      color: const Color(0xFF7B61FF).withValues(alpha: 0.35),
                       blurRadius: 22,
                       spreadRadius: -4,
-                    )
+                    ),
                   ]
                 : const [],
           ),
@@ -982,10 +968,9 @@ class _PosterCardState extends State<_PosterCard> {
                     imageUrl: TmdbApi.getImageUrl(m.posterPath),
                     fit: BoxFit.cover,
                     fadeInDuration: const Duration(milliseconds: 320),
-                    placeholder: (_, _) => Container(
-                        color: Colors.white.withValues(alpha: 0.04)),
-                    errorWidget: (_, _, _) =>
-                        const _PosterFallback(),
+                    placeholder: (_, _) =>
+                        Container(color: Colors.white.withValues(alpha: 0.04)),
+                    errorWidget: (_, _, _) => const _PosterFallback(),
                   )
                 else
                   const _PosterFallback(),
@@ -1009,7 +994,9 @@ class _PosterCardState extends State<_PosterCard> {
                   left: 8,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(6),
@@ -1071,10 +1058,9 @@ class _PosterFallback extends StatelessWidget {
   const _PosterFallback();
   @override
   Widget build(BuildContext context) => Container(
-        color: const Color(0xFF1A1F2C),
-        child: const Icon(Icons.movie_outlined,
-            color: Colors.white24, size: 36),
-      );
+    color: const Color(0xFF1A1F2C),
+    child: const Icon(Icons.movie_outlined, color: Colors.white24, size: 36),
+  );
 }
 
 class _Pill extends StatelessWidget {
@@ -1170,8 +1156,9 @@ class _LinkCardState extends State<_LinkCard> {
   Widget build(BuildContext context) {
     final m = widget.match;
     final q = Site111477Service.qualityTagFor(m.fileName);
-    final size =
-        m.sizeBytes > 0 ? Site111477Service.humanSize(m.sizeBytes) : null;
+    final size = m.sizeBytes > 0
+        ? Site111477Service.humanSize(m.sizeBytes)
+        : null;
     final qColor = _qualityColor(q);
     return MouseRegion(
       onEnter: (_) => setState(() => _hover = true),
@@ -1240,9 +1227,11 @@ class _LinkCardState extends State<_LinkCard> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.storage_rounded,
-                            size: 12,
-                            color: Colors.white.withValues(alpha: 0.5)),
+                        Icon(
+                          Icons.storage_rounded,
+                          size: 12,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           size ?? 'Unknown size',
@@ -1253,9 +1242,11 @@ class _LinkCardState extends State<_LinkCard> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Icon(Icons.cloud_rounded,
-                            size: 12,
-                            color: Colors.white.withValues(alpha: 0.5)),
+                        Icon(
+                          Icons.cloud_rounded,
+                          size: 12,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '111477',
@@ -1333,16 +1324,13 @@ class _CircleIconButton extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: gradient == null
-              ? Colors.white.withValues(alpha: 0.08)
-              : null,
+          color: gradient == null ? Colors.white.withValues(alpha: 0.08) : null,
           gradient: gradient,
           border: gradient == null
               ? Border.all(color: Colors.white.withValues(alpha: 0.12))
               : null,
         ),
-        child: Icon(icon,
-            color: Colors.white, size: size * 0.48),
+        child: Icon(icon, color: Colors.white, size: size * 0.48),
       ),
     );
     if (tooltip != null) return Tooltip(message: tooltip!, child: btn);
@@ -1364,8 +1352,11 @@ class _GradientBadge extends StatelessWidget {
           colors: [Color(0xFF7B61FF), Color(0xFF38C7FF)],
         ),
       ),
-      child: const Icon(Icons.cloud_download_rounded,
-          color: Colors.white, size: 22),
+      child: const Icon(
+        Icons.cloud_download_rounded,
+        color: Colors.white,
+        size: 22,
+      ),
     );
   }
 }
@@ -1424,8 +1415,10 @@ class _ArrowScrollerState extends State<_ArrowScroller> {
 
   void _scrollBy(double delta) {
     if (!widget.controller.hasClients) return;
-    final target = (widget.controller.offset + delta)
-        .clamp(0.0, widget.controller.position.maxScrollExtent);
+    final target = (widget.controller.offset + delta).clamp(
+      0.0,
+      widget.controller.position.maxScrollExtent,
+    );
     widget.controller.animateTo(
       target,
       duration: const Duration(milliseconds: 280),
@@ -1537,10 +1530,7 @@ class _LiquidBlobsPainter extends CustomPainter {
       final cy = h / 3 + math.sin(a * 0.8) * (h * ry);
       final paint = Paint()
         ..shader = RadialGradient(
-          colors: [
-            color.withValues(alpha: 0.55),
-            color.withValues(alpha: 0.0),
-          ],
+          colors: [color.withValues(alpha: 0.55), color.withValues(alpha: 0.0)],
         ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
       canvas.drawCircle(Offset(cx, cy), r, paint);
     }
