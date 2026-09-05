@@ -34,7 +34,16 @@ jobs:
 
       - run: flutter pub get
 
-      - run: >
+      - name: Build Split APKs (arm64, armv7, x86_64)
+        run: >
+          flutter build apk --release --split-per-abi
+          --dart-define=TRAKT_CLIENT_ID=${{ secrets.TRAKT_CLIENT_ID }}
+          --dart-define=TRAKT_CLIENT_SECRET=${{ secrets.TRAKT_CLIENT_SECRET }}
+          --dart-define=SIMKL_CLIENT_ID=${{ secrets.SIMKL_CLIENT_ID }}
+          --dart-define=SIMKL_CLIENT_SECRET=${{ secrets.SIMKL_CLIENT_SECRET }}
+
+      - name: Build Universal APK
+        run: >
           flutter build apk --release
           --dart-define=TRAKT_CLIENT_ID=${{ secrets.TRAKT_CLIENT_ID }}
           --dart-define=TRAKT_CLIENT_SECRET=${{ secrets.TRAKT_CLIENT_SECRET }}
@@ -44,7 +53,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Dizzy-Android-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
 
   # ─── Windows ──────────────────────────────────────────────────────────────
   windows:
