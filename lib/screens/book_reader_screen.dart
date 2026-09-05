@@ -95,10 +95,8 @@ class _BookReaderScreenState extends State<BookReaderScreen>
       final archive = ZipDecoder().decodeBytes(bytes);
       debugPrint('[BookReader] ZIP: ${archive.length} entries');
 
-      final normalPath = widget.file.path.replaceAll(
-        '/',
-        Platform.pathSeparator,
-      );
+      final normalPath =
+          widget.file.path.replaceAll('/', Platform.pathSeparator);
       final epubName = normalPath
           .split(Platform.pathSeparator)
           .last
@@ -127,13 +125,13 @@ class _BookReaderScreenState extends State<BookReaderScreen>
       }
 
       // container.xml → OPF
-      final containerFile = File('${extractDir.path}/META-INF/container.xml');
+      final containerFile =
+          File('${extractDir.path}/META-INF/container.xml');
       if (!containerFile.existsSync()) {
         throw Exception('Invalid EPUB — META-INF/container.xml missing');
       }
-      final containerXml = XmlDocument.parse(
-        await containerFile.readAsString(),
-      );
+      final containerXml =
+          XmlDocument.parse(await containerFile.readAsString());
       final opfPath = containerXml
           .findAllElements('rootfile')
           .first
@@ -176,7 +174,8 @@ class _BookReaderScreenState extends State<BookReaderScreen>
           try {
             final ncx = XmlDocument.parse(await ncxFile.readAsString());
             for (final np in ncx.findAllElements('navPoint')) {
-              final label = np.findAllElements('text').firstOrNull?.innerText;
+              final label =
+                  np.findAllElements('text').firstOrNull?.innerText;
               final src = np
                   .findAllElements('content')
                   .firstOrNull
@@ -195,15 +194,15 @@ class _BookReaderScreenState extends State<BookReaderScreen>
       // EPUB 3 nav
       for (final item in manifest.values) {
         if (item.properties.contains('nav')) {
-          final navPath = opfDir.isEmpty ? item.href : '$opfDir/${item.href}';
+          final navPath =
+              opfDir.isEmpty ? item.href : '$opfDir/${item.href}';
           final navFile = File('${extractDir.path}/$navPath');
           if (navFile.existsSync()) {
             try {
               final navHtml = await navFile.readAsString();
               final re = RegExp(
-                r'<a[^>]+href="([^"]*)"[^>]*>(.*?)</a>',
-                dotAll: true,
-              );
+                  r'<a[^>]+href="([^"]*)"[^>]*>(.*?)</a>',
+                  dotAll: true);
               for (final m in re.allMatches(navHtml)) {
                 final href = m.group(1)!;
                 final title = m
@@ -239,13 +238,12 @@ class _BookReaderScreenState extends State<BookReaderScreen>
         final fullPath = opfDir.isEmpty ? href : '$opfDir/$href';
         final filePath = '${extractDir.path}/$fullPath';
         final title = tocLabels[href] ?? tocLabels[fullPath] ?? '';
-        chapters.add(
-          _Chapter(
-            filePath: filePath.replaceAll('\\', '/'),
-            title: title.isNotEmpty ? title : 'Chapter ${chapters.length + 1}',
-            href: href,
-          ),
-        );
+        chapters.add(_Chapter(
+          filePath: filePath.replaceAll('\\', '/'),
+          title:
+              title.isNotEmpty ? title : 'Chapter ${chapters.length + 1}',
+          href: href,
+        ));
       }
 
       debugPrint('[BookReader] spine: ${chapters.length} chapters');
@@ -297,14 +295,11 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     if (_focusMode) {
       // Only update font-size; don't re-inject full theme which would
       // override focus-mode colours.
-      _webController?.evaluateJavascript(
-        source:
-            '''
+      _webController?.evaluateJavascript(source: '''
 (function(){
   document.body.style.fontSize='${_fontSize}px';
 })();
-''',
-      );
+''');
     } else {
       _injectTheme();
     }
@@ -318,9 +313,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     final link = _isDarkMode ? '#bb86fc' : '#6200ee';
     final border = _isDarkMode ? '#333' : '#ccc';
 
-    _webController?.evaluateJavascript(
-      source:
-          '''
+    _webController?.evaluateJavascript(source: '''
 (function(){
   var s=document.getElementById('_rt');
   if(!s){s=document.createElement('style');s.id='_rt';document.head.appendChild(s);}
@@ -336,11 +329,9 @@ class _BookReaderScreenState extends State<BookReaderScreen>
    +'pre,code{white-space:pre-wrap!important}'
    +'table{max-width:100%!important}';
 })();
-''',
-    );
+''');
 
-    _webController?.evaluateJavascript(
-      source: '''
+    _webController?.evaluateJavascript(source: '''
 (function(){
   if(window._rtBound) return;
   window._rtBound=true;
@@ -350,8 +341,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     }
   });
 })();
-''',
-    );
+''');
   }
 
   // ── Focus-mode JS injection ────────────────────────────────────────────────
@@ -361,8 +351,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
   // Result: each _fl span = exactly one rendered screen line.
 
   void _injectFocusMode() {
-    _webController?.evaluateJavascript(
-      source: '''
+    _webController?.evaluateJavascript(source: '''
 (function(){
   if(window._focusInit) return;
   window._focusInit=true;
@@ -484,8 +473,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     lineSpans[groups[0][0]].scrollIntoView({behavior:'smooth',block:'center'});
   }
 })();
-''',
-    );
+''');
   }
 
   void _focusMoveTo(int index) {
@@ -493,9 +481,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     final clamped = index.clamp(0, _focusLineCount - 1);
     setState(() => _focusLineIndex = clamped);
 
-    _webController?.evaluateJavascript(
-      source:
-          '''
+    _webController?.evaluateJavascript(source: '''
 (function(){
   var lines=window._focusLines;
   var groups=window._focusGroups;
@@ -511,13 +497,11 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     lines[grp[0]].scrollIntoView({behavior:'smooth',block:'center'});
   }
 })();
-''',
-    );
+''');
   }
 
   void _exitFocusMode() {
-    _webController?.evaluateJavascript(
-      source: '''
+    _webController?.evaluateJavascript(source: '''
 (function(){
   window._focusInit=false;
   var fs=document.getElementById('_focus_style');
@@ -530,8 +514,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
   }
   window._focusLines=null;
 })();
-''',
-    );
+''');
     setState(() {
       _focusMode = false;
       _focusLineIndex = 0;
@@ -561,15 +544,20 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     return s < 600;
   }
 
-  Color get _iconColor => _isDarkMode ? Colors.white70 : Colors.black54;
+  Color get _iconColor =>
+      _isDarkMode ? Colors.white70 : Colors.black54;
 
-  Color get _textColor => _isDarkMode ? Colors.white : Colors.black87;
+  Color get _textColor =>
+      _isDarkMode ? Colors.white : Colors.black87;
 
-  Color get _subtextColor => _isDarkMode ? Colors.white38 : Colors.black38;
+  Color get _subtextColor =>
+      _isDarkMode ? Colors.white38 : Colors.black38;
 
-  Color get _barBg => _isDarkMode ? const Color(0xFF0B0B12) : Colors.white;
+  Color get _barBg =>
+      _isDarkMode ? const Color(0xFF0B0B12) : Colors.white;
 
-  Color get _scaffoldBg => _isDarkMode ? const Color(0xFF0B0B12) : Colors.white;
+  Color get _scaffoldBg =>
+      _isDarkMode ? const Color(0xFF0B0B12) : Colors.white;
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
@@ -584,8 +572,8 @@ class _BookReaderScreenState extends State<BookReaderScreen>
         child: _loading
             ? _buildLoading()
             : _error != null
-            ? _buildError()
-            : _buildReader(),
+                ? _buildError()
+                : _buildReader(),
       ),
     );
   }
@@ -628,10 +616,8 @@ class _BookReaderScreenState extends State<BookReaderScreen>
           children: [
             CircularProgressIndicator(color: AppTheme.primaryColor),
             SizedBox(height: 16),
-            Text(
-              'Opening book…',
-              style: TextStyle(color: Colors.white54, fontSize: 14),
-            ),
+            Text('Opening book…',
+                style: TextStyle(color: Colors.white54, fontSize: 14)),
           ],
         ),
       ),
@@ -645,22 +631,19 @@ class _BookReaderScreenState extends State<BookReaderScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+            const Icon(Icons.error_outline,
+                color: Colors.redAccent, size: 48),
             const SizedBox(height: 16),
-            const Text(
-              'Failed to open book',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            const Text('Failed to open book',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text(
-              _error!,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
+            Text(_error!,
+                style:
+                    const TextStyle(color: Colors.white54, fontSize: 12),
+                textAlign: TextAlign.center),
             const SizedBox(height: 24),
             TextButton.icon(
               onPressed: () => Navigator.pop(context),
@@ -742,8 +725,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                 _injectTheme();
               }
               // ── Inject scroll tracker ────────────────────────────────────
-              controller.evaluateJavascript(
-                source: '''
+              controller.evaluateJavascript(source: '''
 (function(){
   if(window._scrollBound) return;
   window._scrollBound=true;
@@ -757,8 +739,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
     },300);
   });
 })();
-''',
-              );
+''');
             },
             onConsoleMessage: (controller, msg) {
               if (kDebugMode) {
@@ -805,10 +786,8 @@ class _BookReaderScreenState extends State<BookReaderScreen>
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 child: Row(
                   children: [
                     _iconBtn(
@@ -821,9 +800,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                       Text(
                         '${_focusLineIndex + 1} / $_focusLineCount',
                         style: const TextStyle(
-                          color: Colors.white24,
-                          fontSize: 11,
-                        ),
+                            color: Colors.white24, fontSize: 11),
                       ),
                     const Spacer(),
                     // Chapter navigation in focus mode
@@ -872,13 +849,12 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                 bottom: false,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                      horizontal: 8, vertical: 4),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.arrow_back_rounded, color: _iconColor),
+                        icon: Icon(Icons.arrow_back_rounded,
+                            color: _iconColor),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Expanded(
@@ -900,9 +876,7 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                               Text(
                                 _chapters[_currentChapter].title,
                                 style: TextStyle(
-                                  color: _subtextColor,
-                                  fontSize: 11,
-                                ),
+                                    color: _subtextColor, fontSize: 11),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -911,10 +885,8 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                       ),
                       // Focus mode toggle
                       IconButton(
-                        icon: Icon(
-                          Icons.center_focus_strong_rounded,
-                          color: _iconColor,
-                        ),
+                        icon: Icon(Icons.center_focus_strong_rounded,
+                            color: _iconColor),
                         onPressed: _toggleFocusMode,
                         tooltip: 'Focus mode',
                       ),
@@ -930,12 +902,14 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                           setState(() => _isDarkMode = !_isDarkMode);
                           _injectTheme();
                         },
-                        tooltip: _isDarkMode ? 'Light mode' : 'Dark mode',
+                        tooltip:
+                            _isDarkMode ? 'Light mode' : 'Dark mode',
                       ),
                       // Chapters
                       if (_chapters.length > 1)
                         IconButton(
-                          icon: Icon(Icons.list_rounded, color: _iconColor),
+                          icon:
+                              Icon(Icons.list_rounded, color: _iconColor),
                           onPressed: _showChapterSheet,
                           tooltip: 'Chapters',
                         ),
@@ -990,10 +964,9 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                             : null,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        '${_fontSize}px',
-                        style: TextStyle(color: _subtextColor, fontSize: 11),
-                      ),
+                      Text('${_fontSize}px',
+                          style: TextStyle(
+                              color: _subtextColor, fontSize: 11)),
                       const SizedBox(width: 4),
                       _pill(
                         icon: Icons.text_increase_rounded,
@@ -1025,26 +998,24 @@ class _BookReaderScreenState extends State<BookReaderScreen>
 
   Widget _pill({required IconData icon, VoidCallback? onTap}) {
     return Material(
-      color: (_isDarkMode ? Colors.white : Colors.black).withValues(alpha: 0.1),
+      color: (_isDarkMode ? Colors.white : Colors.black)
+          .withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(24),
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Icon(
-            icon,
-            color: onTap != null
-                ? _iconColor
-                : _iconColor.withValues(alpha: 0.3),
-            size: _isPhone ? 20 : 22,
-          ),
+          child: Icon(icon,
+              color: onTap != null ? _iconColor : _iconColor.withValues(alpha: 0.3),
+              size: _isPhone ? 20 : 22),
         ),
       ),
     );
   }
 
-  Widget _iconBtn(IconData icon, {VoidCallback? onTap, Color? color}) {
+  Widget _iconBtn(IconData icon,
+      {VoidCallback? onTap, Color? color}) {
     return IconButton(
       icon: Icon(icon, color: color ?? _iconColor, size: 20),
       onPressed: onTap,
@@ -1080,20 +1051,14 @@ class _BookReaderScreenState extends State<BookReaderScreen>
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.list_rounded,
-                    color: AppTheme.primaryColor,
-                    size: 20,
-                  ),
+                  const Icon(Icons.list_rounded,
+                      color: AppTheme.primaryColor, size: 20),
                   const SizedBox(width: 10),
-                  Text(
-                    'Chapters (${_chapters.length})',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  Text('Chapters (${_chapters.length})',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16)),
                 ],
               ),
             ),
@@ -1108,14 +1073,14 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                   final isCurrent = i == _currentChapter;
                   return ListTile(
                     selected: isCurrent,
-                    selectedTileColor: AppTheme.primaryColor.withValues(
-                      alpha: 0.1,
-                    ),
+                    selectedTileColor:
+                        AppTheme.primaryColor.withValues(alpha: 0.1),
                     leading: CircleAvatar(
                       radius: 14,
                       backgroundColor: isCurrent
                           ? AppTheme.primaryColor
-                          : AppTheme.primaryColor.withValues(alpha: 0.2),
+                          : AppTheme.primaryColor
+                              .withValues(alpha: 0.2),
                       child: Text(
                         '${i + 1}',
                         style: TextStyle(
@@ -1130,7 +1095,9 @@ class _BookReaderScreenState extends State<BookReaderScreen>
                     title: Text(
                       chapter.title,
                       style: TextStyle(
-                        color: isCurrent ? AppTheme.primaryColor : Colors.white,
+                        color: isCurrent
+                            ? AppTheme.primaryColor
+                            : Colors.white,
                         fontSize: 13,
                         fontWeight: isCurrent
                             ? FontWeight.bold

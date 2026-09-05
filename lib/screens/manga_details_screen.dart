@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../api/manga_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import 'manga_reader_screen.dart';
 
 class MangaDetailsScreen extends StatefulWidget {
@@ -16,8 +15,7 @@ class MangaDetailsScreen extends StatefulWidget {
 
 class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
   final MangaService _mangaService = MangaService();
-  final TextEditingController _chapterSearchController =
-      TextEditingController();
+  final TextEditingController _chapterSearchController = TextEditingController();
   bool _isLiked = false;
   bool _isLoadingChapters = true;
   List<MangaChapter> _chapters = [];
@@ -170,12 +168,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
               const SizedBox(height: 16),
               _buildMetaItem(Icons.calendar_today, 'Year', _manga.year),
               _buildMetaItem(Icons.category, 'Type', _manga.type.toUpperCase()),
-              _buildMetaItem(
-                Icons.info_outline,
-                'Status',
-                _manga.status.toUpperCase(),
-                color: AppTheme.primaryColor,
-              ),
+              _buildMetaItem(Icons.info_outline, 'Status', _manga.status.toUpperCase(), color: AppTheme.primaryColor),
               _buildMetaItem(Icons.person, 'Author', _manga.author),
             ],
           ),
@@ -184,12 +177,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
     );
   }
 
-  Widget _buildMetaItem(
-    IconData icon,
-    String label,
-    String value, {
-    Color? color,
-  }) {
+  Widget _buildMetaItem(IconData icon, String label, String value, {Color? color}) {
     if (value.isEmpty || value == '0') return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -197,18 +185,11 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
         children: [
           Icon(icon, size: 14, color: Colors.white54),
           const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: const TextStyle(color: Colors.white54, fontSize: 13),
-          ),
+          Text('$label: ', style: const TextStyle(color: Colors.white54, fontSize: 13)),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
-                color: color ?? Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: color ?? Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -234,11 +215,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
         const SizedBox(height: 12),
         Text(
           _manga.synopsis,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 15,
-            height: 1.5,
-          ),
+          style: const TextStyle(color: Colors.white70, fontSize: 15, height: 1.5),
         ),
       ],
     );
@@ -253,23 +230,21 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
         ),
       );
     }
-
+    
     if (_chapters.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(32.0),
-        child: DizzyEmptyState(
-          icon: Icons.menu_book,
-          title: 'No Chapters',
-          description: 'No chapters available for this manga',
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: Text('No chapters available', style: TextStyle(color: Colors.white54)),
         ),
       );
     }
-
+    
     final startIndex = _currentChapterPage * _chaptersPerPage;
     final endIndex = (startIndex + _chaptersPerPage).clamp(0, _chapters.length);
     final displayedChapters = _chapters.sublist(startIndex, endIndex);
     final totalPages = (_chapters.length / _chaptersPerPage).ceil();
-
+    
     return Column(
       children: [
         // Chapter search/jump
@@ -290,10 +265,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                   style: const TextStyle(color: Colors.white),
                 ),
@@ -304,13 +276,8 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text(
                   'Go',
@@ -324,61 +291,42 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
             ],
           ),
         ),
-
+        
         // Chapters list
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
           itemCount: displayedChapters.length,
-          separatorBuilder: (_, _) =>
-              Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
+          separatorBuilder: (_, _) => Divider(color: Colors.white.withValues(alpha: 0.05), height: 1),
           itemBuilder: (context, index) {
             final actualIndex = startIndex + index;
             final chapter = displayedChapters[index];
-            final chapterTitle = chapter.name.isNotEmpty
-                ? 'Chapter ${chapter.number} - ${chapter.name}'
+            final chapterTitle = chapter.name.isNotEmpty 
+                ? 'Chapter ${chapter.number} - ${chapter.name}' 
                 : 'Chapter ${chapter.number}';
-
+            
             return ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.menu_book,
-                  color: AppTheme.primaryColor,
-                  size: 20,
-                ),
+                child: const Icon(Icons.menu_book, color: AppTheme.primaryColor, size: 20),
               ),
               title: Text(
                 chapterTitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
               ),
               subtitle: chapter.name.isNotEmpty
                   ? Text(
                       chapter.name,
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
                     )
                   : null,
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white24,
-                size: 14,
-              ),
+              trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 14),
               onTap: () {
                 Navigator.push(
                   context,
@@ -394,7 +342,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
             );
           },
         ),
-
+        
         // Pagination controls
         const SizedBox(height: 16),
         Row(
@@ -413,15 +361,10 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
             ),
             Text(
               'Page ${_currentChapterPage + 1} of $totalPages',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
             ),
             ElevatedButton.icon(
-              onPressed: _currentChapterPage < totalPages - 1
-                  ? _nextChapterPage
-                  : null,
+              onPressed: _currentChapterPage < totalPages - 1 ? _nextChapterPage : null,
               icon: const Icon(Icons.arrow_forward, size: 18),
               label: const Text('Next'),
               style: ElevatedButton.styleFrom(
@@ -440,7 +383,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
   void _jumpToChapter() {
     final input = _chapterSearchController.text.trim();
     if (input.isEmpty) return;
-
+    
     final chapterNumber = double.tryParse(input);
     if (chapterNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -448,26 +391,24 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
       );
       return;
     }
-
+    
     // Find the chapter index
-    final chapterIndex = _chapters.indexWhere(
-      (ch) => ch.number == chapterNumber,
-    );
-
+    final chapterIndex = _chapters.indexWhere((ch) => ch.number == chapterNumber);
+    
     if (chapterIndex == -1) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Chapter $chapterNumber not found')),
       );
       return;
     }
-
+    
     // Calculate which page this chapter is on
     final targetPage = chapterIndex ~/ _chaptersPerPage;
-
+    
     setState(() {
       _currentChapterPage = targetPage;
     });
-
+    
     _chapterSearchController.clear();
   }
 

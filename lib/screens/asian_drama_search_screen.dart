@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 
 import '../api/kisskh_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import '../widgets/hover_scale.dart';
 import 'asian_drama_details_screen.dart';
 
@@ -17,7 +16,8 @@ class AsianDramaSearchScreen extends StatefulWidget {
   const AsianDramaSearchScreen({super.key});
 
   @override
-  State<AsianDramaSearchScreen> createState() => _AsianDramaSearchScreenState();
+  State<AsianDramaSearchScreen> createState() =>
+      _AsianDramaSearchScreenState();
 }
 
 class _AsianDramaSearchScreenState extends State<AsianDramaSearchScreen> {
@@ -87,7 +87,9 @@ class _AsianDramaSearchScreenState extends State<AsianDramaSearchScreen> {
 
   void _open(KdramaCard a) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => AsianDramaDetailsScreen(drama: a)),
+      MaterialPageRoute(
+        builder: (_) => AsianDramaDetailsScreen(drama: a),
+      ),
     );
   }
 
@@ -143,30 +145,81 @@ class _AsianDramaSearchScreenState extends State<AsianDramaSearchScreen> {
   Widget _buildBody(bool isLandscape) {
     if (_loading) {
       return Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+        child: CircularProgressIndicator(
+          color: AppTheme.primaryColor,
+        ),
       );
     }
     if (_error != null) {
-      return DizzyEmptyState(
-        title: 'Error Searching',
-        description: _error!,
-        icon: Icons.error_outline_rounded,
-        actionLabel: 'Retry',
-        onActionTap: () => _runSearch(_query),
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  color: AppTheme.primaryColor, size: 48),
+              const SizedBox(height: 12),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 14),
+              ElevatedButton.icon(
+                onPressed: () => _runSearch(_query),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
     if (_query.isEmpty) {
-      return DizzyEmptyState(
-        title: 'Search',
-        description: 'Start typing to search',
-        icon: Icons.search_rounded,
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_rounded,
+                size: 60, color: Colors.white.withValues(alpha: 0.25)),
+            const SizedBox(height: 12),
+            Text(
+              'Start typing to search',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.45),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       );
     }
     if (_results.isEmpty) {
-      return DizzyEmptyState(
-        title: 'No Results',
-        description: 'No results for "$_query"',
-        icon: Icons.theater_comedy_outlined,
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.theater_comedy_outlined,
+                size: 60, color: Colors.white.withValues(alpha: 0.25)),
+            const SizedBox(height: 12),
+            Text(
+              'No results for "$_query"',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.45),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       );
     }
     final cols = isLandscape ? 4 : 2;
@@ -221,9 +274,7 @@ class _AsianDramaSearchScreenState extends State<AsianDramaSearchScreen> {
                 top: 8,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
+                      horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(6),
@@ -244,9 +295,7 @@ class _AsianDramaSearchScreenState extends State<AsianDramaSearchScreen> {
                 top: 8,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
+                      horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],

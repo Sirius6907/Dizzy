@@ -5,7 +5,6 @@ import '../api/tmdb_api.dart';
 import '../api/settings_service.dart';
 import '../models/movie.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import 'details_screen.dart';
 import 'streaming_details_screen.dart';
 
@@ -62,14 +61,11 @@ class _MyListScreenState extends State<MyListScreen> {
           details = await _api.getMovieDetails(tmdbId);
         }
         if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => isStreaming
-                  ? StreamingDetailsScreen(movie: details)
-                  : DetailsScreen(movie: details),
-            ),
-          );
+          Navigator.push(context, MaterialPageRoute(
+            builder: (_) => isStreaming
+                ? StreamingDetailsScreen(movie: details)
+                : DetailsScreen(movie: details),
+          ));
           return;
         }
       } catch (_) {}
@@ -78,19 +74,13 @@ class _MyListScreenState extends State<MyListScreen> {
     // Stremio source or fallback — try IMDB lookup
     if (imdbId != null && imdbId.startsWith('tt')) {
       try {
-        final movie = await _api.findByImdbId(
-          imdbId,
-          mediaType: mediaType == 'series' ? 'tv' : mediaType,
-        );
+        final movie = await _api.findByImdbId(imdbId, mediaType: mediaType == 'series' ? 'tv' : mediaType);
         if (movie != null && mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => isStreaming
-                  ? StreamingDetailsScreen(movie: movie)
-                  : DetailsScreen(movie: movie),
-            ),
-          );
+          Navigator.push(context, MaterialPageRoute(
+            builder: (_) => isStreaming
+                ? StreamingDetailsScreen(movie: movie)
+                : DetailsScreen(movie: movie),
+          ));
           return;
         }
       } catch (_) {}
@@ -108,14 +98,11 @@ class _MyListScreenState extends State<MyListScreen> {
         releaseDate: item['releaseDate']?.toString() ?? '',
         mediaType: mediaType == 'series' ? 'tv' : mediaType,
       );
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => isStreaming
-              ? StreamingDetailsScreen(movie: movie)
-              : DetailsScreen(movie: movie),
-        ),
-      );
+      Navigator.push(context, MaterialPageRoute(
+        builder: (_) => isStreaming
+            ? StreamingDetailsScreen(movie: movie)
+            : DetailsScreen(movie: movie),
+      ));
     }
   }
 
@@ -139,18 +126,11 @@ class _MyListScreenState extends State<MyListScreen> {
               children: [
                 const Icon(Icons.bookmark, color: AppTheme.primaryColor),
                 const SizedBox(width: 8),
-                const Text(
-                  'My List',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                const Text('My List', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(width: 12),
                 Text(
                   '${_items.length} items',
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
-                  ),
+                  style: const TextStyle(color: Colors.white38, fontSize: 14, fontWeight: FontWeight.normal),
                 ),
               ],
             ),
@@ -159,11 +139,23 @@ class _MyListScreenState extends State<MyListScreen> {
           // Empty state
           if (_items.isEmpty)
             SliverFillRemaining(
-              child: DizzyEmptyState(
-                title: 'Your list is empty',
-                description:
-                    'Tap the + button on any movie or show to add it here',
-                icon: Icons.bookmark_border,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bookmark_border, size: 80, color: Colors.white.withValues(alpha: 0.1)),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Your list is empty',
+                      style: TextStyle(color: Colors.white38, fontSize: 18),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tap the + button on any movie or show to add it here',
+                      style: TextStyle(color: Colors.white24, fontSize: 13),
+                    ),
+                  ],
+                ),
               ),
             )
           else
@@ -176,58 +168,53 @@ class _MyListScreenState extends State<MyListScreen> {
                   crossAxisSpacing: 12,
                   childAspectRatio: 2 / 3,
                 ),
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final item = _items[index];
-                  return _MyListCard(
-                    item: item,
-                    onTap: () => _openItem(item),
-                    onRemove: () async {
-                      await _myList.remove(item['uniqueId']);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Removed "${item['title']}" from My List',
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final item = _items[index];
+                    return _MyListCard(
+                      item: item,
+                      onTap: () => _openItem(item),
+                      onRemove: () async {
+                        await _myList.remove(item['uniqueId']);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Removed "${item['title']}" from My List'),
+                              duration: const Duration(seconds: 2),
+                              action: SnackBarAction(
+                                label: 'UNDO',
+                                onPressed: () {
+                                  // Re-add the item
+                                  if (item['source'] == 'stremio') {
+                                    _myList.addStremioItem({
+                                      'name': item['title'],
+                                      'poster': item['posterPath'],
+                                      'type': item['stremioType'] ?? item['mediaType'],
+                                      'imdb_id': item['imdbId'],
+                                      'imdbRating': item['voteAverage']?.toString(),
+                                      'releaseInfo': item['releaseDate'],
+                                    });
+                                  } else {
+                                    _myList.addMovie(
+                                      tmdbId: item['tmdbId'] ?? 0,
+                                      imdbId: item['imdbId'],
+                                      title: item['title'] ?? '',
+                                      posterPath: item['posterPath'] ?? '',
+                                      mediaType: item['mediaType'] ?? 'movie',
+                                      voteAverage: (item['voteAverage'] as num?)?.toDouble() ?? 0,
+                                      releaseDate: item['releaseDate'] ?? '',
+                                    );
+                                  }
+                                },
+                              ),
                             ),
-                            duration: const Duration(seconds: 2),
-                            action: SnackBarAction(
-                              label: 'UNDO',
-                              onPressed: () {
-                                // Re-add the item
-                                if (item['source'] == 'stremio') {
-                                  _myList.addStremioItem({
-                                    'name': item['title'],
-                                    'poster': item['posterPath'],
-                                    'type':
-                                        item['stremioType'] ??
-                                        item['mediaType'],
-                                    'imdb_id': item['imdbId'],
-                                    'imdbRating': item['voteAverage']
-                                        ?.toString(),
-                                    'releaseInfo': item['releaseDate'],
-                                  });
-                                } else {
-                                  _myList.addMovie(
-                                    tmdbId: item['tmdbId'] ?? 0,
-                                    imdbId: item['imdbId'],
-                                    title: item['title'] ?? '',
-                                    posterPath: item['posterPath'] ?? '',
-                                    mediaType: item['mediaType'] ?? 'movie',
-                                    voteAverage:
-                                        (item['voteAverage'] as num?)
-                                            ?.toDouble() ??
-                                        0,
-                                    releaseDate: item['releaseDate'] ?? '',
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                  );
-                }, childCount: _items.length),
+                          );
+                        }
+                      },
+                    );
+                  },
+                  childCount: _items.length,
+                ),
               ),
             ),
         ],
@@ -245,11 +232,7 @@ class _MyListCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onRemove;
 
-  const _MyListCard({
-    required this.item,
-    required this.onTap,
-    required this.onRemove,
-  });
+  const _MyListCard({required this.item, required this.onTap, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -272,13 +255,7 @@ class _MyListCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.bgCard,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 6, offset: const Offset(0, 3))],
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -291,28 +268,13 @@ class _MyListCard extends StatelessWidget {
                 placeholder: (_, _) => Container(color: AppTheme.bgCard),
                 errorWidget: (_, _, _) => Container(
                   color: AppTheme.bgCard,
-                  child: Center(
-                    child: Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.white38,
-                      ),
-                    ),
-                  ),
+                  child: Center(child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: Colors.white38))),
                 ),
               )
             else
               Container(
                 color: AppTheme.bgCard,
-                child: Center(
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 10, color: Colors.white38),
-                  ),
-                ),
+                child: Center(child: Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: Colors.white38))),
               ),
 
             // Gradient
@@ -330,13 +292,9 @@ class _MyListCard extends StatelessWidget {
             // Rating badge
             if (rating > 0)
               Positioned(
-                top: 6,
-                right: 6,
+                top: 6, right: 6,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(4),
@@ -346,14 +304,7 @@ class _MyListCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.star, size: 10, color: Colors.amber),
                       const SizedBox(width: 2),
-                      Text(
-                        rating.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber,
-                        ),
-                      ),
+                      Text(rating.toStringAsFixed(1), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.amber)),
                     ],
                   ),
                 ),
@@ -361,8 +312,7 @@ class _MyListCard extends StatelessWidget {
 
             // Type badge
             Positioned(
-              top: 6,
-              left: 6,
+              top: 6, left: 6,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
@@ -373,36 +323,25 @@ class _MyListCard extends StatelessWidget {
                 ),
                 child: Text(
                   mediaType == 'tv' || mediaType == 'series' ? 'TV' : 'MOVIE',
-                  style: const TextStyle(
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
             ),
 
             // Title
             Positioned(
-              bottom: 8,
-              left: 8,
-              right: 28,
+              bottom: 8, left: 8, right: 28,
               child: Text(
                 title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
               ),
             ),
 
             // Remove button — must be AFTER title so it renders on top
             Positioned(
-              bottom: 4,
-              right: 4,
+              bottom: 4, right: 4,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: onRemove,

@@ -19,7 +19,6 @@ import 'package:flutter/material.dart';
 import '../../api/bestsimilar_scraper.dart';
 import '../../api/tmdb_api.dart';
 import '../../models/movie.dart';
-import '../../widgets/dizzy_components.dart';
 import 'similar_results_screen.dart';
 
 enum _MediaFilter { all, movies, tv }
@@ -145,28 +144,22 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
       );
       if (!mounted) return;
       if (hit == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('No bestsimilar.com match for "${m.title}"'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('No bestsimilar.com match for "${m.title}"'),
+          behavior: SnackBarBehavior.floating,
+        ));
         setState(() => _resolvingId = null);
         return;
       }
-      await Navigator.of(context).push(
-        _buildRoute(
-          SimilarResultsScreen(
-            bsId: hit.id,
-            bsSlug: hit.slug,
-            seedTitle: hit.title,
-            seedYear: hit.year,
-            seedPoster: m.posterPath,
-            seedBackdrop: m.backdropPath,
-            seedTmdbMovie: m,
-          ),
-        ),
-      );
+      await Navigator.of(context).push(_buildRoute(SimilarResultsScreen(
+        bsId: hit.id,
+        bsSlug: hit.slug,
+        seedTitle: hit.title,
+        seedYear: hit.year,
+        seedPoster: m.posterPath,
+        seedBackdrop: m.backdropPath,
+        seedTmdbMovie: m,
+      )));
       if (mounted) setState(() => _resolvingId = null);
     } catch (_) {
       if (mounted) setState(() => _resolvingId = null);
@@ -179,10 +172,8 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
       reverseTransitionDuration: const Duration(milliseconds: 320),
       pageBuilder: (_, _, _) => child,
       transitionsBuilder: (_, anim, _, ch) {
-        final curved = CurvedAnimation(
-          parent: anim,
-          curve: Curves.easeOutCubic,
-        );
+        final curved =
+            CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
         return FadeTransition(
           opacity: curved,
           child: SlideTransition(
@@ -208,8 +199,9 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _blobCtrl,
-              builder: (_, _) =>
-                  CustomPaint(painter: _LiquidBlobsPainter(_blobCtrl.value)),
+              builder: (_, _) => CustomPaint(
+                painter: _LiquidBlobsPainter(_blobCtrl.value),
+              ),
             ),
           ),
           // Subtle vignette.
@@ -234,8 +226,7 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
                 constraints: const BoxConstraints(maxWidth: 1400),
                 child: CustomScrollView(
                   physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
+                      parent: AlwaysScrollableScrollPhysics()),
                   slivers: [
                     SliverToBoxAdapter(child: _buildHeader()),
                     SliverToBoxAdapter(child: _buildSearchBar()),
@@ -251,37 +242,29 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
                     ),
                     if (_loading)
                       const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 36),
-                          child: Center(
+                          child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 36),
+                        child: Center(
                             child: SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.4,
-                                color: Colors.white70,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                    color: Colors.white70))),
+                      ))
                     else if (showResults)
                       _buildResultsGrid(_results)
                     else ...[
                       const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
-                          child: Text(
-                            'Trending right now',
+                          child: Padding(
+                        padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
+                        child: Text('Trending right now',
                             style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ),
-                      ),
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3)),
+                      )),
                       _buildResultsGrid(_trending),
                     ],
                     const SliverToBoxAdapter(child: SizedBox(height: 40)),
@@ -296,128 +279,116 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
   }
 
   Widget _buildHeader() => Padding(
-    padding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7B61FF), Color(0xFF38C7FF)],
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF7B61FF), Color(0xFF38C7FF)],
+                    ),
+                  ),
+                  child: const Icon(Icons.auto_awesome,
+                      color: Colors.white, size: 20),
                 ),
-              ),
-              child: const Icon(
-                Icons.auto_awesome,
-                color: Colors.white,
-                size: 20,
-              ),
+                const SizedBox(width: 12),
+                const Text('Similar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    )),
+              ],
             ),
-            const SizedBox(width: 12),
-            const Text(
-              'Similar',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-              ),
+            const SizedBox(height: 6),
+            const Padding(
+              padding: EdgeInsets.only(left: 50),
+              child: Text('Find your next favourite',
+                  style: TextStyle(
+                      color: Colors.white60,
+                      fontSize: 13,
+                      letterSpacing: 0.2)),
             ),
           ],
         ),
-        const SizedBox(height: 6),
-        const Padding(
-          padding: EdgeInsets.only(left: 50),
-          child: Text(
-            'Find your next favourite',
-            style: TextStyle(
-              color: Colors.white60,
-              fontSize: 13,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+      );
 
   Widget _buildSearchBar() => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.10),
-              width: 1,
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.10), width: 1),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.search_rounded, color: Colors.white70),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchCtrl,
+                      focusNode: _searchFocus,
+                      cursorColor: const Color(0xFF8AB4FF),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          letterSpacing: 0.1),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Search a movie or show…',
+                        hintStyle: TextStyle(
+                            color: Colors.white38, fontSize: 14),
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      onChanged: _onQueryChanged,
+                      onSubmitted: _runSearch,
+                      textInputAction: TextInputAction.search,
+                    ),
+                  ),
+                  if (_query.isNotEmpty)
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded,
+                          color: Colors.white60, size: 20),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        _onQueryChanged('');
+                      },
+                    ),
+                ],
+              ),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              const Icon(Icons.search_rounded, color: Colors.white70),
-              const SizedBox(width: 10),
-              Expanded(
-                child: TextField(
-                  controller: _searchCtrl,
-                  focusNode: _searchFocus,
-                  cursorColor: const Color(0xFF8AB4FF),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    letterSpacing: 0.1,
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Search a movie or show…',
-                    hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
-                    contentPadding: EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  onChanged: _onQueryChanged,
-                  onSubmitted: _runSearch,
-                  textInputAction: TextInputAction.search,
-                ),
-              ),
-              if (_query.isNotEmpty)
-                IconButton(
-                  icon: const Icon(
-                    Icons.close_rounded,
-                    color: Colors.white60,
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    _searchCtrl.clear();
-                    _onQueryChanged('');
-                  },
-                ),
-            ],
-          ),
         ),
-      ),
-    ),
-  );
+      );
 
   Widget _buildFilterChips() => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _chip('All', _MediaFilter.all),
-        const SizedBox(width: 8),
-        _chip('Movies', _MediaFilter.movies),
-        const SizedBox(width: 8),
-        _chip('TV Shows', _MediaFilter.tv),
-      ],
-    ),
-  );
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _chip('All', _MediaFilter.all),
+            const SizedBox(width: 8),
+            _chip('Movies', _MediaFilter.movies),
+            const SizedBox(width: 8),
+            _chip('TV Shows', _MediaFilter.tv),
+          ],
+        ),
+      );
 
   Widget _chip(String label, _MediaFilter f) {
     final active = _filter == f;
@@ -433,8 +404,7 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
         color: active ? null : Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: Colors.white.withValues(alpha: active ? 0.18 : 0.08),
-        ),
+            color: Colors.white.withValues(alpha: active ? 0.18 : 0.08)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -442,7 +412,8 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
           borderRadius: BorderRadius.circular(22),
           onTap: () => _setFilter(f),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
             child: Text(
               label,
               style: TextStyle(
@@ -460,25 +431,22 @@ class _SimilarHubScreenState extends State<SimilarHubScreen>
 
   Widget _buildResultsGrid(List<Movie> items) {
     if (items.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: DizzyEmptyState(
-            icon: Icons.search_off,
-            title: 'No results',
-            description: 'Try different search terms.',
-          ),
-        ),
-      );
+      return const SliverToBoxAdapter(
+          child: Padding(
+        padding: EdgeInsets.all(40),
+        child: Center(
+            child: Text('No results',
+                style: TextStyle(color: Colors.white38, fontSize: 14))),
+      ));
     }
     final width = MediaQuery.of(context).size.width;
     final cols = width > 1100
         ? 6
         : width > 800
-        ? 5
-        : width > 500
-        ? 4
-        : 3;
+            ? 5
+            : width > 500
+                ? 4
+                : 3;
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       sliver: SliverGrid(
@@ -505,11 +473,8 @@ class _PosterCard extends StatefulWidget {
   final Movie movie;
   final VoidCallback onTap;
   final bool loading;
-  const _PosterCard({
-    required this.movie,
-    required this.onTap,
-    required this.loading,
-  });
+  const _PosterCard(
+      {required this.movie, required this.onTap, required this.loading});
 
   @override
   State<_PosterCard> createState() => _PosterCardState();
@@ -560,25 +525,22 @@ class _PosterCardState extends State<_PosterCard> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(
-                        0xFF7B61FF,
-                      ).withValues(alpha: glow * 0.55),
+                      color: const Color(0xFF7B61FF)
+                          .withValues(alpha: glow * 0.55),
                       blurRadius: 26,
                       spreadRadius: -2,
                       offset: const Offset(0, 10),
                     ),
                     BoxShadow(
-                      color: const Color(
-                        0xFF38C7FF,
-                      ).withValues(alpha: glow * 0.35),
+                      color: const Color(0xFF38C7FF)
+                          .withValues(alpha: glow * 0.35),
                       blurRadius: 22,
                       spreadRadius: -4,
                       offset: const Offset(0, 4),
                     ),
                     BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: _hover ? 0.45 : 0.0,
-                      ),
+                      color: Colors.black
+                          .withValues(alpha: _hover ? 0.45 : 0.0),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -594,13 +556,13 @@ class _PosterCardState extends State<_PosterCard> {
                             ? CachedNetworkImage(
                                 imageUrl: poster,
                                 fit: BoxFit.cover,
-                                fadeInDuration: const Duration(
-                                  milliseconds: 320,
-                                ),
+                                fadeInDuration:
+                                    const Duration(milliseconds: 320),
                                 placeholder: (_, _) => Container(
-                                  color: Colors.white.withValues(alpha: 0.04),
-                                ),
-                                errorWidget: (_, _, _) => _posterFallback(),
+                                    color: Colors.white
+                                        .withValues(alpha: 0.04)),
+                                errorWidget: (_, _, _) =>
+                                    _posterFallback(),
                               )
                             : _posterFallback(),
                       ),
@@ -618,16 +580,14 @@ class _PosterCardState extends State<_PosterCard> {
                               stops: const [0, 0.55, 1],
                               colors: [
                                 Colors.black.withValues(
-                                  alpha: _hover ? 0.92 : 0.85,
-                                ),
+                                    alpha: _hover ? 0.92 : 0.85),
                                 Colors.transparent,
                                 Colors.transparent,
                               ],
                             ),
                             border: Border.all(
                               color: Colors.white.withValues(
-                                alpha: _hover ? 0.18 : 0.0,
-                              ),
+                                  alpha: _hover ? 0.18 : 0.0),
                               width: 1,
                             ),
                           ),
@@ -638,7 +598,8 @@ class _PosterCardState extends State<_PosterCard> {
                     Positioned.fill(
                       child: IgnorePointer(
                         child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 260),
+                          duration:
+                              const Duration(milliseconds: 260),
                           opacity: _hover ? 1.0 : 0.0,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
@@ -681,9 +642,8 @@ class _PosterCardState extends State<_PosterCard> {
                             Text(
                               movie.releaseDate.substring(0, 4),
                               style: const TextStyle(
-                                color: Colors.white60,
-                                fontSize: 11,
-                              ),
+                                  color: Colors.white60,
+                                  fontSize: 11),
                             ),
                         ],
                       ),
@@ -693,17 +653,18 @@ class _PosterCardState extends State<_PosterCard> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                            filter: ImageFilter.blur(
+                                sigmaX: 8, sigmaY: 8),
                             child: Container(
-                              color: Colors.black.withValues(alpha: 0.35),
+                              color: Colors.black
+                                  .withValues(alpha: 0.35),
                               child: const Center(
                                 child: SizedBox(
                                   width: 22,
                                   height: 22,
                                   child: CircularProgressIndicator(
-                                    strokeWidth: 2.4,
-                                    color: Colors.white,
-                                  ),
+                                      strokeWidth: 2.4,
+                                      color: Colors.white),
                                 ),
                               ),
                             ),
@@ -721,11 +682,11 @@ class _PosterCardState extends State<_PosterCard> {
   }
 
   Widget _posterFallback() => Container(
-    color: const Color(0xFF1A1F2C),
-    child: const Center(
-      child: Icon(Icons.movie_outlined, color: Colors.white24, size: 32),
-    ),
-  );
+        color: const Color(0xFF1A1F2C),
+        child: const Center(
+            child: Icon(Icons.movie_outlined,
+                color: Colors.white24, size: 32)),
+      );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -746,8 +707,12 @@ class _LiquidBlobsPainter extends CustomPainter {
       final cy = h / 3 + math.sin(a * 0.8) * (h * ry);
       final paint = Paint()
         ..shader = RadialGradient(
-          colors: [color.withValues(alpha: 0.55), color.withValues(alpha: 0.0)],
-        ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: r));
+          colors: [
+            color.withValues(alpha: 0.55),
+            color.withValues(alpha: 0.0),
+          ],
+        ).createShader(
+            Rect.fromCircle(center: Offset(cx, cy), radius: r));
       canvas.drawCircle(Offset(cx, cy), r, paint);
     }
 

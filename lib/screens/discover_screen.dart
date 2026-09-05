@@ -1,12 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import '../api/tmdb_api.dart';
 import '../api/settings_service.dart';
 import '../models/movie.dart';
-
+import '../services/my_list_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import 'details_screen.dart';
 import 'streaming_details_screen.dart';
 
@@ -533,30 +532,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> with AutomaticKeepAlive
             child: _isLoading 
               ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
               : _movies.isEmpty 
-                ? const DizzyEmptyState(
-                    title: "No results found", 
-                    description: "Try adjusting your filters or page number",
-                    icon: Icons.search_off_rounded,
-                  )
+                ? const Center(child: Text("No results found", style: TextStyle(color: Colors.white54)))
                 : GridView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(AppTheme.spaceM),
+                    padding: const EdgeInsets.all(16),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
                       childAspectRatio: 2 / 3,
-                      crossAxisSpacing: AppTheme.spaceM,
-                      mainAxisSpacing: AppTheme.spaceM,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
                     ),
                     itemCount: _movies.length,
                     itemBuilder: (context, index) {
                       final movie = _movies[index];
-                      return DizzyCard(
-                        title: movie.title,
-                        subtitle: movie.releaseDate.isNotEmpty ? movie.releaseDate.split('-')[0] : null,
-                        imageUrl: TmdbApi.getImageUrl(movie.posterPath),
-                        badgeText: movie.voteAverage > 0 ? movie.voteAverage.toStringAsFixed(1) : null,
-                        onTap: () => _openDetails(movie),
-                      );
+                      return _DiscoverCard(movie: movie, onTap: () => _openDetails(movie));
                     },
                   ),
           ),
@@ -676,6 +665,118 @@ class _CompactFilterDialog extends StatelessWidget {
   }
 }
 
+class _DiscoverCard extends StatelessWidget {
+  final Movie movie;
+  final VoidCallback onTap;
 
+  const _DiscoverCard({required this.movie, required this.onTap});
 
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = movie.posterPath.isNotEmpty ? TmdbApi.getImageUrl(movie.posterPath) : '';
 
+    return FocusableControl(
+      onTap: onTap,
+      borderRadius: 12,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: AppTheme.isLightMode ? null : [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2))],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (imageUrl.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (c, u) => Container(color: AppTheme.bgCard),
+                errorWidget: (c, u, e) => const Center(child: Icon(Icons.broken_image, color: Colors.white24)),
+              )
+            else
+              Center(child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(movie.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
+              )),
+            
+            // Rating Badge
+            Positioned(
+              top: 8, right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 10),
+                    const SizedBox(width: 4),
+                    Text(movie.voteAverage.toStringAsFixed(1), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+
+            // My List add/remove button
+            Positioned(
+              top: 8, left: 8,
+              child: _AddToMyListButton(movie: movie),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AddToMyListButton extends StatelessWidget {
+  final Movie movie;
+  const _AddToMyListButton({required this.movie});
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = MyListService.movieId(movie.id, movie.mediaType);
+    return ValueListenableBuilder<int>(
+      valueListenable: MyListService.changeNotifier,
+      builder: (context, _, _) {
+        final inList = MyListService().contains(uid);
+        return GestureDetector(
+          onTap: () async {
+            final added = await MyListService().toggleMovie(
+              tmdbId: movie.id,
+              imdbId: movie.imdbId,
+              title: movie.title,
+              posterPath: movie.posterPath,
+              mediaType: movie.mediaType,
+              voteAverage: movie.voteAverage,
+              releaseDate: movie.releaseDate,
+            );
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(added ? 'Added to My List' : 'Removed from My List'),
+                duration: const Duration(seconds: 1),
+              ));
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.6),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              inList ? Icons.bookmark : Icons.add,
+              size: 16,
+              color: inList ? AppTheme.primaryColor : Colors.white70,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

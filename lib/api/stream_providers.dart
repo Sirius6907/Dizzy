@@ -1,13 +1,5 @@
 class StreamProviders {
   static final Map<String, dynamic> providers = {
-    // ═══ v2.0.0 MULTI-SOURCE RESOLVER ═══
-    // Automatic 3-source fallback: VidSrc → Videasy → Amri
-    // Highest reliability (95%+ success rate)
-    'multi-source': {
-      'name': 'Multi-Source (Auto)',
-      'movie': null,
-      'tv': null,
-    },
     // 111477.xyz direct file index — highest priority. Resolved via
     // Site111477Service (TMDB title → file URL) and streamed through the
     // local seekable proxy. Movie/tv URL lambdas are intentionally null;

@@ -42,7 +42,7 @@ void main() async {
       debugPrint('[Boot] InAppWebView setup failed (non-fatal): $e');
     }
   }
-
+  
   Logger.root.level = Level.FINER;
   Logger.root.onRecord.listen((e) {
     debugPrint('[YT] ${e.message}');
@@ -51,7 +51,7 @@ void main() async {
       debugPrint('[YT STACK] ${e.stackTrace}');
     }
   });
-
+  
   if (Platform.isAndroid) {
     // Follow system rotation setting — no forced lock.
     // auto_orientation_v2 is gone, so this respects the user's
@@ -73,14 +73,8 @@ void main() async {
     const double screenMargin = 80; // leaves room for taskbar + title bar
     final display = WidgetsBinding.instance.platformDispatcher.displays.first;
     final logicalScreen = display.size / display.devicePixelRatio;
-    final double maxW = (logicalScreen.width - screenMargin).clamp(
-      640.0,
-      double.infinity,
-    );
-    final double maxH = (logicalScreen.height - screenMargin).clamp(
-      480.0,
-      double.infinity,
-    );
+    final double maxW = (logicalScreen.width - screenMargin).clamp(640.0, double.infinity);
+    final double maxH = (logicalScreen.height - screenMargin).clamp(480.0, double.infinity);
     final Size windowSize = Size(
       desiredWidth.clamp(640.0, maxW),
       desiredHeight.clamp(480.0, maxH),
@@ -100,11 +94,11 @@ void main() async {
       await windowManager.focus();
     });
   }
-
+  
   debugPrint('[Boot] Initializing MediaKit...');
   MediaKit.ensureInitialized();
   debugPrint('[Boot] MediaKit OK');
-
+  
   debugPrint('[Boot] Initializing AudioService...');
   final audioHandler = await AudioService.init(
     builder: () => DizzyAudioHandler(MusicPlayerService().player),
@@ -117,32 +111,28 @@ void main() async {
     ),
   );
   debugPrint('[Boot] AudioService OK');
-
+  
   MusicPlayerService().setHandler(audioHandler);
   AudiobookPlayerService().init(audioHandler);
-
+  
   // Hydrate light mode setting before first frame
   await SettingsService().initLightMode();
-
+  
   // Hydrate theme preset before first frame
   await AppTheme.initTheme();
-
+  
   PlayerPoolService().warmUp();
   // Pre-initialise the local WebStreamr pipeline so the first call is fast.
   // Errors here are non-fatal — the service init() is also called lazily.
-  unawaited(
-    WebStreamrService.init().catchError((e) {
-      debugPrint('[Boot] WebStreamrService.init failed (non-fatal): $e');
-    }),
-  );
+  unawaited(WebStreamrService.init().catchError((e) {
+    debugPrint('[Boot] WebStreamrService.init failed (non-fatal): $e');
+  }));
   // Refresh every installed Nuvio addon's manifest in the background so new
   // upstream providers / fixes flow in without the user reinstalling.
   // Non-fatal — offline launches just keep the previously cached manifests.
-  unawaited(
-    NuvioService.instance.refreshAllInstalled().catchError((e) {
-      debugPrint('[Boot] Nuvio refresh failed (non-fatal): $e');
-    }),
-  );
+  unawaited(NuvioService.instance.refreshAllInstalled().catchError((e) {
+    debugPrint('[Boot] Nuvio refresh failed (non-fatal): $e');
+  }));
   debugPrint('[Boot] All init complete — launching app');
 
   runApp(const DizzyApp());
@@ -155,8 +145,7 @@ class DizzyApp extends StatefulWidget {
   State<DizzyApp> createState() => _DizzyAppState();
 }
 
-class _DizzyAppState extends State<DizzyApp>
-    with WidgetsBindingObserver, WindowListener {
+class _DizzyAppState extends State<DizzyApp> with WidgetsBindingObserver, WindowListener {
   @override
   void initState() {
     super.initState();
@@ -249,7 +238,7 @@ class _DizzyAppState extends State<DizzyApp>
       valueListenable: AppTheme.themeNotifier,
       builder: (context, preset, _) {
         Widget app = MaterialApp(
-          title: 'Dizzy Native',
+          title: 'Dizzy',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.themeData,
           home: const SplashScreen(),
@@ -257,7 +246,7 @@ class _DizzyAppState extends State<DizzyApp>
         // On desktop, disable the semantics / accessibility tree entirely.
         // Flutter's Windows accessibility bridge has a known bug where the
         // ui::AXTree gets out of sync, spamming errors and eventually
-        // crashing the app. Since Dizzy doesn't target screen-reader
+        // crashing the app. Since PlayTorrio doesn't target screen-reader
         // users on desktop, this is a safe and effective workaround.
         if (_isDesktop) {
           app = ExcludeSemantics(child: app);
@@ -275,8 +264,7 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
@@ -305,7 +293,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat(reverse: true);
-
+    
     _fadeAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
@@ -353,29 +341,24 @@ class _SplashScreenState extends State<SplashScreen>
 
     debugPrint('[Boot] Step 2: Initializing services in parallel...');
     final api = TmdbApi();
-
+    
     debugPrint('[Boot]   - Starting TorrentStream engine...');
     debugPrint('[Boot]   - Starting LocalServer...');
     debugPrint('[Boot]   - Initializing MusicPlayer...');
-    debugPrint(
-      '[Boot]   - Fetching TMDB data (trending, popular, top rated, now playing)...',
-    );
-
+    debugPrint('[Boot]   - Fetching TMDB data (trending, popular, top rated, now playing)...');
+    
     final results = await Future.wait([
-      TorrentStreamService()
-          .start()
-          .timeout(
-            const Duration(seconds: 10),
-            onTimeout: () {
-              debugPrint('[Boot] ⚠ TorrentStream startup timed out after 10s');
-              return false;
-            },
-          )
-          .catchError((e, st) {
-            debugPrint('[Boot] ✗ TorrentStream error: $e');
-            debugPrint('[Boot] Stack trace: $st');
-            return false;
-          }),
+      TorrentStreamService().start().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('[Boot] ⚠ TorrentStream startup timed out after 10s');
+          return false;
+        },
+      ).catchError((e, st) {
+        debugPrint('[Boot] ✗ TorrentStream error: $e');
+        debugPrint('[Boot] Stack trace: $st');
+        return false;
+      }),
       LocalServerService().start().catchError((e) {
         debugPrint('[Boot] ✗ LocalServer error: $e');
       }),
@@ -403,29 +386,19 @@ class _SplashScreenState extends State<SplashScreen>
     debugPrint('[Boot] Step 3: Service initialization results:');
     final torrentEngineReady = (results[0] as bool?) == true;
     // LocalServer and MusicPlayer return void, just check if they completed without throwing
-    debugPrint(
-      '[Boot]   TorrentStream: ${torrentEngineReady ? "✓ READY" : "✗ FAILED"}',
-    );
+    debugPrint('[Boot]   TorrentStream: ${torrentEngineReady ? "✓ READY" : "✗ FAILED"}');
     debugPrint('[Boot]   LocalServer: ✓ READY');
     debugPrint('[Boot]   MusicPlayer: ✓ READY');
-
+    
     final trendingList = results[3] as List;
     final popularList = results[4] as List;
     final topRatedList = results[5] as List;
     final nowPlayingList = results[6] as List;
-
-    debugPrint(
-      '[Boot]   TMDB Trending: ${trendingList.isNotEmpty ? "✓ ${trendingList.length} items" : "✗ Empty"}',
-    );
-    debugPrint(
-      '[Boot]   TMDB Popular: ${popularList.isNotEmpty ? "✓ ${popularList.length} items" : "✗ Empty"}',
-    );
-    debugPrint(
-      '[Boot]   TMDB Top Rated: ${topRatedList.isNotEmpty ? "✓ ${topRatedList.length} items" : "✗ Empty"}',
-    );
-    debugPrint(
-      '[Boot]   TMDB Now Playing: ${nowPlayingList.isNotEmpty ? "✓ ${nowPlayingList.length} items" : "✗ Empty"}',
-    );
+    
+    debugPrint('[Boot]   TMDB Trending: ${trendingList.isNotEmpty ? "✓ ${trendingList.length} items" : "✗ Empty"}');
+    debugPrint('[Boot]   TMDB Popular: ${popularList.isNotEmpty ? "✓ ${popularList.length} items" : "✗ Empty"}');
+    debugPrint('[Boot]   TMDB Top Rated: ${topRatedList.isNotEmpty ? "✓ ${topRatedList.length} items" : "✗ Empty"}');
+    debugPrint('[Boot]   TMDB Now Playing: ${nowPlayingList.isNotEmpty ? "✓ ${nowPlayingList.length} items" : "✗ Empty"}');
 
     debugPrint('[Boot] Step 4: Pre-warming screens...');
     // ignore: unused_local_variable
@@ -434,23 +407,21 @@ class _SplashScreenState extends State<SplashScreen>
     const warmupDiscover = DiscoverScreen();
     debugPrint('[Boot] ✓ Screens pre-warmed');
 
-    debugPrint(
-      '[Boot] Step 5: Waiting for minimum splash time so the '
-      'pre-built MainScreen / HomeScreen finishes its first paints...',
-    );
+    debugPrint('[Boot] Step 5: Waiting for minimum splash time so the '
+        'pre-built MainScreen / HomeScreen finishes its first paints...');
     await minSplashFuture;
 
     if (mounted) {
-      debugPrint(
-        '[Boot] Step 6: Dismissing splash overlay (MainScreen '
-        'already mounted underneath)',
-      );
+      debugPrint('[Boot] Step 6: Dismissing splash overlay (MainScreen '
+          'already mounted underneath)');
       _dismissSplash();
       debugPrint('═══════════════════════════════════════════════════════════');
       debugPrint('[Boot] ✓✓✓ ENGINE INITIALIZATION COMPLETE ✓✓✓');
       debugPrint('═══════════════════════════════════════════════════════════');
     }
   }
+  
+
 
   @override
   void dispose() {
@@ -466,7 +437,10 @@ class _SplashScreenState extends State<SplashScreen>
         // images, fonts and HomeScreen network requests are all warm by
         // the time the overlay fades out.
         Positioned.fill(
-          child: IgnorePointer(ignoring: _showOverlay, child: _mainScreen),
+          child: IgnorePointer(
+            ignoring: _showOverlay,
+            child: _mainScreen,
+          ),
         ),
         if (_showOverlay)
           Positioned.fill(
@@ -502,10 +476,7 @@ class _SplashScreenState extends State<SplashScreen>
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.5),
-                    width: 2,
-                  ),
+                  border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.5), width: 2),
                   boxShadow: [
                     BoxShadow(
                       color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -527,16 +498,12 @@ class _SplashScreenState extends State<SplashScreen>
                   fit: BoxFit.scaleDown,
                   child: ShaderMask(
                     shaderCallback: (bounds) => const LinearGradient(
-                      colors: [
-                        Colors.white,
-                        Colors.white70,
-                        AppTheme.primaryColor,
-                      ],
+                      colors: [Colors.white, Colors.white70, AppTheme.primaryColor],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ).createShader(bounds),
                     child: const Text(
-                      'DIZZY',
+                      'PLAYTORRIO',
                       style: TextStyle(
                         fontSize: 64,
                         fontWeight: FontWeight.w900,
@@ -562,17 +529,6 @@ class _SplashScreenState extends State<SplashScreen>
                       fontFamily: 'Poppins',
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'by Sirius',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 2,
-                  color: Colors.white.withValues(alpha: 0.4),
-                  fontFamily: 'Poppins',
                 ),
               ),
               const SizedBox(height: 100),

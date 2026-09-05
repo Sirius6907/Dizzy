@@ -10,7 +10,7 @@ import 'id.dart';
 import 'semaphore.dart';
 
 /// Bundled v3 fallback (same key used elsewhere in the app for metadata).
-const _kFallbackV3ApiKey = 'ef0d35fe298492270fcd565215e1901c';
+const _kFallbackV3ApiKey = 'c3515fdc674ea2bd7b514f4bc3616a4a';
 
 final _mutexes = <String, Mutex>{};
 

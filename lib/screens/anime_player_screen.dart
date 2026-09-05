@@ -173,30 +173,26 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
     }
 
     for (final embed in pair) {
-      _tryEmbed(embed)
-          .then((media) {
-            settled++;
-            if (media != null && media.url.isNotEmpty) {
-              successes.add((embed: embed, media: media));
-              // First hit → start grace window for backups.
-              if (successes.length == 1 && !completer.isCompleted) {
-                graceTimer = Timer(graceWindow, () {
-                  if (!completer.isCompleted) completer.complete(successes);
-                });
-              }
-            }
-            if (mounted && !completer.isCompleted) {
-              setState(
-                () => _statusLine =
-                    '$settled / $total checked${successes.isNotEmpty ? ' \u00b7 ${successes.length} ready' : ''}',
-              );
-            }
-            finishIfReady();
-          })
-          .catchError((_) {
-            settled++;
-            finishIfReady();
-          });
+      _tryEmbed(embed).then((media) {
+        settled++;
+        if (media != null && media.url.isNotEmpty) {
+          successes.add((embed: embed, media: media));
+          // First hit → start grace window for backups.
+          if (successes.length == 1 && !completer.isCompleted) {
+            graceTimer = Timer(graceWindow, () {
+              if (!completer.isCompleted) completer.complete(successes);
+            });
+          }
+        }
+        if (mounted && !completer.isCompleted) {
+          setState(() => _statusLine =
+              '$settled / $total checked${successes.isNotEmpty ? ' \u00b7 ${successes.length} ready' : ''}');
+        }
+        finishIfReady();
+      }).catchError((_) {
+        settled++;
+        finishIfReady();
+      });
     }
 
     final hits = await completer.future;
@@ -228,17 +224,15 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
             '(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
       };
       final subs = direct.tracks
-          .map(
-            (t) => <String, dynamic>{
-              'url': t.url,
-              'display': t.label,
-              'language': _langCodeFromLabel(t.label),
-              // Subtitle CDNs (megacloud, vid-cdn, etc.) gate on the
-              // embed's Referer/Origin — not the sub URL's own host.
-              'referer': direct.referer,
-              'origin': direct.origin,
-            },
-          )
+          .map((t) => <String, dynamic>{
+                'url': t.url,
+                'display': t.label,
+                'language': _langCodeFromLabel(t.label),
+                // Subtitle CDNs (megacloud, vid-cdn, etc.) gate on the
+                // embed's Referer/Origin — not the sub URL's own host.
+                'referer': direct.referer,
+                'origin': direct.origin,
+              })
           .toList();
       return ExtractedMedia(
         url: direct.url,
@@ -260,8 +254,7 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
   }
 
   Future<void> _launchPlayer(
-    List<({AnimeEmbed embed, ExtractedMedia media})> hits,
-  ) async {
+      List<({AnimeEmbed embed, ExtractedMedia media})> hits) async {
     final winner = hits.first;
     await _service.recordWatch(
       anime: widget.anime,
@@ -277,14 +270,12 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
       final headers = Map<String, String>.from(h.media.headers)
         ..putIfAbsent('Referer', () => '${h.embed.refererOrigin}/')
         ..putIfAbsent('Origin', () => h.embed.refererOrigin);
-      sources.add(
-        StreamSource(
-          url: h.media.url,
-          title: h.embed.displayName,
-          type: h.media.url.contains('.m3u8') ? 'hls' : 'video',
-          headers: headers,
-        ),
-      );
+      sources.add(StreamSource(
+        url: h.media.url,
+        title: h.embed.displayName,
+        type: h.media.url.contains('.m3u8') ? 'hls' : 'video',
+        headers: headers,
+      ));
     }
 
     // Aggregate subtitle tracks across all hits. Most extractors return
@@ -304,8 +295,7 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
     final title =
         '${widget.anime.displayTitle} \u2022 Ep ${widget.episodeNumber} (${winner.embed.displayName})';
 
-    final totalEpisodes =
-        _series?.episodes.length ??
+    final totalEpisodes = _series?.episodes.length ??
         (widget.allEpisodes.isNotEmpty
             ? widget.allEpisodes.length
             : (widget.anime.episodes ?? 0));
@@ -366,33 +356,18 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_resolving) ...[
-                    CircularProgressIndicator(
-                      color: theme.primaryColor,
-                      strokeWidth: 2.5,
-                    ),
+                    CircularProgressIndicator(color: theme.primaryColor, strokeWidth: 2.5),
                     const SizedBox(height: 18),
                   ] else if (_failedAll) ...[
-                    Icon(
-                      Icons.error_outline,
-                      color: theme.primaryColor,
-                      size: 48,
-                    ),
+                    Icon(Icons.error_outline, color: theme.primaryColor, size: 48),
                     const SizedBox(height: 12),
                   ],
-                  Text(
-                    _phase,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                  ),
+                  Text(_phase, style: const TextStyle(color: Colors.white, fontSize: 14)),
                   if (_statusLine.isNotEmpty) ...[
                     const SizedBox(height: 6),
-                    Text(
-                      _statusLine,
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 11,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    Text(_statusLine,
+                        style: const TextStyle(color: Colors.white54, fontSize: 11),
+                        textAlign: TextAlign.center),
                   ],
                   if (_failedAll) ...[
                     const SizedBox(height: 22),
@@ -400,9 +375,7 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
                       onPressed: _resolveForCategory,
                       icon: const Icon(Icons.refresh, size: 16),
                       label: const Text('Retry'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: theme.primaryColor,
-                      ),
+                      style: TextButton.styleFrom(foregroundColor: theme.primaryColor),
                     ),
                   ],
                 ],
@@ -414,3 +387,4 @@ class _AnimePlayerScreenState extends State<AnimePlayerScreen> {
     );
   }
 }
+

@@ -1,4 +1,4 @@
-// Models ported from Dizzy TV (Kotlin) IPTV system.
+// Models ported from PlayTorrio TV (Kotlin) IPTV system.
 // Pure data classes - no Flutter dependencies.
 
 /// Raw scraped Xtream-Codes portal credentials (unverified).

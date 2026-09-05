@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 
 import '../api/anime_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import '../widgets/hover_scale.dart';
 import '../widgets/horizontal_scroller.dart';
 import 'anime_player_screen.dart';
@@ -63,7 +62,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
     // instead of an empty grid.
     final n = (count is int && count > 0) ? count : 1;
     final airedNow = a.nextAiringEpisode?['episode'];
-    final maxAired = (airedNow is int && airedNow > 1) ? (airedNow - 1) : n;
+    final maxAired =
+        (airedNow is int && airedNow > 1) ? (airedNow - 1) : n;
     return List.generate(
       n,
       (i) => AnimeEpisode(
@@ -85,70 +85,52 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
 
     // 1. Fresh AniList details (banner, full synopsis, streamingEpisodes
     //    thumbnails). Usually fast, ~150-300ms.
-    _service
-        .getDetails(widget.anime.id)
-        .then((d) {
-          if (!mounted) return;
-          setState(() {
-            _full = d;
-            // Re-synth with the fresher data if Anikoto hasn't landed yet.
-            if (_episodes.isEmpty || _episodes.length < (d.episodes ?? 0)) {
-              _episodes = _synthEpisodes(d);
-            }
-          });
-        })
-        .catchError((e) {
-          if (mounted && _full == null) {
-            setState(() => _error = 'Failed to load: $e');
-          }
-        });
+    _service.getDetails(widget.anime.id).then((d) {
+      if (!mounted) return;
+      setState(() {
+        _full = d;
+        // Re-synth with the fresher data if Anikoto hasn't landed yet.
+        if (_episodes.isEmpty || _episodes.length < (d.episodes ?? 0)) {
+          _episodes = _synthEpisodes(d);
+        }
+      });
+    }).catchError((e) {
+      if (mounted && _full == null) {
+        setState(() => _error = 'Failed to load: $e');
+      }
+    });
 
     // 2. Real episode list (Anikoto). Slow — walks /recent-anime feed +
     //    search + ID probes. The synth list keeps the UI populated until
     //    this lands.
-    _service
-        .getEpisodes(widget.anime)
-        .then((eps) {
-          if (!mounted || eps.isEmpty) return;
-          setState(() => _episodes = eps);
-        })
-        .catchError((_) {});
+    _service.getEpisodes(widget.anime).then((eps) {
+      if (!mounted || eps.isEmpty) return;
+      setState(() => _episodes = eps);
+    }).catchError((_) {});
 
     // 3. Related (single AniList query). Independent.
-    _service
-        .getRelations(widget.anime.id)
-        .then((r) {
-          if (!mounted) return;
-          setState(() => _related = r);
-        })
-        .catchError((_) {});
+    _service.getRelations(widget.anime.id).then((r) {
+      if (!mounted) return;
+      setState(() => _related = r);
+    }).catchError((_) {});
 
     // 4. Local prefs — instant.
-    _service
-        .getProgress(widget.anime.id)
-        .then((p) {
-          if (!mounted) return;
-          setState(() => _progress = p);
-        })
-        .catchError((_) {});
-    _service
-        .isLiked(widget.anime.id)
-        .then((l) {
-          if (!mounted) return;
-          setState(() => _liked = l);
-        })
-        .catchError((_) {});
+    _service.getProgress(widget.anime.id).then((p) {
+      if (!mounted) return;
+      setState(() => _progress = p);
+    }).catchError((_) {});
+    _service.isLiked(widget.anime.id).then((l) {
+      if (!mounted) return;
+      setState(() => _liked = l);
+    }).catchError((_) {});
 
     // 5. Seasons (graph walk — multiple AniList queries). Background.
-    _service
-        .getSeasons(widget.anime.id)
-        .then((s) {
-          if (!mounted) return;
-          if (s.length > 1) setState(() => _seasons = s);
-        })
-        .catchError((e) {
-          debugPrint('[Details] seasons load: $e');
-        });
+    _service.getSeasons(widget.anime.id).then((s) {
+      if (!mounted) return;
+      if (s.length > 1) setState(() => _seasons = s);
+    }).catchError((e) {
+      debugPrint('[Details] seasons load: $e');
+    });
   }
 
   void _play(int epNumber) {
@@ -192,7 +174,12 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
           backgroundColor: AppTheme.bgDark,
           body: _error != null
               ? _buildError()
-              : Stack(children: [_buildPageBackdrop(), _buildContent()]),
+              : Stack(
+                  children: [
+                    _buildPageBackdrop(),
+                    _buildContent(),
+                  ],
+                ),
         );
       },
     );
@@ -238,12 +225,35 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
   }
 
   Widget _buildError() {
-    return DizzyEmptyState(
-      icon: Icons.error_outline_rounded,
-      title: _error!,
-      description: '',
-      actionLabel: 'Retry',
-      onActionTap: _load,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline_rounded,
+                color: AppTheme.primaryColor, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _load,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+              ),
+              child: const Text('Retry',
+                  style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -259,7 +269,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
         SliverToBoxAdapter(child: _buildMetaGrid()),
         SliverToBoxAdapter(child: _buildCategoryToggle()),
         SliverToBoxAdapter(child: _buildEpisodesHeader()),
-        if (_seasons.length > 1) SliverToBoxAdapter(child: _buildSeasonsRail()),
+        if (_seasons.length > 1)
+          SliverToBoxAdapter(child: _buildSeasonsRail()),
         if (_episodes.isNotEmpty)
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
@@ -274,8 +285,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
                 (context, i) {
                   final start = _episodeChunk * _chunkSize;
                   final ep = _episodes[start + i];
-                  final isCurrent =
-                      _progress != null && _progress!['episode'] == ep.number;
+                  final isCurrent = _progress != null &&
+                      _progress!['episode'] == ep.number;
                   return _episodeTile(ep, isCurrent);
                 },
                 childCount: () {
@@ -288,7 +299,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
           )
         else
           SliverToBoxAdapter(child: _buildEmptyEpisodes()),
-        if (_related.isNotEmpty) SliverToBoxAdapter(child: _buildRelated()),
+        if (_related.isNotEmpty)
+          SliverToBoxAdapter(child: _buildRelated()),
         const SliverToBoxAdapter(child: SizedBox(height: 80)),
       ],
     );
@@ -406,7 +418,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
       children: [
         if ((a.averageScore ?? 0) > 0)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],
@@ -416,7 +429,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.star_rounded, color: Colors.white, size: 12),
+                const Icon(Icons.star_rounded,
+                    color: Colors.white, size: 12),
                 const SizedBox(width: 3),
                 Text(
                   ((a.averageScore ?? 0) / 10).toStringAsFixed(1),
@@ -429,7 +443,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
               ],
             ),
           ),
-        if (a.format != null && a.format!.isNotEmpty) _miniChip(a.format!),
+        if (a.format != null && a.format!.isNotEmpty)
+          _miniChip(a.format!),
         if (a.seasonYear != null) _miniChip('${a.seasonYear}'),
         if (a.episodes != null) _miniChip('${a.episodes} eps'),
         if (a.status != null && a.status!.isNotEmpty)
@@ -456,21 +471,23 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
   }
 
   Widget _miniChip(String s) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-    ),
-    child: Text(
-      s,
-      style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.85),
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  );
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Text(
+          s,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.85),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
 
   Widget _frostedIcon(IconData icon, VoidCallback onTap, {Color? color}) {
     return Padding(
@@ -509,20 +526,21 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
               borderRadius: BorderRadius.circular(28),
               child: InkWell(
                 borderRadius: BorderRadius.circular(28),
-                onTap: canPlay ? () => _play(resumeEp ?? 1) : null,
+                onTap: canPlay
+                    ? () => _play(resumeEp ?? 1)
+                    : null,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+                      const Icon(Icons.play_arrow_rounded,
+                          color: Colors.white, size: 24),
                       const SizedBox(width: 6),
                       Text(
-                        hasProgress ? 'Resume Ep $resumeEp' : 'Play Ep 1',
+                        hasProgress
+                            ? 'Resume Ep $resumeEp'
+                            : 'Play Ep 1',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,
@@ -548,7 +566,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: GestureDetector(
-        onTap: () => setState(() => _synopsisExpanded = !_synopsisExpanded),
+        onTap: () =>
+            setState(() => _synopsisExpanded = !_synopsisExpanded),
         child: AnimatedCrossFade(
           duration: const Duration(milliseconds: 200),
           firstChild: Text(
@@ -585,11 +604,10 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
         ('Studio', a.mainStudio!),
       if (a.duration != null) ('Duration', '${a.duration} min/ep'),
       if (a.season != null && a.seasonYear != null)
-        (
-          'Season',
-          '${a.season![0]}${a.season!.substring(1).toLowerCase()} ${a.seasonYear}',
-        ),
-      if (a.popularity != null) ('Popularity', _compactNum(a.popularity!)),
+        ('Season',
+            '${a.season![0]}${a.season!.substring(1).toLowerCase()} ${a.seasonYear}'),
+      if (a.popularity != null)
+        ('Popularity', _compactNum(a.popularity!)),
       if (a.genres.isNotEmpty) ('Genres', a.genres.join(', ')),
     ];
     if (entries.isEmpty) return const SizedBox.shrink();
@@ -600,7 +618,9 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
         decoration: BoxDecoration(
           color: AppTheme.bgCard.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+          ),
         ),
         child: Column(
           children: [
@@ -664,7 +684,9 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+          ),
         ),
         child: Row(
           children: [
@@ -680,7 +702,9 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
     final selected = _category == id;
     return Expanded(
       child: Material(
-        color: selected ? AppTheme.primaryColor : Colors.transparent,
+        color: selected
+            ? AppTheme.primaryColor
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
@@ -724,14 +748,59 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
       child: Row(
         children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.playlist_play_rounded,
+                color: AppTheme.primaryColor, size: 18),
+          ),
+          const SizedBox(width: 10),
           Expanded(
-            child: DizzySectionHeader(
-              title: 'Episodes',
-              subtitle: '${_episodes.length} total',
-              icon: Icons.playlist_play_rounded,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Episodes',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  height: 2.5,
+                  width: 36,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor,
+                        AppTheme.primaryColor.withValues(alpha: 0.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          if (chunks > 1) ...[const SizedBox(width: 10), _chunkPicker(chunks)],
+          if (_episodes.isNotEmpty)
+            Text(
+              '${_episodes.length} total',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          if (chunks > 1) ...[
+            const SizedBox(width: 10),
+            _chunkPicker(chunks),
+          ],
         ],
       ),
     );
@@ -748,7 +817,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
             context: context,
             backgroundColor: AppTheme.bgCard,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(20)),
             ),
             builder: (_) => SafeArea(
               child: ListView.builder(
@@ -756,7 +826,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
                 itemCount: chunks,
                 itemBuilder: (_, i) {
                   final start = i * _chunkSize + 1;
-                  final end = ((i + 1) * _chunkSize).clamp(0, _episodes.length);
+                  final end = ((i + 1) * _chunkSize)
+                      .clamp(0, _episodes.length);
                   return ListTile(
                     title: Text(
                       'Episodes $start–$end',
@@ -778,7 +849,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
           }
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 10, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -901,12 +973,28 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
         decoration: BoxDecoration(
           color: AppTheme.bgCard.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+          ),
         ),
-        child: DizzyEmptyState(
-          icon: Icons.movie_filter_outlined,
-          title: 'No episodes available yet',
-          description: '',
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                Icons.movie_filter_outlined,
+                color: Colors.white.withValues(alpha: 0.3),
+                size: 40,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No episodes available yet',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -919,9 +1007,30 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
-          child: DizzySectionHeader(
-            title: 'Related',
-            icon: Icons.collections_bookmark_rounded,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.collections_bookmark_rounded,
+                    color: AppTheme.primaryColor, size: 18),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Related',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(
@@ -954,7 +1063,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
                           color: AppTheme.bgCard,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.06),
+                            color:
+                                Colors.white.withValues(alpha: 0.06),
                           ),
                         ),
                         child: r.coverUrl.isNotEmpty
@@ -980,7 +1090,8 @@ class _AnimeDetailsScreenState extends State<AnimeDetailsScreen> {
                         Text(
                           r.format!,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.45),
+                            color:
+                                Colors.white.withValues(alpha: 0.45),
                             fontSize: 11,
                           ),
                         ),

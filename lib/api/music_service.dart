@@ -221,7 +221,7 @@ class MusicService {
       return _videoIdCache[cacheKey];
     }
 
-    // Fast path: YouTube results-page HTML + regex (ported from Dizzy TV).
+    // Fast path: YouTube results-page HTML + regex (ported from PlayTorrio TV).
     try {
       final fastId = await YoutubeAudioExtractor.instance
           .searchVideoId(title, artist);
@@ -262,7 +262,7 @@ class MusicService {
       return cached.url;
     }
 
-    // Fast path: direct InnerTube call (ported from Dizzy TV).
+    // Fast path: direct InnerTube call (ported from PlayTorrio TV).
     try {
       final fastUrl =
           await YoutubeAudioExtractor.instance.getAudioUrl(videoId);

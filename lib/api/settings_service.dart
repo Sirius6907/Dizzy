@@ -135,45 +135,6 @@ class SettingsService {
     await prefs.setString(_subFontKey, v);
   }
 
-  // ── v2.0.0 Stream Health Tracking ─────────────────────────────────────────
-  static const String _streamHealthKey = 'stream_health_v2';
-  
-  /// Record successful stream from a source (for health monitoring)
-  Future<void> recordStreamSuccess(String sourceName) async {
-    final prefs = await SharedPreferences.getInstance();
-    final healthData = prefs.getString(_streamHealthKey);
-    Map<String, dynamic> health = {};
-    
-    if (healthData != null) {
-      try {
-        health = json.decode(healthData) as Map<String, dynamic>;
-      } catch (e) {
-        debugPrint('[SettingsService] Failed to parse stream health: $e');
-      }
-    }
-    
-    // Update success count and last success timestamp
-    health[sourceName] = {
-      'successCount': ((health[sourceName]?['successCount'] ?? 0) as int) + 1,
-      'lastSuccess': DateTime.now().toIso8601String(),
-    };
-    
-    await prefs.setString(_streamHealthKey, json.encode(health));
-  }
-  
-  /// Get stream health stats (for debug/analytics)
-  Future<Map<String, dynamic>> getStreamHealth() async {
-    final prefs = await SharedPreferences.getInstance();
-    final healthData = prefs.getString(_streamHealthKey);
-    if (healthData == null) return {};
-    
-    try {
-      return json.decode(healthData) as Map<String, dynamic>;
-    } catch (e) {
-      return {};
-    }
-  }
-
   Future<List<Map<String, dynamic>>> getStremioAddons() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> list = prefs.getStringList(_stremioAddonsKey) ?? [];
@@ -476,7 +437,7 @@ class SettingsService {
   static const List<String> allNavIds = [
     'home', 'discover', 'similar', 'search', 'mylist', 'downloader', 'magnet', 'live_matches',
     'iptv', 'audiobooks', 'books', 'music', 'comics', 'manga',
-    'jellyfin', 'anime', 'asian_drama',
+    'jellyfin', 'anime', 'anime_arabic', 'asian_drama', 'arabic',
   ];
 
   /// Returns the ordered list of visible nav item IDs.

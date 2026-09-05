@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import '../api/books_service.dart';
 import '../services/book_progress_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import 'book_reader_screen.dart';
 
 class BooksScreen extends StatefulWidget {
@@ -66,21 +65,16 @@ class _BooksScreenState extends State<BooksScreen> {
         _isLoading = false;
       });
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        _scrollController.animateTo(0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut);
       }
     }
   }
 
   // ── Download + open flow ───────────────────────────────────────────────────
 
-  Future<void> _showDownloadDialog(
-    BookResult book, {
-    int resumeChapter = 0,
-  }) async {
+  Future<void> _showDownloadDialog(BookResult book, {int resumeChapter = 0}) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -137,10 +131,8 @@ class _BooksScreenState extends State<BooksScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A0B2E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Delete Book',
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
+        title: const Text('Delete Book',
+            style: TextStyle(color: Colors.white, fontSize: 16)),
         content: Text(
           'Delete "${entry.book.title}" and its reading progress?',
           style: const TextStyle(color: Colors.white70, fontSize: 14),
@@ -148,17 +140,11 @@ class _BooksScreenState extends State<BooksScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white54),
-            ),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.redAccent),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -198,29 +184,21 @@ class _BooksScreenState extends State<BooksScreen> {
               color: AppTheme.primaryColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.import_contacts_rounded,
-              color: AppTheme.primaryColor,
-              size: 28,
-            ),
+            child: const Icon(Icons.import_contacts_rounded,
+                color: AppTheme.primaryColor, size: 28),
           ),
           const SizedBox(width: 14),
           const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Books',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              Text(
-                'Search & download ebooks (EPUB)',
-                style: TextStyle(fontSize: 12, color: Colors.white38),
-              ),
+              Text('Books',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.5)),
+              Text('Search & download ebooks (EPUB)',
+                  style: TextStyle(fontSize: 12, color: Colors.white38)),
             ],
           ),
         ],
@@ -245,11 +223,7 @@ class _BooksScreenState extends State<BooksScreen> {
             children: [
               if (_searchController.text.isNotEmpty)
                 IconButton(
-                  icon: const Icon(
-                    Icons.clear,
-                    color: Colors.white38,
-                    size: 20,
-                  ),
+                  icon: const Icon(Icons.clear, color: Colors.white38, size: 20),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -273,15 +247,11 @@ class _BooksScreenState extends State<BooksScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(
-              color: AppTheme.primaryColor,
-              width: 1.5,
-            ),
+            borderSide:
+                const BorderSide(color: AppTheme.primaryColor, width: 1.5),
           ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 14,
-            horizontal: 16,
-          ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
         onChanged: (v) => setState(() {}),
       ),
@@ -296,10 +266,8 @@ class _BooksScreenState extends State<BooksScreen> {
           children: [
             CircularProgressIndicator(color: AppTheme.primaryColor),
             SizedBox(height: 16),
-            Text(
-              'Searching LibGen…',
-              style: TextStyle(color: Colors.white54, fontSize: 14),
-            ),
+            Text('Searching LibGen…',
+                style: TextStyle(color: Colors.white54, fontSize: 14)),
           ],
         ),
       );
@@ -307,10 +275,20 @@ class _BooksScreenState extends State<BooksScreen> {
 
     if (_hasSearched) {
       if (_results.isEmpty) {
-        return DizzyEmptyState(
-          icon: Icons.search_off_rounded,
-          title: 'No EPUB results for "$_lastQuery"',
-          description: 'Try a different title or author',
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.search_off_rounded,
+                  size: 64, color: Colors.white24),
+              const SizedBox(height: 16),
+              Text('No EPUB results for "$_lastQuery"',
+                  style: const TextStyle(color: Colors.white54, fontSize: 15)),
+              const SizedBox(height: 8),
+              const Text('Try a different title or author',
+                  style: TextStyle(color: Colors.white30, fontSize: 13)),
+            ],
+          ),
         );
       }
 
@@ -320,19 +298,14 @@ class _BooksScreenState extends State<BooksScreen> {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: Row(
               children: [
-                Text(
-                  '${_results.length} EPUB results',
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                ),
+                Text('${_results.length} EPUB results',
+                    style: const TextStyle(
+                        color: Colors.white38, fontSize: 12)),
                 const Spacer(),
-                Text(
-                  'for "$_lastQuery"',
-                  style: const TextStyle(
-                    color: Colors.white24,
-                    fontSize: 11,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
+                Text('for "$_lastQuery"',
+                    style: const TextStyle(
+                        color: Colors.white24, fontSize: 11,
+                        fontStyle: FontStyle.italic)),
               ],
             ),
           ),
@@ -341,7 +314,8 @@ class _BooksScreenState extends State<BooksScreen> {
               controller: _scrollController,
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
               itemCount: _results.length,
-              itemBuilder: (context, index) => _buildBookCard(_results[index]),
+              itemBuilder: (context, index) =>
+                  _buildBookCard(_results[index]),
             ),
           ),
         ],
@@ -356,7 +330,12 @@ class _BooksScreenState extends State<BooksScreen> {
       children: [
         const Padding(
           padding: EdgeInsets.fromLTRB(8, 8, 8, 12),
-          child: DizzySectionHeader(title: 'Continue Reading'),
+          child: Text('Continue Reading',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 0.3)),
         ),
         ..._reading.map(_buildContinueCard),
       ],
@@ -379,11 +358,8 @@ class _BooksScreenState extends State<BooksScreen> {
           color: Colors.redAccent.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
-          Icons.delete_outline_rounded,
-          color: Colors.redAccent,
-          size: 28,
-        ),
+        child: const Icon(Icons.delete_outline_rounded,
+            color: Colors.redAccent, size: 28),
       ),
       confirmDismiss: (_) async {
         await _deleteBook(entry);
@@ -409,14 +385,10 @@ class _BooksScreenState extends State<BooksScreen> {
                     color: AppTheme.primaryColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.25),
-                    ),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.25)),
                   ),
-                  child: const Icon(
-                    Icons.auto_stories_rounded,
-                    color: AppTheme.primaryColor,
-                    size: 28,
-                  ),
+                  child: const Icon(Icons.auto_stories_rounded,
+                      color: AppTheme.primaryColor, size: 28),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -424,44 +396,32 @@ class _BooksScreenState extends State<BooksScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (book.series.isNotEmpty)
-                        Text(
-                          book.series,
+                        Text(book.series,
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: AppTheme.accentColor,
+                                letterSpacing: 0.5),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                      Text(book.title,
                           style: const TextStyle(
-                            fontSize: 10,
-                            color: AppTheme.accentColor,
-                            letterSpacing: 0.5,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      Text(
-                        book.title,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
                       if (book.author.isNotEmpty)
-                        Text(
-                          book.author,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white60,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        Text(book.author,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.white60),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          _chip(
-                            Icons.bookmark_rounded,
-                            'Chapter ${entry.chapter + 1}',
-                          ),
+                          _chip(Icons.bookmark_rounded,
+                              'Chapter ${entry.chapter + 1}'),
                           const SizedBox(width: 6),
                           _chip(Icons.access_time_rounded, ago),
                         ],
@@ -472,19 +432,13 @@ class _BooksScreenState extends State<BooksScreen> {
                 const SizedBox(width: 4),
                 Column(
                   children: [
-                    const Icon(
-                      Icons.play_circle_fill_rounded,
-                      color: AppTheme.primaryColor,
-                      size: 28,
-                    ),
+                    const Icon(Icons.play_circle_fill_rounded,
+                        color: AppTheme.primaryColor, size: 28),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: () => _deleteBook(entry),
-                      child: const Icon(
-                        Icons.delete_outline_rounded,
-                        color: Colors.white24,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.delete_outline_rounded,
+                          color: Colors.white24, size: 20),
                     ),
                   ],
                 ),
@@ -498,8 +452,7 @@ class _BooksScreenState extends State<BooksScreen> {
 
   String _timeAgo(int ts) {
     final diff = DateTime.now().difference(
-      DateTime.fromMillisecondsSinceEpoch(ts),
-    );
+        DateTime.fromMillisecondsSinceEpoch(ts));
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
@@ -508,11 +461,36 @@ class _BooksScreenState extends State<BooksScreen> {
   }
 
   Widget _buildEmptyState() {
-    return DizzyEmptyState(
-      icon: Icons.import_contacts_rounded,
-      title: 'Search for Books',
-      description:
-          'Search LibGen to find and download EPUB ebooks by title, author, or ISBN.',
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.import_contacts_rounded,
+                  size: 64, color: AppTheme.primaryColor),
+            ),
+            const SizedBox(height: 24),
+            const Text('Search for Books',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+            const SizedBox(height: 10),
+            const Text(
+              'Search LibGen to find and download EPUB ebooks by title, author, or ISBN.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: Colors.white38, height: 1.5),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -536,14 +514,10 @@ class _BooksScreenState extends State<BooksScreen> {
                   color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.25),
-                  ),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.25)),
                 ),
-                child: const Icon(
-                  Icons.menu_book_rounded,
-                  color: AppTheme.primaryColor,
-                  size: 28,
-                ),
+                child: const Icon(Icons.menu_book_rounded,
+                    color: AppTheme.primaryColor, size: 28),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -551,37 +525,27 @@ class _BooksScreenState extends State<BooksScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (book.series.isNotEmpty)
-                      Text(
-                        book.series,
+                      Text(book.series,
+                          style: const TextStyle(
+                              fontSize: 10,
+                              color: AppTheme.accentColor,
+                              letterSpacing: 0.5),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    Text(book.title,
                         style: const TextStyle(
-                          fontSize: 10,
-                          color: AppTheme.accentColor,
-                          letterSpacing: 0.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    Text(
-                      book.title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     if (book.author.isNotEmpty)
-                      Text(
-                        book.author,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white60,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(book.author,
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.white60),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 6,
@@ -604,29 +568,21 @@ class _BooksScreenState extends State<BooksScreen> {
               Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
-                      'EPUB',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.greenAccent,
-                      ),
-                    ),
+                    child: const Text('EPUB',
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.greenAccent)),
                   ),
                   const SizedBox(height: 12),
-                  const Icon(
-                    Icons.download_rounded,
-                    color: AppTheme.primaryColor,
-                    size: 22,
-                  ),
+                  const Icon(Icons.download_rounded,
+                      color: AppTheme.primaryColor, size: 22),
                 ],
               ),
             ],
@@ -648,10 +604,8 @@ class _BooksScreenState extends State<BooksScreen> {
         children: [
           Icon(icon, size: 10, color: Colors.white38),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 10, color: Colors.white54),
-          ),
+          Text(label,
+              style: const TextStyle(fontSize: 10, color: Colors.white54)),
         ],
       ),
     );
@@ -691,9 +645,8 @@ class _DownloadDialogState extends State<_DownloadDialog> {
   Future<void> _run() async {
     try {
       // ── Step 1: Check persistent cache ─────────────────────────────────────
-      final filePath = await BookProgressService.instance.bookFilePath(
-        widget.book.editionId,
-      );
+      final filePath = await BookProgressService.instance
+          .bookFilePath(widget.book.editionId);
       final cacheFile = File(filePath);
 
       if (cacheFile.existsSync() && cacheFile.lengthSync() > 1000) {
@@ -703,9 +656,8 @@ class _DownloadDialogState extends State<_DownloadDialog> {
 
       // ── Step 2: Resolve MD5 → download URL ────────────────────────────────
       if (mounted) setState(() => _status = 'Resolving download link…');
-      final downloadUrl = await widget.service.resolveDownloadUrl(
-        widget.book.editionId,
-      );
+      final downloadUrl =
+          await widget.service.resolveDownloadUrl(widget.book.editionId);
       if (downloadUrl == null) {
         if (mounted) {
           setState(() {
@@ -777,10 +729,9 @@ class _DownloadDialogState extends State<_DownloadDialog> {
             child: Text(
               book.title,
               style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -799,7 +750,8 @@ class _DownloadDialogState extends State<_DownloadDialog> {
             _infoRow(Icons.business_rounded, book.publisher),
           if (book.pages.isNotEmpty)
             _infoRow(Icons.article_rounded, '${book.pages} pages'),
-          if (book.size.isNotEmpty) _infoRow(Icons.sd_card_rounded, book.size),
+          if (book.size.isNotEmpty)
+            _infoRow(Icons.sd_card_rounded, book.size),
           if (book.language.isNotEmpty)
             _infoRow(Icons.language_rounded, book.language),
           if (book.isbn.isNotEmpty)
@@ -810,20 +762,13 @@ class _DownloadDialogState extends State<_DownloadDialog> {
           if (_failed)
             Row(
               children: [
-                const Icon(
-                  Icons.error_outline_rounded,
-                  color: Colors.redAccent,
-                  size: 18,
-                ),
+                const Icon(Icons.error_outline_rounded,
+                    color: Colors.redAccent, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    _status,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.redAccent,
-                    ),
-                  ),
+                  child: Text(_status,
+                      style: const TextStyle(
+                          fontSize: 13, color: Colors.redAccent)),
                 ),
               ],
             )
@@ -843,22 +788,17 @@ class _DownloadDialogState extends State<_DownloadDialog> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        _status,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white54,
-                        ),
-                      ),
+                      child: Text(_status,
+                          style: const TextStyle(
+                              fontSize: 13, color: Colors.white54)),
                     ),
                     if (_downloadProgress != null)
                       Text(
                         '${(_downloadProgress! * 100).toStringAsFixed(0)}%',
                         style: const TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 12,
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold),
                       ),
                   ],
                 ),
@@ -870,8 +810,7 @@ class _DownloadDialogState extends State<_DownloadDialog> {
                       value: _downloadProgress,
                       backgroundColor: Colors.white12,
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppTheme.primaryColor,
-                      ),
+                          AppTheme.primaryColor),
                       minHeight: 4,
                     ),
                   ),
@@ -884,7 +823,8 @@ class _DownloadDialogState extends State<_DownloadDialog> {
         if (_failed)
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close', style: TextStyle(color: Colors.white54)),
+            child: const Text('Close',
+                style: TextStyle(color: Colors.white54)),
           ),
       ],
     );
@@ -898,12 +838,11 @@ class _DownloadDialogState extends State<_DownloadDialog> {
           Icon(icon, size: 14, color: Colors.white38),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 13, color: Colors.white70),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: Text(text,
+                style: const TextStyle(
+                    fontSize: 13, color: Colors.white70),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
           ),
         ],
       ),

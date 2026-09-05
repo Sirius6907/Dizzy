@@ -1633,7 +1633,7 @@ class TraktService {
   }
 
   // ── TMDB poster resolution ─────────────────────────────────────────────
-  static const String _tmdbApiKey = 'ef0d35fe298492270fcd565215e1901c';
+  static const String _tmdbApiKey = 'c3515fdc674ea2bd7b514f4bc3616a4a';
   static const String _tmdbBase = 'https://api.themoviedb.org/3';
 
   /// Fetch the TMDB poster_path for a given TMDB ID.

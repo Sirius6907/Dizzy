@@ -1,45 +1,46 @@
-// Asian Drama (kisskh.co) per-episode resolver. Single extraction path
-// (no multi-server fan-out) that runs `KissKhExtractor` against a hidden
-// WebView, then hands the resulting URL + subtitles to `PlayerScreen`.
+// Anime Arabic player resolver: cracks streamData, then races every
+// available iframe through StreamExtractor in parallel. The first hit
+// triggers a short grace window so slower extractors land as fallbacks
+// for the in-player source switcher. No UI to pick servers — auto only.
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../api/kisskh_extractor.dart';
-import '../api/kisskh_service.dart';
+import '../api/anime_arabic_extractor.dart';
+import '../api/anime_arabic_service.dart';
 import '../utils/app_theme.dart';
 import 'player_screen.dart';
 
-class AsianDramaPlayerScreen extends StatefulWidget {
-  final KdramaCard drama;
-  final KdramaEpisode episode;
-  final List<KdramaEpisode> allEpisodes;
+class AnimeArabicPlayerScreen extends StatefulWidget {
+  final ArabicAnimeCard anime;
+  final ArabicEpisode episode;
+  final List<ArabicEpisode> allEpisodes;
   final Duration? startPosition;
 
-  const AsianDramaPlayerScreen({
+  const AnimeArabicPlayerScreen({
     super.key,
-    required this.drama,
+    required this.anime,
     required this.episode,
     this.allEpisodes = const [],
     this.startPosition,
   });
 
   @override
-  State<AsianDramaPlayerScreen> createState() =>
-      _AsianDramaPlayerScreenState();
+  State<AnimeArabicPlayerScreen> createState() =>
+      _AnimeArabicPlayerScreenState();
 }
 
-class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
+class _AnimeArabicPlayerScreenState extends State<AnimeArabicPlayerScreen>
     with TickerProviderStateMixin {
-  final KissKhService _service = KissKhService();
-  final KissKhExtractor _extractor = KissKhExtractor();
+  final AnimeArabicService _service = AnimeArabicService();
+  final AnimeArabicExtractor _extractor = AnimeArabicExtractor();
 
   String _phase = 'Fetching streams…';
   String _statusLine = '';
   bool _resolving = true;
   bool _failedAll = false;
-  int _subsFound = 0;
+  int _serversFound = 0;
 
   late final AnimationController _pulseCtrl;
 
@@ -56,39 +57,33 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
   @override
   void dispose() {
     _pulseCtrl.dispose();
-    _extractor.dispose();
     super.dispose();
   }
 
   Future<void> _bootstrap() async {
     try {
-      final stream = await _extractor.resolve(
-        dramaId: widget.drama.id,
-        dramaTitle: widget.drama.title,
-        episodeId: widget.episode.id,
-        episodeNumber: widget.episode.number,
+      final hits = await _extractor.resolveEpisode(
+        widget.episode,
         onProgress: (phase, detail) {
           if (!mounted) return;
-          setState(() {
-            if (phase == 'init') _phase = 'Opening kisskh…';
-            if (phase == 'loaded') _phase = 'Waiting for stream key…';
-            if (phase == 'done') _phase = 'Stream ready';
-            if (phase == 'error') _statusLine = detail;
-          });
+          if (phase == 'error') {
+            setState(() => _statusLine = detail);
+          }
         },
       );
 
       if (!mounted) return;
-      if (stream == null) {
+      if (hits.isEmpty) {
         setState(() {
           _resolving = false;
           _failedAll = true;
-          _phase = 'No stream available';
+          _phase = 'No streams available';
+          _statusLine = '';
         });
         return;
       }
-      _subsFound = stream.subtitles.length;
-      await _launchPlayer(stream);
+      _serversFound = hits.length;
+      await _launchPlayer(hits);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -100,32 +95,40 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
     }
   }
 
-  Future<void> _launchPlayer(KissKhStream stream) async {
-    final sources = stream.toSources(label: 'kisskh');
-    final subs = stream.subtitles;
+  Future<void> _launchPlayer(List<ArabicResolvedStream> hits) async {
+    final winner = hits.first;
+    final sources = AnimeArabicExtractor.toSources(hits);
+    final subs = AnimeArabicExtractor.collectSubtitles(hits);
 
     await _service.recordWatch(
-      drama: widget.drama,
+      anime: widget.anime,
       episodeNumber: widget.episode.number,
       totalEpisodes: widget.allEpisodes.isNotEmpty
           ? widget.allEpisodes.length
-          : widget.episode.number.toInt(),
+          : widget.episode.number,
     );
 
-    final title =
-        '${widget.drama.title} • EP ${widget.episode.displayNumber}';
+    final title = '${widget.anime.title} • Ep ${widget.episode.number} '
+        '(${winner.server.displayName})';
 
-    KdramaEpisode? nextFromList;
+    // Next-episode detection. When `allEpisodes` was passed in (the normal
+    // launch path from the details screen / continue-watching), pick it
+    // straight from the list. Otherwise, optimistically assume there *is*
+    // a next episode and refetch the details on click.
+    ArabicEpisode? nextFromList;
     if (widget.allEpisodes.isNotEmpty) {
       for (final e in widget.allEpisodes) {
-        if (e.number == widget.episode.number + 1) {
+        if (e.number == widget.episode.number + 1 &&
+            e.watchPath.isNotEmpty) {
           nextFromList = e;
           break;
         }
       }
     }
-    final hasNext =
-        widget.allEpisodes.isEmpty ? true : nextFromList != null;
+    final hasNext = widget.allEpisodes.isEmpty
+        // Unknown total — let the user try; refetch decides on click.
+        ? true
+        : nextFromList != null;
 
     if (!mounted) return;
     final navigator = Navigator.of(context);
@@ -133,23 +136,26 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
     Future<void> goNext() async {
       var ep = nextFromList;
       var list = widget.allEpisodes;
-      if (ep == null) {
+      if (ep == null || ep.watchPath.isEmpty) {
+        // Either we never had the list, or the cached next entry is empty.
+        // Refetch the details now so we have a fresh slug + watchPath.
         try {
-          final det = await _service.getDetails(widget.drama.id);
+          final det = await _service.getDetails(widget.anime.slug);
           list = det.episodes;
           for (final e in det.episodes) {
-            if (e.number == widget.episode.number + 1) {
+            if (e.number == widget.episode.number + 1 &&
+                e.watchPath.isNotEmpty) {
               ep = e;
               break;
             }
           }
         } catch (_) {}
       }
-      if (ep == null) return;
+      if (ep == null || ep.watchPath.isEmpty) return;
       await navigator.pushReplacement(
         MaterialPageRoute(
-          builder: (_) => AsianDramaPlayerScreen(
-            drama: widget.drama,
+          builder: (_) => AnimeArabicPlayerScreen(
+            anime: widget.anime,
             episode: ep!,
             allEpisodes: list,
           ),
@@ -164,16 +170,16 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
           title: title,
           headers: sources.first.headers,
           sources: sources,
-          activeProvider: 'kisskh',
+          activeProvider: winner.server.name,
           startPosition: widget.startPosition,
           externalSubtitles: subs.isNotEmpty ? subs : null,
           onSaveProgress: (pos, dur) async {
             await _service.recordWatch(
-              drama: widget.drama,
+              anime: widget.anime,
               episodeNumber: widget.episode.number,
               totalEpisodes: widget.allEpisodes.isNotEmpty
                   ? widget.allEpisodes.length
-                  : widget.episode.number.toInt(),
+                  : widget.episode.number,
               position: pos,
               duration: dur,
             );
@@ -185,7 +191,7 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AppThemePreset>(
@@ -198,11 +204,9 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
             elevation: 0,
             iconTheme: const IconThemeData(color: Colors.white),
             title: Text(
-              '${widget.drama.title} • EP ${widget.episode.displayNumber}',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
+              '${widget.anime.title} • EP ${widget.episode.number}',
+              style:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -269,11 +273,11 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
                       ),
                     ),
                   ],
-                  if (_subsFound > 0) ...[
+                  if (_serversFound > 0) ...[
                     const SizedBox(height: 6),
                     Text(
-                      '$_subsFound subtitle'
-                      '${_subsFound > 1 ? 's' : ''} loaded',
+                      '$_serversFound source${_serversFound > 1 ? 's' : ''}'
+                      ' ready',
                       style: TextStyle(
                         color: theme.primaryColor.withValues(alpha: 0.9),
                         fontSize: 12,
@@ -298,8 +302,7 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
+                            color: Colors.white.withValues(alpha: 0.3)),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 22, vertical: 12),
                       ),
@@ -310,8 +313,8 @@ class _AsianDramaPlayerScreenState extends State<AsianDramaPlayerScreen>
                       child: Text(
                         'Back',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
+                            color:
+                                Colors.white.withValues(alpha: 0.6)),
                       ),
                     ),
                   ],

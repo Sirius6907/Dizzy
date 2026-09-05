@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../api/manga_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 
 class MangaReaderScreen extends StatefulWidget {
   final Manga manga;
@@ -24,9 +23,8 @@ class MangaReaderScreen extends StatefulWidget {
   /// Bumped whenever the reading history is saved or removed.
   /// MangaScreen listens to this so the Continue Reading list updates
   /// without needing the screen to be popped or the app to be resumed.
-  static final ValueNotifier<int> readingHistoryRevision = ValueNotifier<int>(
-    0,
-  );
+  static final ValueNotifier<int> readingHistoryRevision =
+      ValueNotifier<int>(0);
 
   @override
   State<MangaReaderScreen> createState() => _MangaReaderScreenState();
@@ -34,11 +32,10 @@ class MangaReaderScreen extends StatefulWidget {
 
 class _MangaReaderScreenState extends State<MangaReaderScreen> {
   final MangaService _mangaService = MangaService();
-  final TransformationController _transformationController =
-      TransformationController();
+  final TransformationController _transformationController = TransformationController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
-
+  
   List<String> _pageUrls = [];
   int _currentPageIndex = 0;
   int _currentChapterIndex = 0;
@@ -48,7 +45,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   double _currentScale = 1.0;
   bool _continuousScrollMode = false;
   bool _showZoomControls = true;
-
+  
   static const String _historyKey = 'manga_reading_history';
 
   @override
@@ -92,15 +89,11 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
           // When zoomed in, up/down pan the view
           if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
             final currentMatrix = _transformationController.value;
-            final newMatrix =
-                currentMatrix.clone() *
-                Matrix4.translationValues(0.0, -100.0, 0.0);
+            final newMatrix = currentMatrix.clone() * Matrix4.translationValues(0.0, -100.0, 0.0);
             _transformationController.value = newMatrix;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
             final currentMatrix = _transformationController.value;
-            final newMatrix =
-                currentMatrix.clone() *
-                Matrix4.translationValues(0.0, 100.0, 0.0);
+            final newMatrix = currentMatrix.clone() * Matrix4.translationValues(0.0, 100.0, 0.0);
             _transformationController.value = newMatrix;
           }
         }
@@ -120,7 +113,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
       _continuousScrollMode = !_continuousScrollMode;
       _resetZoom();
     });
-
+    
     // Scroll to the current page position in continuous mode
     if (_continuousScrollMode && _pageUrls.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -140,7 +133,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
 
   Future<void> _saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
-
+    
     final progress = {
       'manga': widget.manga.toJson(),
       'chapterIndex': _currentChapterIndex,
@@ -150,25 +143,20 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     };
 
     final historyJson = prefs.getStringList(_historyKey) ?? [];
-    final history = historyJson
-        .map((e) => jsonDecode(e) as Map<String, dynamic>)
-        .toList();
-
+    final history = historyJson.map((e) => jsonDecode(e) as Map<String, dynamic>).toList();
+    
     // Remove existing entry for this manga
     history.removeWhere((h) => h['manga']['id'] == widget.manga.id);
-
+    
     // Add new entry at the beginning
     history.insert(0, progress);
-
+    
     // Keep only last 10 items
     if (history.length > 10) {
       history.removeRange(10, history.length);
     }
-
-    await prefs.setStringList(
-      _historyKey,
-      history.map((e) => jsonEncode(e)).toList(),
-    );
+    
+    await prefs.setStringList(_historyKey, history.map((e) => jsonEncode(e)).toList());
     MangaReaderScreen.readingHistoryRevision.value++;
   }
 
@@ -176,19 +164,19 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     final viewportSize = MediaQuery.of(context).size;
     final centerX = viewportSize.width / 2;
     final centerY = viewportSize.height / 2;
-
+    
     final focalPointX = centerX - (centerX * scale);
     final focalPointY = centerY - (centerY * scale);
-
+    
     // Create transformation matrix without deprecated methods
     final matrix = Matrix4.identity();
-    matrix.setEntry(0, 0, scale); // Scale X
-    matrix.setEntry(1, 1, scale); // Scale Y
-    matrix.setEntry(0, 3, focalPointX); // Translate X
-    matrix.setEntry(1, 3, focalPointY); // Translate Y
-
+    matrix.setEntry(0, 0, scale);  // Scale X
+    matrix.setEntry(1, 1, scale);  // Scale Y
+    matrix.setEntry(0, 3, focalPointX);  // Translate X
+    matrix.setEntry(1, 3, focalPointY);  // Translate Y
+    
     _transformationController.value = matrix;
-
+    
     setState(() => _currentScale = scale);
   }
 
@@ -208,35 +196,33 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
 
   Future<void> _loadChapter() async {
     setState(() => _isLoading = true);
-
+    
     final chapter = widget.chapters[_currentChapterIndex];
     debugPrint('[MangaReader] Loading chapter ${chapter.number}');
     final images = await _mangaService.getChapterImages(chapter.id);
-
+    
     debugPrint('[MangaReader] Received ${images.length} images');
     if (images.isNotEmpty) {
       debugPrint('[MangaReader] First image: ${images.first}');
     }
-
+    
     if (mounted) {
       setState(() {
         _pageUrls = images;
         _currentPageIndex = 0;
         _isLoading = false;
       });
-
-      debugPrint(
-        '[MangaReader] State updated, _pageUrls.length = ${_pageUrls.length}',
-      );
-
+      
+      debugPrint('[MangaReader] State updated, _pageUrls.length = ${_pageUrls.length}');
+      
       // Resume to saved page if provided and this is the initial load
-      if (widget.resumePageIndex != null &&
+      if (widget.resumePageIndex != null && 
           _currentChapterIndex == widget.currentChapterIndex &&
           widget.resumePageIndex! < _pageUrls.length) {
         setState(() => _currentPageIndex = widget.resumePageIndex!);
         debugPrint('[MangaReader] Resuming to page ${widget.resumePageIndex}');
       }
-
+      
       if (_pageUrls.isNotEmpty) {
         _loadPageImage(_currentPageIndex);
       }
@@ -245,14 +231,12 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
 
   Future<void> _loadPageImage(int pageIndex) async {
     if (pageIndex < 0 || pageIndex >= _pageUrls.length) return;
-
-    debugPrint(
-      '[MangaReader] Loading page $pageIndex: ${_pageUrls[pageIndex]}',
-    );
+    
+    debugPrint('[MangaReader] Loading page $pageIndex: ${_pageUrls[pageIndex]}');
     setState(() => _isLoadingPage = true);
-
+    
     final imageUrl = _pageUrls[pageIndex];
-
+    
     if (mounted) {
       setState(() {
         _currentImageUrl = imageUrl;
@@ -303,8 +287,8 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final chapter = widget.chapters[_currentChapterIndex];
-    final chapterTitle = chapter.name.isNotEmpty
-        ? 'Chapter ${chapter.number} - ${chapter.name}'
+    final chapterTitle = chapter.name.isNotEmpty 
+        ? 'Chapter ${chapter.number} - ${chapter.name}' 
         : 'Chapter ${chapter.number}';
 
     return KeyboardListener(
@@ -326,7 +310,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
               ),
               if (!_isLoading && _pageUrls.isNotEmpty)
                 Text(
-                  _continuousScrollMode
+                  _continuousScrollMode 
                       ? 'All Pages (${_pageUrls.length})'
                       : 'Page ${_currentPageIndex + 1} / ${_pageUrls.length}',
                   style: const TextStyle(fontSize: 11, color: Colors.white54),
@@ -337,14 +321,10 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
             if (!_isLoading && _pageUrls.isNotEmpty)
               IconButton(
                 icon: Icon(
-                  _continuousScrollMode
-                      ? Icons.view_carousel
-                      : Icons.view_stream,
+                  _continuousScrollMode ? Icons.view_carousel : Icons.view_stream,
                   color: Colors.white,
                 ),
-                tooltip: _continuousScrollMode
-                    ? 'Page by Page'
-                    : 'Continuous Scroll',
+                tooltip: _continuousScrollMode ? 'Page by Page' : 'Continuous Scroll',
                 onPressed: _toggleScrollMode,
               ),
           ],
@@ -355,11 +335,9 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
               _buildContinuousScrollView()
             else
               _buildPageByPageView(),
-
+            
             // Zoom Controls (available in both modes)
-            if (!_isLoading &&
-                (_currentImageUrl != null || _continuousScrollMode) &&
-                _showZoomControls)
+            if (!_isLoading && (_currentImageUrl != null || _continuousScrollMode) && _showZoomControls)
               Positioned(
                 left: 16,
                 top: 80,
@@ -386,12 +364,8 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                           child: SliderTheme(
                             data: SliderThemeData(
                               trackHeight: 3,
-                              thumbShape: const RoundSliderThumbShape(
-                                enabledThumbRadius: 6,
-                              ),
-                              overlayShape: const RoundSliderOverlayShape(
-                                overlayRadius: 12,
-                              ),
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
                               activeTrackColor: AppTheme.primaryColor,
                               inactiveTrackColor: Colors.white24,
                               thumbColor: AppTheme.primaryColor,
@@ -425,10 +399,9 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                   ),
                 ),
               ),
-
+            
             // Navigation Buttons (Desktop/Tablet, page-by-page mode)
-            if (!_continuousScrollMode &&
-                MediaQuery.of(context).size.width > 600) ...[
+            if (!_continuousScrollMode && MediaQuery.of(context).size.width > 600) ...[
               Positioned(
                 left: 16,
                 bottom: 16,
@@ -452,13 +425,10 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                 ),
               ),
             ],
-
+            
             // Next Chapter Button (on last page)
-            if (!_continuousScrollMode &&
-                !_isLoading &&
-                _pageUrls.isNotEmpty &&
-                _currentPageIndex == _pageUrls.length - 1 &&
-                _currentChapterIndex > 0)
+            if (!_continuousScrollMode && !_isLoading && _pageUrls.isNotEmpty && 
+                _currentPageIndex == _pageUrls.length - 1 && _currentChapterIndex > 0)
               Positioned(
                 bottom: 80,
                 left: 0,
@@ -467,16 +437,11 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _nextChapter,
                     icon: const Icon(Icons.skip_next),
-                    label: Text(
-                      'Next Chapter: ${widget.chapters[_currentChapterIndex - 1].number}',
-                    ),
+                    label: Text('Next Chapter: ${widget.chapters[_currentChapterIndex - 1].number}'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -485,12 +450,9 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                   ),
                 ),
               ),
-
+            
             // Bottom Progress Indicator (Mobile, page-by-page mode)
-            if (!_continuousScrollMode &&
-                MediaQuery.of(context).size.width <= 600 &&
-                !_isLoading &&
-                _pageUrls.isNotEmpty)
+            if (!_continuousScrollMode && MediaQuery.of(context).size.width <= 600 && !_isLoading && _pageUrls.isNotEmpty)
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -516,63 +478,53 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
       child: _isLoading
           ? const CircularProgressIndicator(color: AppTheme.primaryColor)
           : _pageUrls.isEmpty
-          ? const DizzyEmptyState(
-              icon: Icons.error_outline,
-              title: 'Load Error',
-              description: 'Failed to load pages',
-            )
-          : _isLoadingPage || _currentImageUrl == null
-          ? const CircularProgressIndicator(color: AppTheme.primaryColor)
-          : GestureDetector(
-              onTap: () {
-                // Toggle zoom controls on mobile
-                if (MediaQuery.of(context).size.width <= 600) {
-                  setState(() => _showZoomControls = !_showZoomControls);
-                }
-              },
-              onHorizontalDragEnd: (details) {
-                // Swipe navigation on mobile when not zoomed
-                if (MediaQuery.of(context).size.width <= 600 &&
-                    _currentScale <= 1.0) {
-                  if (details.primaryVelocity! > 500) {
-                    // Swipe right - previous page
-                    _prevPage();
-                  } else if (details.primaryVelocity! < -500) {
-                    // Swipe left - next page
-                    _nextPage();
-                  }
-                }
-              },
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                minScale: 1.0,
-                maxScale: 8.0,
-                panEnabled: true,
-                scaleEnabled: true,
-                onInteractionUpdate: (details) {
-                  setState(() {
-                    _currentScale = _transformationController.value
-                        .getMaxScaleOnAxis();
-                  });
-                },
-                child: CachedNetworkImage(
-                  imageUrl: _currentImageUrl!,
-                  fit: BoxFit.contain,
-                  width: double.infinity,
-                  height: double.infinity,
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  errorWidget: (context, url, error) => const Center(
-                    child: Icon(
-                      Icons.broken_image,
-                      color: Colors.white24,
-                      size: 48,
+              ? const Text('Failed to load pages', style: TextStyle(color: Colors.white70))
+              : _isLoadingPage || _currentImageUrl == null
+                  ? const CircularProgressIndicator(color: AppTheme.primaryColor)
+                  : GestureDetector(
+                      onTap: () {
+                        // Toggle zoom controls on mobile
+                        if (MediaQuery.of(context).size.width <= 600) {
+                          setState(() => _showZoomControls = !_showZoomControls);
+                        }
+                      },
+                      onHorizontalDragEnd: (details) {
+                        // Swipe navigation on mobile when not zoomed
+                        if (MediaQuery.of(context).size.width <= 600 && _currentScale <= 1.0) {
+                          if (details.primaryVelocity! > 500) {
+                            // Swipe right - previous page
+                            _prevPage();
+                          } else if (details.primaryVelocity! < -500) {
+                            // Swipe left - next page
+                            _nextPage();
+                          }
+                        }
+                      },
+                      child: InteractiveViewer(
+                        transformationController: _transformationController,
+                        minScale: 1.0,
+                        maxScale: 8.0,
+                        panEnabled: true,
+                        scaleEnabled: true,
+                        onInteractionUpdate: (details) {
+                          setState(() {
+                            _currentScale = _transformationController.value.getMaxScaleOnAxis();
+                          });
+                        },
+                        child: CachedNetworkImage(
+                          imageUrl: _currentImageUrl!,
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                          height: double.infinity,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          errorWidget: (context, url, error) => const Center(
+                            child: Icon(Icons.broken_image, color: Colors.white24, size: 48),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
     );
   }
 
@@ -584,10 +536,8 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     }
 
     if (_pageUrls.isEmpty) {
-      return const DizzyEmptyState(
-        icon: Icons.error_outline,
-        title: 'Load Error',
-        description: 'Failed to load pages',
+      return const Center(
+        child: Text('Failed to load pages', style: TextStyle(color: Colors.white70)),
       );
     }
 
@@ -610,9 +560,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
         radius: const Radius.circular(8),
         child: ListView.builder(
           controller: _scrollController,
-          physics: _currentScale > 1.0
-              ? const NeverScrollableScrollPhysics()
-              : const AlwaysScrollableScrollPhysics(),
+          physics: _currentScale > 1.0 ? const NeverScrollableScrollPhysics() : const AlwaysScrollableScrollPhysics(),
           itemCount: _pageUrls.length,
           itemBuilder: (context, index) {
             return Center(
@@ -635,10 +583,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                           const SizedBox(height: 12),
                           Text(
                             'Loading page ${index + 1}...',
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 12,
-                            ),
+                            style: const TextStyle(color: Colors.white54, fontSize: 12),
                           ),
                         ],
                       ),
@@ -652,18 +597,11 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.broken_image,
-                            color: Colors.white24,
-                            size: 48,
-                          ),
+                          const Icon(Icons.broken_image, color: Colors.white24, size: 48),
                           const SizedBox(height: 8),
                           Text(
                             'Failed to load page ${index + 1}',
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 12,
-                            ),
+                            style: const TextStyle(color: Colors.white54, fontSize: 12),
                           ),
                         ],
                       ),

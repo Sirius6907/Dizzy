@@ -5,7 +5,6 @@ import '../api/audiobook_download_service.dart';
 import '../api/audiobook_service.dart';
 import '../api/music_player_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import 'audiobook_player_screen.dart';
 
 class AudiobookDownloadsScreen extends StatefulWidget {
@@ -65,7 +64,10 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
     // Convert downloaded chapters to AudiobookChapter with local file:// URLs
     final chapters = downloaded.chapters
         .where((c) => c.sizeBytes > 0)
-        .map((c) => AudiobookChapter(title: c.title, url: c.filePath))
+        .map((c) => AudiobookChapter(
+              title: c.title,
+              url: c.filePath,
+            ))
         .toList();
 
     if (chapters.isEmpty) {
@@ -83,10 +85,8 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
         context: context,
         builder: (context) => Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 40,
-            vertical: 24,
-          ),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500, maxHeight: 850),
             child: ClipRRect(
@@ -122,10 +122,7 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A0B2E),
-        title: const Text(
-          'Delete Download',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Delete Download', style: TextStyle(color: Colors.white)),
         content: Text(
           'Delete "${book.book.title}" and all its chapters?',
           style: const TextStyle(color: Colors.white70),
@@ -137,10 +134,7 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.redAccent),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -172,10 +166,7 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 8,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                       child: Text(
                         'DOWNLOADING',
                         style: TextStyle(
@@ -194,30 +185,40 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
             Expanded(
               child: _isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor,
-                      ),
-                    )
+                      child:
+                          CircularProgressIndicator(color: AppTheme.primaryColor))
                   : _downloadedBooks.isEmpty
-                  ? DizzyEmptyState(
-                      title: 'No Downloads Yet',
-                      description:
-                          'Download audiobooks from the player\nto listen offline',
-                      icon: Icons.download_rounded,
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadDownloads,
-                      color: AppTheme.primaryColor,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                      ? const Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.download_rounded,
+                                  color: Colors.white24, size: 64),
+                              SizedBox(height: 16),
+                              Text('No downloads yet',
+                                  style: TextStyle(color: Colors.white54)),
+                              SizedBox(height: 8),
+                              Text(
+                                'Download audiobooks from the player\nto listen offline',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.white38, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _loadDownloads,
+                          color: AppTheme.primaryColor,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            itemCount: _downloadedBooks.length,
+                            itemBuilder: (context, index) =>
+                                _buildDownloadedBookTile(
+                                    _downloadedBooks[index]),
+                          ),
                         ),
-                        itemCount: _downloadedBooks.length,
-                        itemBuilder: (context, index) =>
-                            _buildDownloadedBookTile(_downloadedBooks[index]),
-                      ),
-                    ),
             ),
           ],
         ),
@@ -238,10 +239,9 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
           const Text(
             'Downloads',
             style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Poppins',
-            ),
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins'),
           ),
           const Spacer(),
           Text(
@@ -281,11 +281,7 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
                   width: 48,
                   height: 48,
                   color: Colors.white10,
-                  child: const Icon(
-                    Icons.book,
-                    color: Colors.white24,
-                    size: 24,
-                  ),
+                  child: const Icon(Icons.book, color: Colors.white24, size: 24),
                 ),
               ),
             ),
@@ -300,10 +296,7 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                      color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -354,21 +347,14 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: hasCover
-                    ? Image.file(
-                        coverFile,
-                        width: 72,
-                        height: 72,
-                        fit: BoxFit.cover,
-                      )
+                    ? Image.file(coverFile,
+                        width: 72, height: 72, fit: BoxFit.cover)
                     : Container(
                         width: 72,
                         height: 72,
                         color: Colors.white10,
-                        child: const Icon(
-                          Icons.book,
-                          color: Colors.white24,
-                          size: 32,
-                        ),
+                        child: const Icon(Icons.book,
+                            color: Colors.white24, size: 32),
                       ),
               ),
               const SizedBox(width: 16),
@@ -389,18 +375,14 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '${book.chapters.length} chapters  •  ${_downloadService.formatBytes(book.totalSizeBytes)}',
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 12,
-                      ),
+                      style:
+                          const TextStyle(color: Colors.white54, fontSize: 12),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       _formatSource(book.book.source),
                       style: const TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontSize: 11,
-                      ),
+                          color: AppTheme.primaryColor, fontSize: 11),
                     ),
                   ],
                 ),
@@ -408,19 +390,13 @@ class _AudiobookDownloadsScreenState extends State<AudiobookDownloadsScreen> {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.play_circle_fill,
-                    color: AppTheme.primaryColor,
-                    size: 36,
-                  ),
+                  const Icon(Icons.play_circle_fill,
+                      color: AppTheme.primaryColor, size: 36),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () => _deleteDownload(book),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.white38,
-                      size: 22,
-                    ),
+                    child: const Icon(Icons.delete_outline,
+                        color: Colors.white38, size: 22),
                   ),
                 ],
               ),

@@ -430,7 +430,8 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          draft: true
+          draft: false
+          prerelease: false
           generate_release_notes: true
           files: |
             Dizzy-Android-APK/*.apk

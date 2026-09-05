@@ -5,7 +5,6 @@ import '../api/audiobook_service.dart';
 import '../api/audiobook_player_service.dart';
 import '../api/music_player_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import 'audiobook_player_screen.dart';
 import 'audiobook_downloads_screen.dart';
 import 'generate_audiobook_screen.dart';
@@ -17,12 +16,11 @@ class AudiobookScreen extends StatefulWidget {
   State<AudiobookScreen> createState() => _AudiobookScreenState();
 }
 
-class _AudiobookScreenState extends State<AudiobookScreen>
-    with WidgetsBindingObserver {
+class _AudiobookScreenState extends State<AudiobookScreen> with WidgetsBindingObserver {
   final AudiobookService _service = AudiobookService();
   final AudiobookPlayerService _playerService = AudiobookPlayerService();
   final TextEditingController _searchController = TextEditingController();
-
+  
   List<Audiobook> _books = [];
   List<Audiobook> _likedBooks = [];
   List<Map<String, dynamic>> _history = [];
@@ -71,10 +69,7 @@ class _AudiobookScreenState extends State<AudiobookScreen>
       _isLoading = true;
       _showLiked = false;
     });
-    final books = await _service.getAudiobooks(
-      offset: _currentOffset,
-      limit: _limit,
-    );
+    final books = await _service.getAudiobooks(offset: _currentOffset, limit: _limit);
     if (!mounted) return;
     setState(() {
       _books = books;
@@ -131,10 +126,10 @@ class _AudiobookScreenState extends State<AudiobookScreen>
 
   void _resumeAudiobook(Map<String, dynamic> progress) async {
     final book = Audiobook.fromJson(progress['book']);
-
+    
     _openAudiobook(
-      book,
-      initialChapter: progress['chapterIndex'],
+      book, 
+      initialChapter: progress['chapterIndex'], 
       initialPosition: Duration(milliseconds: progress['positionMs']),
     );
   }
@@ -144,23 +139,17 @@ class _AudiobookScreenState extends State<AudiobookScreen>
     _loadHistory();
   }
 
-  void _openAudiobook(
-    Audiobook book, {
-    int initialChapter = 0,
-    Duration? initialPosition,
-  }) async {
+  void _openAudiobook(Audiobook book, {int initialChapter = 0, Duration? initialPosition}) async {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: AppTheme.primaryColor),
-      ),
+      builder: (context) => const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
     );
 
     final chapters = await _service.getChapters(book);
-
+    
     if (mounted) {
-      Navigator.pop(context);
+      Navigator.pop(context); 
       final musicService = MusicPlayerService();
       if (chapters.isNotEmpty) {
         if (Platform.isWindows || MediaQuery.of(context).size.width > 900) {
@@ -169,15 +158,9 @@ class _AudiobookScreenState extends State<AudiobookScreen>
             context: context,
             builder: (context) => Dialog(
               backgroundColor: Colors.transparent,
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 40,
-                vertical: 24,
-              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 500,
-                  maxHeight: 850,
-                ),
+                constraints: const BoxConstraints(maxWidth: 500, maxHeight: 850),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: AudiobookPlayerScreen(
@@ -208,15 +191,11 @@ class _AudiobookScreenState extends State<AudiobookScreen>
           ).then((_) {
             musicService.isFullScreenVisible.value = false;
             _loadHistory();
-          });
+          }); 
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Failed to load audio tracks. Book might be restricted.',
-            ),
-          ),
+          const SnackBar(content: Text('Failed to load audio tracks. Book might be restricted.')),
         );
       }
     }
@@ -243,8 +222,7 @@ class _AudiobookScreenState extends State<AudiobookScreen>
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     children: [
-                      if (!_isSearching && _history.isNotEmpty)
-                        _buildHistoryCarousel(),
+                      if (!_isSearching && _history.isNotEmpty) _buildHistoryCarousel(),
                       _buildBody(),
                     ],
                   ),
@@ -266,43 +244,27 @@ class _AudiobookScreenState extends State<AudiobookScreen>
         children: [
           const Text(
             'Audiobooks',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Poppins',
-            ),
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(
-                  Icons.auto_awesome,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                icon: const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const GenerateAudiobookScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const GenerateAudiobookScreen()),
                   ).then((_) => _loadHistory());
                 },
                 tooltip: 'Generate your own audiobook',
               ),
               IconButton(
-                icon: const Icon(
-                  Icons.download_rounded,
-                  color: Colors.white,
-                  size: 26,
-                ),
+                icon: const Icon(Icons.download_rounded, color: Colors.white, size: 26),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const AudiobookDownloadsScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const AudiobookDownloadsScreen()),
                   );
                 },
                 tooltip: 'Downloads',
@@ -334,14 +296,8 @@ class _AudiobookScreenState extends State<AudiobookScreen>
           prefixIcon: const Icon(Icons.search, color: Colors.white54),
           filled: true,
           fillColor: Colors.white.withValues(alpha: 0.05),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );
@@ -349,10 +305,7 @@ class _AudiobookScreenState extends State<AudiobookScreen>
 
   Widget _buildHistoryThumb(Audiobook book) {
     final url = book.thumbUrl;
-    final isLocal =
-        url.isNotEmpty &&
-        !url.startsWith('http://') &&
-        !url.startsWith('https://');
+    final isLocal = url.isNotEmpty && !url.startsWith('http://') && !url.startsWith('https://');
     if (isLocal) {
       final f = File(url);
       if (f.existsSync()) {
@@ -361,13 +314,9 @@ class _AudiobookScreenState extends State<AudiobookScreen>
     }
     return CachedNetworkImage(
       imageUrl: url,
-      width: 60,
-      height: 60,
-      fit: BoxFit.cover,
+      width: 60, height: 60, fit: BoxFit.cover,
       errorWidget: (c, u, e) => Container(
-        width: 60,
-        height: 60,
-        color: Colors.white12,
+        width: 60, height: 60, color: Colors.white12,
         child: const Icon(Icons.menu_book_rounded, color: Colors.white54),
       ),
     );
@@ -375,10 +324,8 @@ class _AudiobookScreenState extends State<AudiobookScreen>
 
   Widget _buildHistoryCarousel() {
     final isDesktop = MediaQuery.of(context).size.width > 600;
-    final pageController = PageController(
-      viewportFraction: isDesktop ? 0.45 : 0.9,
-    );
-
+    final pageController = PageController(viewportFraction: isDesktop ? 0.45 : 0.9);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -387,15 +334,7 @@ class _AudiobookScreenState extends State<AudiobookScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'CONTINUE LISTENING',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                  fontSize: 12,
-                ),
-              ),
+              const Text('CONTINUE LISTENING', style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 12)),
               if (isDesktop && _history.length > 1)
                 Row(
                   children: [
@@ -447,9 +386,7 @@ class _AudiobookScreenState extends State<AudiobookScreen>
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                          ),
+                          border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [
@@ -463,52 +400,25 @@ class _AudiobookScreenState extends State<AudiobookScreen>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
+                                  Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    'Chapter $chapterIdx',
-                                    style: const TextStyle(
-                                      color: AppTheme.primaryColor,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                                  Text('Chapter $chapterIdx', style: const TextStyle(color: AppTheme.primaryColor, fontSize: 13, fontWeight: FontWeight.w500)),
                                 ],
                               ),
                             ),
-                            const Icon(
-                              Icons.play_circle_fill,
-                              color: AppTheme.primaryColor,
-                              size: 40,
-                            ),
+                            const Icon(Icons.play_circle_fill, color: AppTheme.primaryColor, size: 40),
                           ],
                         ),
                       ),
                     ),
                     Positioned(
-                      top: 4,
-                      right: 4,
+                      top: 4, right: 4,
                       child: GestureDetector(
                         onTap: () => _removeFromHistory(book.audioBookId),
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: Colors.white70,
-                          ),
+                          decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                          child: const Icon(Icons.close, size: 16, color: Colors.white70),
                         ),
                       ),
                     ),
@@ -524,27 +434,9 @@ class _AudiobookScreenState extends State<AudiobookScreen>
 
   Widget _buildBody() {
     final displayBooks = _showLiked ? _likedBooks : _books;
-
-    if (_isLoading && !_showLiked) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 100),
-        child: Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryColor),
-        ),
-      );
-    }
-    if (displayBooks.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 100),
-        child: DizzyEmptyState(
-          icon: _showLiked ? Icons.favorite_border : Icons.search_off,
-          title: _showLiked ? 'No liked audiobooks' : 'No audiobooks found',
-          description: _showLiked
-              ? 'Start liking audiobooks to see them here'
-              : 'Try a different search query',
-        ),
-      );
-    }
+    
+    if (_isLoading && !_showLiked) return const Padding(padding: EdgeInsets.only(top: 100), child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)));
+    if (displayBooks.isEmpty) return Padding(padding: const EdgeInsets.only(top: 100), child: Center(child: Text(_showLiked ? 'No liked audiobooks' : 'No audiobooks found', style: const TextStyle(color: Colors.white54))));
 
     final screenWidth = MediaQuery.of(context).size.width;
     int crossAxisCount = 2;
@@ -596,15 +488,12 @@ class _AudiobookScreenState extends State<AudiobookScreen>
                     imageUrl: book.thumbUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
-                    placeholder: (context, url) =>
-                        Container(color: Colors.white10),
+                    placeholder: (context, url) => Container(color: Colors.white10),
                     errorWidget: (context, url, error) => CachedNetworkImage(
                       imageUrl: book.coverImage,
                       fit: BoxFit.cover,
                       width: double.infinity,
-                      errorWidget: (c, u, e) => const Center(
-                        child: Icon(Icons.book, color: Colors.white24),
-                      ),
+                      errorWidget: (c, u, e) => const Center(child: Icon(Icons.book, color: Colors.white24)),
                     ),
                   ),
                 ),
@@ -614,17 +503,13 @@ class _AudiobookScreenState extends State<AudiobookScreen>
                     book.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                 ),
               ],
             ),
             Positioned(
-              top: 8,
-              right: 8,
+              top: 8, right: 8,
               child: GestureDetector(
                 onTap: () async {
                   await _playerService.toggleLikeBook(book);
@@ -659,26 +544,18 @@ class _AudiobookScreenState extends State<AudiobookScreen>
         children: [
           ElevatedButton(
             onPressed: _currentOffset > 0 ? _prevPage : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white10,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white10, foregroundColor: Colors.white),
             child: const Text('Previous'),
           ),
-          Text(
-            'Page ${(_currentOffset / _limit).floor() + 1}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          Text('Page ${(_currentOffset / _limit).floor() + 1}', style: const TextStyle(fontWeight: FontWeight.bold)),
           ElevatedButton(
             onPressed: _nextPage,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white),
             child: const Text('Next Page'),
           ),
         ],
       ),
     );
   }
+
 }

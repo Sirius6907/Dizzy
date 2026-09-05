@@ -1,40 +1,40 @@
-// kisskh.co (Asian Drama) hub — mirrors `AnimeArabicScreen` visual style.
+// AnimeSlayer (animeslayer.to) hub — mirrors `AnimeScreen` visual style.
 // Hero carousel + ambient gradient backdrop + continue-watching rail
-// + multiple horizontal poster rails sourced from kisskh's category APIs.
+// + multiple horizontal poster rails parsed from /home.
 
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:palette_generator/palette_generator.dart';
 
-import '../api/kisskh_service.dart';
+import '../api/anime_arabic_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/horizontal_scroller.dart';
 import '../widgets/hover_scale.dart';
-import 'asian_drama_details_screen.dart';
-import 'asian_drama_explore_screen.dart';
-import 'asian_drama_player_screen.dart';
-import 'asian_drama_search_screen.dart';
+import 'anime_arabic_details_screen.dart';
+import 'anime_arabic_player_screen.dart';
+import 'anime_arabic_search_screen.dart';
 
-class AsianDramaScreen extends StatefulWidget {
-  const AsianDramaScreen({super.key});
+class AnimeArabicScreen extends StatefulWidget {
+  const AnimeArabicScreen({super.key});
 
   @override
-  State<AsianDramaScreen> createState() => _AsianDramaScreenState();
+  State<AnimeArabicScreen> createState() => _AnimeArabicScreenState();
 }
 
-class _AsianDramaScreenState extends State<AsianDramaScreen>
+class _AnimeArabicScreenState extends State<AnimeArabicScreen>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  final KissKhService _service = KissKhService();
+  final AnimeArabicService _service = AnimeArabicService();
   final PageController _heroCtrl = PageController();
   final ScrollController _scroll = ScrollController();
 
   Timer? _heroTimer;
   int _heroIndex = 0;
 
-  KdramaHomeFeed? _feed;
+  HomeFeed? _feed;
   bool _loading = true;
   String? _error;
 
@@ -42,7 +42,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
 
   Color _ambientPrimary = AppTheme.primaryColor;
   Color _ambientSecondary = AppTheme.accentColor;
-  final Map<int, ({Color primary, Color secondary})> _ambientCache = {};
+  final Map<String, ({Color primary, Color secondary})> _ambientCache = {};
 
   @override
   bool get wantKeepAlive => true;
@@ -52,7 +52,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     AppTheme.themeNotifier.addListener(_onTheme);
-    KissKhService.watchHistoryRevision.addListener(_onHistoryChanged);
+    AnimeArabicService.watchHistoryRevision.addListener(_onHistoryChanged);
     _load();
   }
 
@@ -60,7 +60,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     AppTheme.themeNotifier.removeListener(_onTheme);
-    KissKhService.watchHistoryRevision.removeListener(_onHistoryChanged);
+    AnimeArabicService.watchHistoryRevision.removeListener(_onHistoryChanged);
     _heroTimer?.cancel();
     _heroCtrl.dispose();
     _scroll.dispose();
@@ -99,14 +99,21 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
         _service.getWatchHistory(),
       ]);
       if (!mounted) return;
-      final feed = results[0] as KdramaHomeFeed;
+      final feed = results[0] as HomeFeed;
       setState(() {
         _feed = feed;
         _continueWatching =
             (results[1] as List<Map<String, dynamic>>).take(10).toList();
         _loading = false;
       });
-      final pool = _spotlight;
+
+      // Pick spotlight pool: prefer the page's hero block, else trending,
+      // else recent episodes.
+      final pool = feed.spotlight.isNotEmpty
+          ? feed.spotlight
+          : (feed.trending.isNotEmpty
+              ? feed.trending
+              : feed.recentEpisodes);
       if (pool.isNotEmpty) {
         _extractAmbient(pool.first);
         _startHeroTimer(pool.length);
@@ -120,12 +127,12 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     }
   }
 
-  List<KdramaCard> get _spotlight {
+  List<ArabicAnimeCard> get _spotlight {
     final f = _feed;
     if (f == null) return const [];
-    if (f.spotlight.isNotEmpty) return f.spotlight.take(8).toList();
-    if (f.latest.isNotEmpty) return f.latest.take(8).toList();
-    return f.trending.take(8).toList();
+    if (f.spotlight.length >= 3) return f.spotlight.take(8).toList();
+    if (f.trending.length >= 3) return f.trending.take(8).toList();
+    return f.recentEpisodes.take(8).toList();
   }
 
   void _startHeroTimer(int count) {
@@ -142,9 +149,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     });
   }
 
-  Future<void> _extractAmbient(KdramaCard a) async {
-    if (_ambientCache.containsKey(a.id)) {
-      final c = _ambientCache[a.id]!;
+  Future<void> _extractAmbient(ArabicAnimeCard a) async {
+    if (_ambientCache.containsKey(a.slug)) {
+      final c = _ambientCache[a.slug]!;
       if (!mounted) return;
       setState(() {
         _ambientPrimary = c.primary;
@@ -152,10 +159,11 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
       });
       return;
     }
-    if (a.cover.isEmpty) return;
+    final url = a.cover ?? '';
+    if (url.isEmpty) return;
     try {
       final palette = await PaletteGenerator.fromImageProvider(
-        CachedNetworkImageProvider(a.cover),
+        CachedNetworkImageProvider(url),
         size: const Size(180, 100),
         maximumColorCount: 12,
       );
@@ -164,7 +172,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
       final s = palette.vibrantColor?.color ??
           palette.lightVibrantColor?.color ??
           AppTheme.accentColor;
-      _ambientCache[a.id] = (primary: p, secondary: s);
+      _ambientCache[a.slug] = (primary: p, secondary: s);
       setState(() {
         _ambientPrimary = p;
         _ambientSecondary = s;
@@ -172,63 +180,65 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     } catch (_) {}
   }
 
-  void _openDetails(KdramaCard a) {
+  void _openDetails(ArabicAnimeCard a) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => AsianDramaDetailsScreen(drama: a),
+        builder: (_) => AnimeArabicDetailsScreen(anime: a),
       ),
     ).then((_) => _refreshHistory());
   }
 
   void _openSearch() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AsianDramaSearchScreen()),
-    );
-  }
-
-  void _openExplore() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AsianDramaExploreScreen()),
+      MaterialPageRoute(builder: (_) => const AnimeArabicSearchScreen()),
     );
   }
 
   Future<void> _resumeWatch(Map<String, dynamic> entry) async {
     try {
-      final id = (entry['id'] as num).toInt();
-      final epNum = (entry['episodeNumber'] as num?)?.toDouble() ?? 1.0;
-      final title = entry['title'] as String? ?? '';
-      final cover = entry['cover'] as String? ?? '';
+      final slug = entry['slug'] as String;
+      final epNum = (entry['episodeNumber'] as num?)?.toInt() ?? 1;
+      final title = entry['title'] as String? ?? slug;
+      final cover = entry['cover'] as String?;
       final posMs = (entry['positionMs'] as num?)?.toInt() ?? 0;
+      // Start a few seconds before the saved point so users don't pop in
+      // mid-sentence. Also avoid seeking right to the end.
       final durMs = (entry['durationMs'] as num?)?.toInt() ?? 0;
       Duration? startPosition;
       if (posMs > 5000) {
         final clamped = (durMs > 0 && posMs > durMs - 30000)
             ? (durMs - 30000)
             : posMs;
-        startPosition =
-            Duration(milliseconds: (clamped - 3000).clamp(0, 1 << 31));
+        startPosition = Duration(milliseconds: (clamped - 3000).clamp(0, 1 << 31));
       }
 
-      final card = KdramaCard(id: id, title: title, cover: cover);
-      final details = await _service.getDetails(id);
+      // Fetch full details to obtain episodes (needed for next-episode + watchPath).
+      final card = ArabicAnimeCard(
+        slug: slug,
+        title: title,
+        cover: cover,
+      );
+
+      final details = await _service.getDetails(slug);
       if (!mounted) return;
-      KdramaEpisode? ep;
+      ArabicEpisode? ep;
       try {
         ep = details.episodes.firstWhere((e) => e.number == epNum);
       } catch (_) {}
       ep ??= details.episodes.isNotEmpty ? details.episodes.first : null;
       if (ep == null) {
+        // No episodes resolvable — open details instead.
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => AsianDramaDetailsScreen(drama: card),
+            builder: (_) => AnimeArabicDetailsScreen(anime: card),
           ),
         );
         return;
       }
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => AsianDramaPlayerScreen(
-            drama: card,
+          builder: (_) => AnimeArabicPlayerScreen(
+            anime: card,
             episode: ep!,
             allEpisodes: details.episodes,
             startPosition: startPosition,
@@ -247,9 +257,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
   }
 
   Future<void> _removeFromHistory(Map<String, dynamic> entry) async {
-    final id = (entry['id'] as num?)?.toInt();
-    if (id == null) return;
-    await _service.removeFromHistory(id);
+    final slug = entry['slug'] as String?;
+    if (slug == null) return;
+    await _service.removeFromHistory(slug);
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -288,7 +298,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                                 backgroundColor: Colors.transparent,
                                 elevation: 0,
                                 title: const Text(
-                                  'Asian Drama',
+                                  'Anime Arabic',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 20,
@@ -297,12 +307,6 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                                   ),
                                 ),
                                 actions: [
-                                  IconButton(
-                                    icon: const Icon(Icons.tune_rounded,
-                                        color: Colors.white),
-                                    tooltip: 'Explore',
-                                    onPressed: _openExplore,
-                                  ),
                                   IconButton(
                                     icon: const Icon(Icons.search,
                                         color: Colors.white),
@@ -316,64 +320,83 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                                 SliverToBoxAdapter(
                                   child: _buildContinueWatching(),
                                 ),
-                              if ((_feed?.latest ?? const [])
+                              if ((_feed?.recentEpisodes ?? const [])
                                   .isNotEmpty)
                                 SliverToBoxAdapter(
                                   child: _buildEpisodeRail(
-                                    title: 'Latest Update',
-                                    subtitle: 'Newest episodes',
+                                    title: 'الحلقة التالية',
+                                    subtitle: 'آخر الحلقات المضافة',
                                     icon: Icons.skip_next_rounded,
-                                    items: _feed!.latest,
+                                    items: _feed!.recentEpisodes,
                                   ),
                                 ),
                               if ((_feed?.trending ?? const []).isNotEmpty)
                                 SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Trending',
+                                  child: _ArabicRail(
+                                    title: 'رائج الآن',
                                     icon: Icons.trending_up_rounded,
                                     items: _feed!.trending,
                                     onTap: _openDetails,
                                   ),
                                 ),
-                              if ((_feed?.topRated ?? const [])
+                              if ((_feed?.topSeasonal ?? const [])
                                   .isNotEmpty)
                                 SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Top Rated',
+                                  child: _ArabicRail(
+                                    title: 'أفضل أنميات الموسم',
                                     icon: Icons.leaderboard_rounded,
-                                    items: _feed!.topRated,
+                                    items: _feed!.topSeasonal,
                                     onTap: _openDetails,
                                     showRank: true,
                                   ),
                                 ),
-                              if ((_feed?.mostViewed ?? const [])
+                              if ((_feed?.popularMovies ?? const [])
                                   .isNotEmpty)
                                 SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Most Viewed',
-                                    icon: Icons.visibility_rounded,
-                                    items: _feed!.mostViewed,
-                                    onTap: _openDetails,
-                                  ),
-                                ),
-                              if ((_feed?.anime ?? const []).isNotEmpty)
-                                SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Anime',
-                                    icon: Icons.auto_awesome_rounded,
-                                    items: _feed!.anime,
+                                  child: _ArabicRail(
+                                    title: 'الأفلام الأكثر شعبية',
+                                    icon: Icons.movie_rounded,
+                                    items: _feed!.popularMovies,
                                     onTap: _openDetails,
                                   ),
                                 ),
                               if ((_feed?.upcoming ?? const []).isNotEmpty)
                                 SliverToBoxAdapter(
-                                  child: _Rail(
-                                    title: 'Upcoming',
+                                  child: _ArabicRail(
+                                    title: 'أفضل الأنميات المنتظرة',
                                     icon: Icons.event_rounded,
                                     items: _feed!.upcoming,
                                     onTap: _openDetails,
                                   ),
                                 ),
+                              if ((_feed?.seasonal ?? const []).isNotEmpty)
+                                SliverToBoxAdapter(
+                                  child: _ArabicRail(
+                                    title: 'أنميات موسمية',
+                                    icon: Icons.auto_awesome_rounded,
+                                    items: _feed!.seasonal,
+                                    onTap: _openDetails,
+                                  ),
+                                ),
+                              if ((_feed?.legendary ?? const []).isNotEmpty)
+                                SliverToBoxAdapter(
+                                  child: _ArabicRail(
+                                    title: 'أنميات أسطورية',
+                                    icon: Icons.workspace_premium_rounded,
+                                    items: _feed!.legendary,
+                                    onTap: _openDetails,
+                                  ),
+                                ),
+                              for (final misc in (_feed?.misc ?? const []))
+                                if (misc.value.isNotEmpty)
+                                  SliverToBoxAdapter(
+                                    child: _ArabicRail(
+                                      title: misc.key,
+                                      icon: Icons.bookmark_rounded,
+                                      items: misc.value,
+                                      onTap: _openDetails,
+                                    ),
+                                  ),
                               const SliverToBoxAdapter(
                                 child: SizedBox(height: 80),
                               ),
@@ -387,7 +410,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     );
   }
 
-  // ─── Error ────────────────────────────────────────────────────
+  // ─── Error ─────────────────────────────────────────────────────
   Widget _buildError() {
     return Center(
       child: Padding(
@@ -422,7 +445,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     );
   }
 
-  // ─── Ambient backdrop ────────────────────────────────────────
+  // ─── Ambient backdrop ─────────────────────────────────────────
   Widget _buildAmbientBackdrop() {
     return Positioned.fill(
       child: AnimatedContainer(
@@ -472,13 +495,15 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     );
   }
 
-  // ─── Hero carousel ───────────────────────────────────────────
+  // ─── Hero carousel ────────────────────────────────────────────
   Widget _buildHero() {
     final pool = _spotlight;
     if (pool.isEmpty) return const SizedBox.shrink();
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    final h = MediaQuery.of(context).size.height * 0.65;
+    final h = isLandscape
+        ? MediaQuery.of(context).size.height * 0.65
+        : MediaQuery.of(context).size.height * 0.65;
 
     return SizedBox(
       height: h,
@@ -522,18 +547,19 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     );
   }
 
-  Widget _buildHeroSlide(KdramaCard a, bool isLandscape) {
+  Widget _buildHeroSlide(ArabicAnimeCard a, bool isLandscape) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (a.cover.isNotEmpty)
+        if ((a.cover ?? '').isNotEmpty)
           CachedNetworkImage(
-            imageUrl: a.cover,
+            imageUrl: a.cover!,
             fit: BoxFit.cover,
             alignment: Alignment.topCenter,
             placeholder: (_, _) => Container(color: AppTheme.bgCard),
             errorWidget: (_, _, _) => Container(color: AppTheme.bgCard),
           ),
+        // Gradient
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -582,7 +608,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                 runSpacing: 6,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  if (a.label != null && a.label!.isNotEmpty)
+                  if (a.rating != null && a.rating!.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
@@ -595,16 +621,24 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
-                        a.label!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star_rounded,
+                              color: Colors.white, size: 14),
+                          const SizedBox(width: 3),
+                          Text(
+                            a.rating!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  if (a.episodesCount > 0)
+                  if (a.tag != null && a.tag!.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
@@ -615,13 +649,21 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        '${a.episodesCount} EP',
+                        a.tag!,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
                         ),
+                      ),
+                    ),
+                  if (a.episodeBadge != null && a.episodeBadge!.isNotEmpty)
+                    Text(
+                      a.episodeBadge!,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 13,
                       ),
                     ),
                 ],
@@ -645,7 +687,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                                 color: Colors.black, size: 26),
                             SizedBox(width: 6),
                             Text(
-                              'Watch',
+                              'مشاهدة',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
@@ -661,7 +703,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                   const SizedBox(width: 12),
                   _frostedPill(
                     icon: Icons.info_outline_rounded,
-                    label: 'Details',
+                    label: 'تفاصيل',
                     onTap: () => _openDetails(a),
                   ),
                 ],
@@ -687,8 +729,8 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 22, vertical: 12),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -733,7 +775,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                 ),
                 const SizedBox(width: 10),
                 const Text(
-                  'Continue Watching',
+                  'متابعة المشاهدة',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -765,14 +807,11 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
   Widget _continueCard(Map<String, dynamic> entry) {
     final cover = entry['cover'] as String?;
     final title = entry['title'] as String? ?? '';
-    final epNum = (entry['episodeNumber'] as num?)?.toDouble() ?? 1.0;
+    final epNum = (entry['episodeNumber'] as num?)?.toInt() ?? 1;
     final totalEps = (entry['totalEpisodes'] as num?)?.toInt() ?? 0;
     final posMs = (entry['positionMs'] as num?)?.toInt() ?? 0;
     final durMs = (entry['durationMs'] as num?)?.toInt() ?? 0;
     final progress = (durMs > 0) ? (posMs / durMs).clamp(0.0, 1.0) : 0.0;
-    final epLabel = epNum == epNum.truncateToDouble()
-        ? epNum.toInt().toString()
-        : epNum.toString();
 
     return SizedBox(
       width: 270,
@@ -837,7 +876,8 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'EP $epLabel${totalEps > 0 ? ' / $totalEps' : ''}',
+                          'EP $epNum'
+                          '${totalEps > 0 ? ' / $totalEps' : ''}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -908,12 +948,12 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     );
   }
 
-  // ─── Episode rail (latest landscape thumbs) ──────────────────
+  // ─── Episode rail (latest episodes — landscape thumbs) ────────
   Widget _buildEpisodeRail({
     required String title,
     required String subtitle,
     required IconData icon,
-    required List<KdramaCard> items,
+    required List<ArabicAnimeCard> items,
   }) {
     return Padding(
       padding: const EdgeInsets.only(top: 28),
@@ -975,7 +1015,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
     );
   }
 
-  Widget _episodeRailCard(KdramaCard a) {
+  Widget _episodeRailCard(ArabicAnimeCard a) {
     return SizedBox(
       width: 270,
       child: HoverScale(
@@ -990,9 +1030,9 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (a.cover.isNotEmpty)
+                    if ((a.cover ?? '').isNotEmpty)
                       CachedNetworkImage(
-                        imageUrl: a.cover,
+                        imageUrl: a.cover!,
                         fit: BoxFit.cover,
                         placeholder: (_, _) =>
                             Container(color: AppTheme.bgCard),
@@ -1014,7 +1054,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                         ),
                       ),
                     ),
-                    if (a.episodesCount > 0)
+                    if (a.episodeBadge != null && a.episodeBadge!.isNotEmpty)
                       Positioned(
                         left: 8,
                         top: 8,
@@ -1026,7 +1066,7 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'EP ${a.episodesCount}',
+                            a.episodeBadge!,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -1062,16 +1102,16 @@ class _AsianDramaScreenState extends State<AsianDramaScreen>
 }
 
 // ════════════════════════════════════════════════════════════════════
-//  Generic poster rail
+//  Generic poster rail (mirrors `_AnimeRail`)
 // ════════════════════════════════════════════════════════════════════
-class _Rail extends StatelessWidget {
+class _ArabicRail extends StatelessWidget {
   final String title;
   final IconData icon;
-  final List<KdramaCard> items;
-  final void Function(KdramaCard) onTap;
+  final List<ArabicAnimeCard> items;
+  final void Function(ArabicAnimeCard) onTap;
   final bool showRank;
 
-  const _Rail({
+  const _ArabicRail({
     required this.title,
     required this.icon,
     required this.items,
@@ -1137,7 +1177,7 @@ class _Rail extends StatelessWidget {
 }
 
 class _PosterCard extends StatelessWidget {
-  final KdramaCard card;
+  final ArabicAnimeCard card;
   final int? rank;
   final VoidCallback onTap;
 
@@ -1163,9 +1203,9 @@ class _PosterCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (card.cover.isNotEmpty)
+                    if ((card.cover ?? '').isNotEmpty)
                       CachedNetworkImage(
-                        imageUrl: card.cover,
+                        imageUrl: card.cover!,
                         fit: BoxFit.cover,
                         placeholder: (_, _) =>
                             Container(color: AppTheme.bgCard),
@@ -1174,7 +1214,7 @@ class _PosterCard extends StatelessWidget {
                       )
                     else
                       Container(color: AppTheme.bgCard),
-                    if (card.label != null && card.label!.isNotEmpty)
+                    if (card.tag != null && card.tag!.isNotEmpty)
                       Positioned(
                         left: 6,
                         top: 6,
@@ -1186,7 +1226,7 @@ class _PosterCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            card.label!,
+                            card.tag!,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 9,
@@ -1195,7 +1235,7 @@ class _PosterCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                    if (card.episodesCount > 0)
+                    if (card.rating != null && card.rating!.isNotEmpty)
                       Positioned(
                         right: 6,
                         top: 6,
@@ -1211,13 +1251,21 @@ class _PosterCard extends StatelessWidget {
                             ),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text(
-                            'EP ${card.episodesCount}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.star_rounded,
+                                  color: Colors.white, size: 10),
+                              const SizedBox(width: 2),
+                              Text(
+                                card.rating!,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -1262,3 +1310,7 @@ class _PosterCard extends StatelessWidget {
     );
   }
 }
+
+// Stub left for future use; mirrors `math` import from anime_screen.
+// ignore: unused_element
+double _unusedAnchor() => math.pi;

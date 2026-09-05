@@ -550,7 +550,7 @@ class IptvScraper {
   // This gives 100 posts/page with full pagination — unlimited scraping.
   // Falls back to RSS if all OAuth2 attempts fail.
   static const _catalogSubs = ['IPTV_ZONENEW', 'FreeIPTV', 'iptvguru', 'IPTVfree'];
-  static const _oauthUa = 'Dizzy/1.0.0 (by /u/DizzyApp)';
+  static const _oauthUa = 'PlayTorrio/1.3.6 (by /u/PlayTorrioApp)';
   // Open-source Reddit client IDs (public, installed-app type).
   static const _oauthClientIds = [
     'ohXpoqrZYub1kg',  // Slide for Reddit
@@ -560,7 +560,7 @@ class IptvScraper {
   static String? _oauthToken;
   static DateTime? _oauthTokenExpiry;
   static int _oauthClientIdx = 0;
-  static const _ua = 'Mozilla/5.0 (Linux; Android 11; Dizzy) '
+  static const _ua = 'Mozilla/5.0 (Linux; Android 11; PlayTorrio) '
       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36';
 
   static const _pasteDomains = [

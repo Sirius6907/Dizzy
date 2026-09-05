@@ -63,7 +63,7 @@ class WebViewCleanup {
         if (home != null) {
           final cacheDirs = [
             Directory(path.join(home, '.cache', 'webkitgtk')),
-            Directory(path.join(home, '.cache', 'dizzy')),
+            Directory(path.join(home, '.cache', 'play_torrio_native')),
           ];
           
           for (final cacheDir in cacheDirs) {
@@ -78,7 +78,7 @@ class WebViewCleanup {
         final home = Platform.environment['HOME'];
         if (home != null) {
           final cacheDirs = [
-            Directory(path.join(home, 'Library', 'Caches', 'dizzy')),
+            Directory(path.join(home, 'Library', 'Caches', 'play_torrio_native')),
             Directory(path.join(home, 'Library', 'WebKit')),
           ];
           

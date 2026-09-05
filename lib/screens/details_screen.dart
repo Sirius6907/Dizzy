@@ -32,27 +32,16 @@ import '../widgets/movie_atmosphere.dart';
 
 class DetailsScreen extends StatefulWidget {
   final Movie movie;
-
   /// Optional: when opened from a Stremio addon search result with a custom ID,
   /// pass the original item so we can auto-select the right addon and use its ID.
   final Map<String, dynamic>? stremioItem;
-
   /// Optional: pre-select a season (e.g. from Continue Watching / Trakt import).
   final int? initialSeason;
-
   /// Optional: pre-select an episode (e.g. from Continue Watching / Trakt import).
   final int? initialEpisode;
-
   /// Optional: resume position from Trakt/Simkl import (used when no local progress matches).
   final Duration? startPosition;
-  const DetailsScreen({
-    super.key,
-    required this.movie,
-    this.stremioItem,
-    this.initialSeason,
-    this.initialEpisode,
-    this.startPosition,
-  });
+  const DetailsScreen({super.key, required this.movie, this.stremioItem, this.initialSeason, this.initialEpisode, this.startPosition});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -76,7 +65,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   String? _errorMessage;
   Map<String, dynamic>? _lastProgress;
 
-  String _selectedSourceId = 'dizzy';
+  String _selectedSourceId = 'playtorrio';
   List<Map<String, dynamic>> _streamAddons = [];
   List<dynamic> _stremioStreams = [];
   List<Map<String, dynamic>> _allCombinedStremioStreams = [];
@@ -91,16 +80,13 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   bool _isNuvioFetching = false;
   bool _hasNuvioAddons = false;
   StreamSubscription<NuvioScraperResult>? _nuvioSub;
-
   /// Cached list of installed Nuvio addons (refreshed when the Nuvio tab
   /// is opened). Used to render the addon-picker chips.
   List<NuvioAddon> _nuvioAddons = [];
-
   /// Manifest URL of the addon the user has drilled into. `null` means
   /// we're showing the addon-picker chips. Once non-null, scraper chips
   /// for that addon are rendered.
   String? _nuvioSelectedAddonUrl;
-
   /// Scraper id (`<scraperId>`) the user picked. Drives `_selectedSourceId`
   /// (`'nuvio:<scraperId>'`) and the active stream list.
   String? _nuvioSelectedScraperId;
@@ -154,12 +140,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     super.initState();
     _movie = widget.movie;
     if (widget.initialSeason != null) _selectedSeason = widget.initialSeason!;
-    if (widget.initialEpisode != null)
-      _selectedEpisode = widget.initialEpisode!;
+    if (widget.initialEpisode != null) _selectedEpisode = widget.initialEpisode!;
     // Start atmosphere color extraction
-    final url = (_movie.posterPath.isNotEmpty
-        ? _movie.posterPath
-        : _movie.backdropPath);
+    final url = (_movie.posterPath.isNotEmpty ? _movie.posterPath : _movie.backdropPath);
     loadAtmosphere(url.startsWith('http') ? url : TmdbApi.getImageUrl(url));
     _checkHistory();
     _loadSortPreference();
@@ -216,17 +199,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   // ─── audio filter helpers ────────────────────────────────────────────────
 
   static const List<String> _kAudioTags = [
-    'Atmos',
-    'TrueHD',
-    'DTS:X',
-    'DTS-HD',
-    'DTS',
-    'DD+',
-    'DD',
-    'AAC',
-    '7.1',
-    '5.1',
-    '2.0',
+    'Atmos', 'TrueHD', 'DTS:X', 'DTS-HD', 'DTS', 'DD+', 'DD', 'AAC', '7.1', '5.1', '2.0',
   ];
 
   /// Returns every audio tag found in [name] (upper-cased for matching).
@@ -237,23 +210,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (n.contains('ATMOS')) found.add('Atmos');
     if (n.contains('TRUEHD')) found.add('TrueHD');
     if (n.contains('DTS:X') || n.contains('DTSX')) found.add('DTS:X');
-    if (!found.contains('DTS:X') &&
-        (n.contains('DTS-HD') || n.contains('DTSHD')))
-      found.add('DTS-HD');
-    if (!found.contains('DTS:X') &&
-        !found.contains('DTS-HD') &&
-        n.contains('DTS'))
-      found.add('DTS');
-    if (n.contains('DD+') ||
-        n.contains('EAC3') ||
-        n.contains('E-AC-3') ||
-        n.contains('DDPLUS'))
-      found.add('DD+');
-    if (!found.contains('DD+') &&
-        (n.contains(' DD ') ||
-            n.contains('AC3') ||
-            n.contains('DOLBY DIGITAL')))
-      found.add('DD');
+    if (!found.contains('DTS:X') && (n.contains('DTS-HD') || n.contains('DTSHD'))) found.add('DTS-HD');
+    if (!found.contains('DTS:X') && !found.contains('DTS-HD') && n.contains('DTS')) found.add('DTS');
+    if (n.contains('DD+') || n.contains('EAC3') || n.contains('E-AC-3') || n.contains('DDPLUS')) found.add('DD+');
+    if (!found.contains('DD+') && (n.contains(' DD ') || n.contains('AC3') || n.contains('DOLBY DIGITAL'))) found.add('DD');
     if (n.contains('AAC')) found.add('AAC');
     if (n.contains('7.1')) found.add('7.1');
     if (!found.contains('7.1') && n.contains('5.1')) found.add('5.1');
@@ -292,10 +252,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
   Future<void> _sortResults() async {
     if (_allTorrentResults.isEmpty) return;
-    final sorted = await TorrentFilter.sortTorrentsAsync(
-      _allTorrentResults,
-      _sortPreference,
-    );
+    final sorted = await TorrentFilter.sortTorrentsAsync(_allTorrentResults, _sortPreference);
     if (_lastProgress != null && _lastProgress!['method'] == 'torrent') {
       final historyHash = _getHash(_lastProgress!['sourceId']);
       final index = sorted.indexWhere((r) => _getHash(r.magnet) == historyHash);
@@ -309,8 +266,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
   Future<void> _fetchDetails() async {
     final stremioItem = widget.stremioItem;
-    final bool isCustomId =
-        stremioItem != null &&
+    final bool isCustomId = stremioItem != null &&
         !(stremioItem['id']?.toString().startsWith('tt') ?? true);
 
     try {
@@ -320,15 +276,11 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       // have all the info we need from the search result.
       if (isCustomId) {
         debugPrint('[DetailsScreen] Custom ID detected: ${stremioItem['id']}');
-        debugPrint(
-          '[DetailsScreen] stremioItem keys: ${stremioItem.keys.toList()}',
-        );
-        debugPrint(
-          '[DetailsScreen] _addonBaseUrl: ${stremioItem['_addonBaseUrl']}',
-        );
+        debugPrint('[DetailsScreen] stremioItem keys: ${stremioItem.keys.toList()}');
+        debugPrint('[DetailsScreen] _addonBaseUrl: ${stremioItem['_addonBaseUrl']}');
         debugPrint('[DetailsScreen] _addonName: ${stremioItem['_addonName']}');
         debugPrint('[DetailsScreen] type: ${stremioItem['type']}');
-
+        
         // Update movie mediaType if it's a collection
         if (stremioItem['type'] == 'collections') {
           _movie = Movie(
@@ -348,7 +300,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             screenshots: _movie.screenshots,
           );
         }
-
+        
         if (mounted) {
           setState(() {
             _streamAddons = streamAddons;
@@ -400,9 +352,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       if (!mounted) return;
       setState(() {
         _hasNuvioAddons = hasEnabled;
-        _nuvioAddons = addons
-            .where((a) => a.scrapers.any((s) => s.enabled))
-            .toList();
+        _nuvioAddons = addons.where((a) =>
+            a.scrapers.any((s) => s.enabled)).toList();
       });
     } catch (_) {}
   }
@@ -422,9 +373,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         ratings = await MdblistService().getRatingsByImdb(_movie.imdbId!);
       } else {
         ratings = await MdblistService().getRatingsByTmdb(
-          _movie.id,
-          _movie.mediaType == 'tv' ? 'show' : 'movie',
-        );
+          _movie.id, _movie.mediaType == 'tv' ? 'show' : 'movie');
       }
       if (mounted && ratings != null) setState(() => _mdblistRatings = ratings);
     } catch (_) {}
@@ -506,10 +455,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1A1A2E),
-          title: const Text(
-            'Rate on Simkl',
-            style: TextStyle(color: Colors.white),
-          ),
+          title: const Text('Rate on Simkl', style: TextStyle(color: Colors.white)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -522,9 +468,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 1),
                       child: Icon(
-                        val <= selected
-                            ? Icons.star_rounded
-                            : Icons.star_outline_rounded,
+                        val <= selected ? Icons.star_rounded : Icons.star_outline_rounded,
                         color: const Color(0xFF0BF5E5),
                         size: 28,
                       ),
@@ -533,44 +477,23 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                 }),
               ),
               const SizedBox(height: 8),
-              Text(
-                '$selected / 10',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('$selected / 10',
+                style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600)),
             ],
           ),
           actions: [
             if (_userSimklRating != null)
               TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _removeSimklRating();
-                },
-                child: const Text(
-                  'Remove',
-                  style: TextStyle(color: Colors.redAccent),
-                ),
+                onPressed: () { Navigator.pop(ctx); _removeSimklRating(); },
+                child: const Text('Remove', style: TextStyle(color: Colors.redAccent)),
               ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white54),
-              ),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _rateSimklItem(selected);
-              },
-              child: const Text(
-                'Rate',
-                style: TextStyle(color: Color(0xFF0BF5E5)),
-              ),
+              onPressed: () { Navigator.pop(ctx); _rateSimklItem(selected); },
+              child: const Text('Rate', style: TextStyle(color: Color(0xFF0BF5E5))),
             ),
           ],
         ),
@@ -603,8 +526,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (!await TraktService().isLoggedIn()) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login to Trakt first in Settings')),
-      );
+        const SnackBar(content: Text('Login to Trakt first in Settings')));
       return;
     }
     if (_isInTraktCollection) {
@@ -628,8 +550,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (!await TraktService().isLoggedIn()) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login to Trakt first in Settings')),
-      );
+        const SnackBar(content: Text('Login to Trakt first in Settings')));
       return;
     }
     final success = await TraktService().checkin(
@@ -640,32 +561,23 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     );
     if (!mounted) return;
     if (success) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Checked in on Trakt!')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Checked in on Trakt!')),
+      );
     } else {
       // Offer to cancel existing check-in and retry
       final shouldCancel = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
           backgroundColor: const Color(0xFF1A1A2E),
-          title: const Text(
-            'Check-in Failed',
-            style: TextStyle(color: Colors.white),
-          ),
+          title: const Text('Check-in Failed', style: TextStyle(color: Colors.white)),
           content: const Text(
             'You may already have an active check-in.\nCancel existing and retry?',
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Yes, retry'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('No')),
+            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Yes, retry')),
           ],
         ),
       );
@@ -680,11 +592,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           );
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                retrySuccess ? 'Checked in on Trakt!' : 'Check-in failed',
-              ),
-            ),
+            SnackBar(content: Text(retrySuccess ? 'Checked in on Trakt!' : 'Check-in failed')),
           );
         }
       }
@@ -697,18 +605,14 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (!await TraktService().isLoggedIn()) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login to Trakt first in Settings')),
-      );
+        const SnackBar(content: Text('Login to Trakt first in Settings')));
       return;
     }
     final lists = await TraktService().getUserLists();
     if (!mounted || lists.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No Trakt lists found. Create one in Lists screen.'),
-          ),
-        );
+          const SnackBar(content: Text('No Trakt lists found. Create one in Lists screen.')));
       }
       return;
     }
@@ -717,10 +621,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A2E),
-        title: const Text(
-          'Add to Trakt List',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Add to Trakt List', style: TextStyle(color: Colors.white)),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -732,10 +633,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               final count = list['item_count'] ?? 0;
               return ListTile(
                 title: Text(name, style: const TextStyle(color: Colors.white)),
-                subtitle: Text(
-                  '$count items',
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                ),
+                subtitle: Text('$count items', style: const TextStyle(color: Colors.white38, fontSize: 12)),
                 onTap: () => Navigator.pop(ctx, list),
               );
             },
@@ -749,9 +647,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (slug.isEmpty) return;
 
     final type = _movie.mediaType == 'tv' ? 'shows' : 'movies';
-    final entry = <String, dynamic>{
-      'ids': {'tmdb': _movie.id},
-    };
+    final entry = <String, dynamic>{'ids': {'tmdb': _movie.id}};
     final success = await TraktService().addToList(
       listId: slug,
       movies: type == 'movies' ? [entry] : [],
@@ -759,11 +655,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success ? 'Added to "${selected['name']}"' : 'Failed to add to list',
-        ),
-      ),
+      SnackBar(content: Text(success
+        ? 'Added to "${selected['name']}"'
+        : 'Failed to add to list')),
     );
   }
 
@@ -774,10 +668,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1A1A2E),
-          title: const Text(
-            'Rate on Trakt',
-            style: TextStyle(color: Colors.white),
-          ),
+          title: const Text('Rate on Trakt', style: TextStyle(color: Colors.white)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -790,9 +681,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 1),
                       child: Icon(
-                        val <= selected
-                            ? Icons.star_rounded
-                            : Icons.star_outline_rounded,
+                        val <= selected ? Icons.star_rounded : Icons.star_outline_rounded,
                         color: const Color(0xFFFFD700),
                         size: 28,
                       ),
@@ -801,44 +690,23 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                 }),
               ),
               const SizedBox(height: 8),
-              Text(
-                '$selected / 10',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('$selected / 10',
+                style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600)),
             ],
           ),
           actions: [
             if (_userTraktRating != null)
               TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _removeTraktRating();
-                },
-                child: const Text(
-                  'Remove',
-                  style: TextStyle(color: Colors.redAccent),
-                ),
+                onPressed: () { Navigator.pop(ctx); _removeTraktRating(); },
+                child: const Text('Remove', style: TextStyle(color: Colors.redAccent)),
               ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white54),
-              ),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _rateTraktItem(selected);
-              },
-              child: const Text(
-                'Rate',
-                style: TextStyle(color: Color(0xFF00E5FF)),
-              ),
+              onPressed: () { Navigator.pop(ctx); _rateTraktItem(selected); },
+              child: const Text('Rate', style: TextStyle(color: Color(0xFF00E5FF))),
             ),
           ],
         ),
@@ -887,22 +755,18 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
       // Try to load posters for recommendations by batch-resolving metas
       if (recommendations.isNotEmpty) {
-        await Future.wait(
-          recommendations.map((rec) async {
-            try {
-              final recMeta = await _stremio.getMetaFromAny(
-                type: rec['type'] ?? type,
-                id: rec['id'],
-              );
-              if (recMeta != null) {
-                rec['poster'] = recMeta['poster'];
-                rec['name'] = rec['name'].isEmpty
-                    ? (recMeta['name'] ?? '')
-                    : rec['name'];
-              }
-            } catch (_) {}
-          }),
-        );
+        await Future.wait(recommendations.map((rec) async {
+          try {
+            final recMeta = await _stremio.getMetaFromAny(
+              type: rec['type'] ?? type,
+              id: rec['id'],
+            );
+            if (recMeta != null) {
+              rec['poster'] = recMeta['poster'];
+              rec['name'] = rec['name'].isEmpty ? (recMeta['name'] ?? '') : rec['name'];
+            }
+          } catch (_) {}
+        }));
       }
 
       if (mounted) {
@@ -924,15 +788,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     // Try TMDB lookup first for IMDB IDs
     if (id.startsWith('tt')) {
       try {
-        final movie = await _api.findByImdbId(
-          id,
-          mediaType: type == 'series' ? 'tv' : 'movie',
-        );
+        final movie = await _api.findByImdbId(id, mediaType: type == 'series' ? 'tv' : 'movie');
         if (movie != null && mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie)),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie)));
           return;
         }
       } catch (_) {}
@@ -948,10 +806,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             (m) => m.title.toLowerCase() == name.toLowerCase(),
             orElse: () => results.first,
           );
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => DetailsScreen(movie: match)),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(movie: match)));
           return;
         }
       } catch (_) {}
@@ -959,24 +814,16 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
     // Last fallback: minimal Movie
     if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DetailsScreen(
-            movie: Movie(
-              id: id.hashCode,
-              imdbId: id.startsWith('tt') ? id : null,
-              title: name.isNotEmpty ? name : id,
-              posterPath: '',
-              backdropPath: '',
-              voteAverage: 0,
-              releaseDate: '',
-              overview: '',
-              mediaType: type == 'series' ? 'tv' : 'movie',
-            ),
-          ),
+      Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(
+        movie: Movie(
+          id: id.hashCode,
+          imdbId: id.startsWith('tt') ? id : null,
+          title: name.isNotEmpty ? name : id,
+          posterPath: '', backdropPath: '', voteAverage: 0,
+          releaseDate: '', overview: '',
+          mediaType: type == 'series' ? 'tv' : 'movie',
         ),
-      );
+      )));
     }
   }
 
@@ -991,14 +838,13 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           _selectedSeason = seasonNumber;
           // Only reset to episode 1 if no initial episode was provided,
           // or if we're navigating to a different season after init.
-          if (widget.initialEpisode != null &&
-              seasonNumber == widget.initialSeason) {
+          if (widget.initialEpisode != null && seasonNumber == widget.initialSeason) {
             _selectedEpisode = widget.initialEpisode!;
           } else {
             _selectedEpisode = 1;
           }
         });
-        if (_selectedSourceId == 'dizzy') {
+        if (_selectedSourceId == 'playtorrio') {
           _autoSearch();
         } else if (_selectedSourceId == 'jackett') {
           _searchJackett();
@@ -1047,8 +893,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         if (mounted) setState(() => _isStremioFetching = false);
         return;
       }
-      if (_movie.mediaType == 'tv')
-        stremioId = '$stremioId:$_selectedSeason:$_selectedEpisode';
+      if (_movie.mediaType == 'tv') stremioId = '$stremioId:$_selectedSeason:$_selectedEpisode';
       final type = _movie.mediaType == 'tv' ? 'series' : 'movie';
 
       int pendingCount = _streamAddons.length;
@@ -1069,50 +914,39 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
       for (final addon in _streamAddons) {
         // Fire each addon fetch independently — don't await here
-        _stremio
-            .getStreams(baseUrl: addon['baseUrl'], type: type, id: stremioId)
-            .then((streams) {
-              if (!mounted) return;
-              final tagged = streams.map((s) {
-                if (s is Map<String, dynamic>) {
-                  return <String, dynamic>{
-                    ...s,
-                    '_addonName': addon['name'] ?? 'Unknown',
-                    '_addonBaseUrl': addon['baseUrl'],
-                  };
-                }
-                return <String, dynamic>{
-                  '_addonName': addon['name'],
-                  '_addonBaseUrl': addon['baseUrl'],
-                };
-              }).toList();
+        _stremio.getStreams(baseUrl: addon['baseUrl'], type: type, id: stremioId).then((streams) {
+          if (!mounted) return;
+          final tagged = streams.map((s) {
+            if (s is Map<String, dynamic>) {
+              return <String, dynamic>{
+                ...s,
+                '_addonName': addon['name'] ?? 'Unknown',
+                '_addonBaseUrl': addon['baseUrl'],
+              };
+            }
+            return <String, dynamic>{'_addonName': addon['name'], '_addonBaseUrl': addon['baseUrl']};
+          }).toList();
 
-              setState(() {
-                // Only show chip if addon returned results
-                if (tagged.isNotEmpty) {
-                  _loadedAddonBaseUrls.add(addon['baseUrl'] as String);
-                }
-                // Append below existing results
-                _allCombinedStremioStreams.addAll(tagged);
-                if (_selectedSourceId == 'all_stremio' ||
-                    _selectedSourceId == addon['baseUrl']) {
-                  _applyStremioFilter();
-                }
-              });
-            })
-            .catchError((_) {
-              // No-op: don't show chip for errored addons
-            })
-            .whenComplete(() {
-              completeOne();
-            });
+          setState(() {
+            // Only show chip if addon returned results
+            if (tagged.isNotEmpty) {
+              _loadedAddonBaseUrls.add(addon['baseUrl'] as String);
+            }
+            // Append below existing results
+            _allCombinedStremioStreams.addAll(tagged);
+            if (_selectedSourceId == 'all_stremio' ||
+                _selectedSourceId == addon['baseUrl']) {
+              _applyStremioFilter();
+            }
+          });
+        }).catchError((_) {
+          // No-op: don't show chip for errored addons
+        }).whenComplete(() {
+          completeOne();
+        });
       }
     } catch (e) {
-      if (mounted)
-        setState(() {
-          _errorMessage = 'Error: $e';
-          _isStremioFetching = false;
-        });
+      if (mounted) setState(() { _errorMessage = 'Error: $e'; _isStremioFetching = false; });
     }
   }
 
@@ -1142,21 +976,16 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       String scraperName = scraperId;
       for (final a in _nuvioAddons) {
         for (final s in a.scrapers) {
-          if (s.id == scraperId) {
-            scraperName = s.name;
-            break;
-          }
+          if (s.id == scraperId) { scraperName = s.name; break; }
         }
       }
       setState(() {
         _nuvioStreams = results
-            .map(
-              (r) => <String, dynamic>{
-                ...r.toStremioStream(sourceLabel: scraperName),
-                '_addonName': scraperName,
-                '_addonBaseUrl': 'nuvio:$scraperId',
-              },
-            )
+            .map((r) => <String, dynamic>{
+                  ...r.toStremioStream(sourceLabel: scraperName),
+                  '_addonName': scraperName,
+                  '_addonBaseUrl': 'nuvio:$scraperId',
+                })
             .toList();
         _isNuvioFetching = false;
         _errorMessage = _nuvioStreams.isEmpty
@@ -1200,16 +1029,12 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         if (!mounted) return;
         if (batch.streams.isEmpty) return; // failed/empty scrapers add nothing
         setState(() {
-          _nuvioStreams.addAll(
-            batch.streams.map(
-              (s) => <String, dynamic>{
+          _nuvioStreams.addAll(batch.streams.map((s) => <String, dynamic>{
                 ...s,
                 '_addonName': s['sourceName'] ?? batch.scraperName,
                 '_addonBaseUrl':
                     'nuvio://${s['sourceName'] ?? batch.scraperId}',
-              },
-            ),
-          );
+              }));
           if (_selectedSourceId == 'all_nuvio') _errorMessage = null;
         });
       },
@@ -1231,50 +1056,30 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   }
 
   /// Fetches streams using the custom Stremio ID from the originating addon.
-  Future<void> _fetchStremioStreamsForCustomId(
-    Map<String, dynamic> item,
-  ) async {
+  Future<void> _fetchStremioStreamsForCustomId(Map<String, dynamic> item) async {
     final customId = item['id']?.toString() ?? '';
     final addonBaseUrl = item['_addonBaseUrl']?.toString() ?? '';
     final addonName = item['_addonName']?.toString() ?? 'Unknown';
-    final type =
-        item['type']?.toString() ??
-        (_movie.mediaType == 'tv' ? 'series' : 'movie');
-    debugPrint(
-      '[CustomIdStreams] customId=$customId, addonBaseUrl=$addonBaseUrl, type=$type',
-    );
+    final type = item['type']?.toString() ?? (_movie.mediaType == 'tv' ? 'series' : 'movie');
+    debugPrint('[CustomIdStreams] customId=$customId, addonBaseUrl=$addonBaseUrl, type=$type');
     if (customId.isEmpty || addonBaseUrl.isEmpty) {
-      debugPrint(
-        '[CustomIdStreams] SKIPPED: customId empty=${customId.isEmpty}, addonBaseUrl empty=${addonBaseUrl.isEmpty}',
-      );
+      debugPrint('[CustomIdStreams] SKIPPED: customId empty=${customId.isEmpty}, addonBaseUrl empty=${addonBaseUrl.isEmpty}');
       return;
     }
 
-    setState(() {
-      _isStremioFetching = true;
-      _errorMessage = null;
-      _stremioStreams = [];
-      _allCombinedStremioStreams = [];
-      _loadedAddonBaseUrls.clear();
-    });
-
+    setState(() { _isStremioFetching = true; _errorMessage = null; _stremioStreams = []; _allCombinedStremioStreams = []; _loadedAddonBaseUrls.clear(); });
+    
     try {
       // For collections, fetch meta to get videos array with collection items
       if (type == 'collections') {
-        final meta = await _stremio.getMeta(
-          baseUrl: addonBaseUrl,
-          type: type,
-          id: customId,
-        );
+        final meta = await _stremio.getMeta(baseUrl: addonBaseUrl, type: type, id: customId);
         if (meta != null && meta['videos'] != null) {
           final videos = meta['videos'] as List;
-          debugPrint(
-            '[CustomIdStreams] Got ${videos.length} collection items from meta',
-          );
-
+          debugPrint('[CustomIdStreams] Got ${videos.length} collection items from meta');
+          
           // Parse videos to build collection structure
           _parseCollectionVideos(videos);
-
+          
           // Collections don't have streams - they're just containers for other content
           // The UI will display the collection items and allow navigation to them
           if (mounted) {
@@ -1286,48 +1091,31 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           return;
         }
       }
-
+      
       // For series, first fetch meta to get videos array with season/episode info
       if (type == 'series') {
-        final meta = await _stremio.getMeta(
-          baseUrl: addonBaseUrl,
-          type: type,
-          id: customId,
-        );
+        final meta = await _stremio.getMeta(baseUrl: addonBaseUrl, type: type, id: customId);
         if (meta != null && meta['videos'] != null) {
           final videos = meta['videos'] as List;
           debugPrint('[CustomIdStreams] Got ${videos.length} videos from meta');
-
+          
           // Parse videos to build season/episode structure
           _parseCustomIdVideos(videos);
-
+          
           // Now fetch streams for the selected episode
           final selectedVideo = _getSelectedVideoFromCustomId(videos);
           if (selectedVideo != null) {
             final videoId = selectedVideo['id']?.toString() ?? '';
-            debugPrint(
-              '[CustomIdStreams] Fetching streams for video: $videoId',
-            );
-            final streams = await _stremio.getStreams(
-              baseUrl: addonBaseUrl,
-              type: type,
-              id: videoId,
-            );
+            debugPrint('[CustomIdStreams] Fetching streams for video: $videoId');
+            final streams = await _stremio.getStreams(baseUrl: addonBaseUrl, type: type, id: videoId);
             debugPrint('[CustomIdStreams] Got ${streams.length} streams');
-
+            
             if (mounted) {
               final tagged = streams.map((s) {
                 if (s is Map<String, dynamic>) {
-                  return <String, dynamic>{
-                    ...s,
-                    '_addonName': addonName,
-                    '_addonBaseUrl': addonBaseUrl,
-                  };
+                  return <String, dynamic>{...s, '_addonName': addonName, '_addonBaseUrl': addonBaseUrl};
                 }
-                return <String, dynamic>{
-                  '_addonName': addonName,
-                  '_addonBaseUrl': addonBaseUrl,
-                };
+                return <String, dynamic>{'_addonName': addonName, '_addonBaseUrl': addonBaseUrl};
               }).toList();
               setState(() {
                 _stremioStreams = tagged;
@@ -1341,29 +1129,17 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           }
         }
       }
-
+      
       // For movies or if meta fetch failed, use the original ID directly
-      final streams = await _stremio.getStreams(
-        baseUrl: addonBaseUrl,
-        type: type,
-        id: customId,
-      );
+      final streams = await _stremio.getStreams(baseUrl: addonBaseUrl, type: type, id: customId);
       debugPrint('[CustomIdStreams] Got ${streams.length} streams');
-      if (streams.isNotEmpty)
-        debugPrint('[CustomIdStreams] First stream: ${streams.first}');
+      if (streams.isNotEmpty) debugPrint('[CustomIdStreams] First stream: ${streams.first}');
       if (mounted) {
         final tagged = streams.map((s) {
           if (s is Map<String, dynamic>) {
-            return <String, dynamic>{
-              ...s,
-              '_addonName': addonName,
-              '_addonBaseUrl': addonBaseUrl,
-            };
+            return <String, dynamic>{...s, '_addonName': addonName, '_addonBaseUrl': addonBaseUrl};
           }
-          return <String, dynamic>{
-            '_addonName': addonName,
-            '_addonBaseUrl': addonBaseUrl,
-          };
+          return <String, dynamic>{'_addonName': addonName, '_addonBaseUrl': addonBaseUrl};
         }).toList();
         setState(() {
           _stremioStreams = tagged;
@@ -1374,26 +1150,21 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         });
       }
     } catch (e) {
-      if (mounted)
-        setState(() {
-          _errorMessage = 'Error: $e';
-          _isStremioFetching = false;
-          _loadedAddonBaseUrls.add(addonBaseUrl);
-        });
+      if (mounted) setState(() { _errorMessage = 'Error: $e'; _isStremioFetching = false; _loadedAddonBaseUrls.add(addonBaseUrl); });
     }
   }
 
   /// Parses the videos array from custom ID meta to build season/episode structure
   void _parseCustomIdVideos(List videos) {
     if (videos.isEmpty) return;
-
+    
     // Build a map of seasons to episodes
     final Map<int, List<Map<String, dynamic>>> seasonMap = {};
     for (final video in videos) {
       if (video is! Map) continue;
       final season = video['season'] as int? ?? 1;
       final episode = video['episode'] as int? ?? 1;
-
+      
       seasonMap.putIfAbsent(season, () => []);
       seasonMap[season]!.add({
         'id': video['id'],
@@ -1404,14 +1175,12 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         'released': video['released'],
       });
     }
-
+    
     // Sort episodes within each season
     for (final episodes in seasonMap.values) {
-      episodes.sort(
-        (a, b) => (a['episode'] as int).compareTo(b['episode'] as int),
-      );
+      episodes.sort((a, b) => (a['episode'] as int).compareTo(b['episode'] as int));
     }
-
+    
     // Store in _seasonData format compatible with existing UI
     if (mounted) {
       setState(() {
@@ -1425,9 +1194,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         }
         final episodes = seasonMap[_selectedSeason] ?? [];
         if (episodes.isEmpty || _selectedEpisode > episodes.length) {
-          _selectedEpisode = episodes.isNotEmpty
-              ? episodes.first['episode']
-              : 1;
+          _selectedEpisode = episodes.isNotEmpty ? episodes.first['episode'] : 1;
         }
       });
     }
@@ -1436,11 +1203,11 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   /// Parses the videos array from collection meta to build collection items list
   void _parseCollectionVideos(List videos) {
     if (videos.isEmpty) return;
-
+    
     final List<Map<String, dynamic>> items = [];
     for (final video in videos) {
       if (video is! Map) continue;
-
+      
       items.add({
         'id': video['id'],
         'title': video['title'] ?? 'Unknown',
@@ -1450,7 +1217,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         'overview': video['overview'],
       });
     }
-
+    
     if (mounted) {
       setState(() {
         _collectionItems = items;
@@ -1479,38 +1246,23 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       if (_allCombinedStremioStreams.isEmpty) {
         return _fetchAllStremioStreams();
       }
-      setState(() {
-        _stremioStreams = _allCombinedStremioStreams;
-        _errorMessage = null;
-      });
+      setState(() { _stremioStreams = _allCombinedStremioStreams; _errorMessage = null; });
       return;
     }
     final addon = _streamAddons.firstWhere(
       (a) => a['baseUrl'] == _selectedSourceId,
-      orElse: () =>
-          _streamAddons.isNotEmpty ? _streamAddons.first : <String, dynamic>{},
-    );
+      orElse: () => _streamAddons.isNotEmpty ? _streamAddons.first : <String, dynamic>{},);
     if (addon.isEmpty) return;
-    setState(() {
-      _isStremioFetching = true;
-      _errorMessage = null;
-      _stremioStreams = [];
-    });
+    setState(() { _isStremioFetching = true; _errorMessage = null; _stremioStreams = []; });
     try {
       String stremioId = _movie.imdbId ?? '';
-      if (_movie.mediaType == 'tv')
-        stremioId = '$stremioId:$_selectedSeason:$_selectedEpisode';
+      if (_movie.mediaType == 'tv') stremioId = '$stremioId:$_selectedSeason:$_selectedEpisode';
       final type = _movie.mediaType == 'tv' ? 'series' : 'movie';
-      final streams = await _stremio.getStreams(
-        baseUrl: addon['baseUrl'],
-        type: type,
-        id: stremioId,
-      );
+      final streams = await _stremio.getStreams(baseUrl: addon['baseUrl'], type: type, id: stremioId);
       if (mounted) {
         setState(() {
           _stremioStreams = streams;
-          if (streams.isEmpty)
-            _errorMessage = 'No streams found in ${addon['name']}';
+          if (streams.isEmpty) _errorMessage = 'No streams found in ${addon['name']}';
         });
       }
     } catch (e) {
@@ -1531,83 +1283,42 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     }
   }
 
-  Future<void> _searchTvTorrents(
-    String seasonQuery,
-    String episodeQuery,
-  ) async {
-    setState(() {
-      _isSearching = true;
-      _allTorrentResults = [];
-      _errorMessage = null;
-    });
+  Future<void> _searchTvTorrents(String seasonQuery, String episodeQuery) async {
+    setState(() { _isSearching = true; _allTorrentResults = []; _errorMessage = null; });
     try {
       final results = await Future.wait([
         _torrentApi.searchTorrents(seasonQuery),
         _torrentApi.searchTorrents(episodeQuery),
       ]);
       if (mounted) {
-        final filteredSeason = await TorrentFilter.filterTorrentsAsync(
-          results[0],
-          _movie.title,
-          requiredSeason: _selectedSeason,
-        );
-        final filteredEpisode = await TorrentFilter.filterTorrentsAsync(
-          results[1],
-          _movie.title,
-          requiredSeason: _selectedSeason,
-          requiredEpisode: _selectedEpisode,
-        );
+        final filteredSeason = await TorrentFilter.filterTorrentsAsync(results[0], _movie.title, requiredSeason: _selectedSeason);
+        final filteredEpisode = await TorrentFilter.filterTorrentsAsync(results[1], _movie.title, requiredSeason: _selectedSeason, requiredEpisode: _selectedEpisode);
         final combined = <String, TorrentResult>{};
-        for (var r in filteredEpisode) {
-          combined[r.magnet] = r;
-        }
-        for (var r in filteredSeason) {
-          combined[r.magnet] = r;
-        }
+        for (var r in filteredEpisode) { combined[r.magnet] = r; }
+        for (var r in filteredSeason) { combined[r.magnet] = r; }
         if (mounted) {
-          setState(() {
-            _allTorrentResults = combined.values.toList();
-            _isSearching = false;
-          });
+          setState(() { _allTorrentResults = combined.values.toList(); _isSearching = false; });
           _sortResults();
         }
       }
     } catch (e) {
-      if (mounted)
-        setState(() {
-          _errorMessage = e.toString();
-          _isSearching = false;
-        });
+      if (mounted) setState(() { _errorMessage = e.toString(); _isSearching = false; });
     }
   }
 
   Future<void> _searchTorrents(String query) async {
-    setState(() {
-      _isSearching = true;
-      _allTorrentResults = [];
-      _errorMessage = null;
-    });
+    setState(() { _isSearching = true; _allTorrentResults = []; _errorMessage = null; });
     try {
       final results = await _torrentApi.searchTorrents(query);
       if (mounted) {
-        final filtered = await TorrentFilter.filterTorrentsAsync(
-          results,
-          _movie.title,
-        );
+        final filtered = await TorrentFilter.filterTorrentsAsync(results, _movie.title);
         if (mounted) {
-          setState(() {
-            _allTorrentResults = filtered;
-            _isSearching = false;
-          });
+          setState(() { _allTorrentResults = filtered; _isSearching = false; });
           _sortResults();
         }
       }
     } catch (e) {
-      if (mounted)
-        setState(() {
-          _errorMessage = e.toString();
-          _isSearching = false;
-        });
+      if (mounted) setState(() { _errorMessage = e.toString(); _isSearching = false; });
     }
   }
 
@@ -1619,28 +1330,19 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (!_isJackettConfigured) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Jackett is not configured. Go to Settings to add your Base URL and API Key.',
-            ),
-          ),
+          const SnackBar(content: Text('Jackett is not configured. Go to Settings to add your Base URL and API Key.'))
         );
       }
       return;
     }
 
-    setState(() {
-      _isSearching = true;
-      _allTorrentResults = [];
-      _errorMessage = null;
-    });
+    setState(() { _isSearching = true; _allTorrentResults = []; _errorMessage = null; });
 
     try {
       final baseUrl = await _settings.getJackettBaseUrl();
       final apiKey = await _settings.getJackettApiKey();
 
-      if (baseUrl == null || apiKey == null)
-        throw Exception('Jackett configuration missing');
+      if (baseUrl == null || apiKey == null) throw Exception('Jackett configuration missing');
 
       if (_movie.mediaType == 'tv') {
         final s = _selectedSeason.toString().padLeft(2, '0');
@@ -1650,74 +1352,38 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           _jackett.search(baseUrl, apiKey, '${_movie.title} S${s}E$e'),
         ]);
         if (mounted) {
-          final filteredSeason = await TorrentFilter.filterTorrentsAsync(
-            results[0],
-            _movie.title,
-            requiredSeason: _selectedSeason,
-          );
-          final filteredEpisode = await TorrentFilter.filterTorrentsAsync(
-            results[1],
-            _movie.title,
-            requiredSeason: _selectedSeason,
-            requiredEpisode: _selectedEpisode,
-          );
+          final filteredSeason = await TorrentFilter.filterTorrentsAsync(results[0], _movie.title, requiredSeason: _selectedSeason);
+          final filteredEpisode = await TorrentFilter.filterTorrentsAsync(results[1], _movie.title, requiredSeason: _selectedSeason, requiredEpisode: _selectedEpisode);
           final combined = <String, TorrentResult>{};
-          for (var r in filteredEpisode) {
-            combined[r.magnet] = r;
-          }
-          for (var r in filteredSeason) {
-            combined[r.magnet] = r;
-          }
+          for (var r in filteredEpisode) { combined[r.magnet] = r; }
+          for (var r in filteredSeason) { combined[r.magnet] = r; }
           if (mounted) {
             if (combined.isEmpty) {
-              setState(() {
-                _errorMessage =
-                    'No results found for "S${s}E$e". Try checking your configured indexers in Jackett.';
-                _isSearching = false;
-              });
+              setState(() { _errorMessage = 'No results found for "S${s}E$e". Try checking your configured indexers in Jackett.'; _isSearching = false; });
             } else {
-              setState(() {
-                _allTorrentResults = combined.values.toList();
-                _isSearching = false;
-              });
+              setState(() { _allTorrentResults = combined.values.toList(); _isSearching = false; });
               _sortResults();
             }
           }
         }
       } else {
-        final year = _movie.releaseDate.length >= 4
-            ? _movie.releaseDate.substring(0, 4)
-            : '';
+        final year = _movie.releaseDate.length >= 4 ? _movie.releaseDate.substring(0, 4) : '';
         final query = year.isNotEmpty ? '${_movie.title} $year' : _movie.title;
         final results = await _jackett.search(baseUrl, apiKey, query);
         if (mounted) {
-          final filtered = await TorrentFilter.filterTorrentsAsync(
-            results,
-            _movie.title,
-          );
+          final filtered = await TorrentFilter.filterTorrentsAsync(results, _movie.title);
           if (mounted) {
             if (filtered.isEmpty) {
-              setState(() {
-                _errorMessage =
-                    'No results found for "$query". Try checking your configured indexers in Jackett.';
-                _isSearching = false;
-              });
+              setState(() { _errorMessage = 'No results found for "$query". Try checking your configured indexers in Jackett.'; _isSearching = false; });
             } else {
-              setState(() {
-                _allTorrentResults = filtered;
-                _isSearching = false;
-              });
+              setState(() { _allTorrentResults = filtered; _isSearching = false; });
               _sortResults();
             }
           }
         }
       }
     } catch (e) {
-      if (mounted)
-        setState(() {
-          _errorMessage = e.toString();
-          _isSearching = false;
-        });
+      if (mounted) setState(() { _errorMessage = e.toString(); _isSearching = false; });
     }
   }
 
@@ -1729,39 +1395,26 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (!_isProwlarrConfigured) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Prowlarr is not configured. Go to Settings to add your Base URL and API Key.',
-            ),
-          ),
+          const SnackBar(content: Text('Prowlarr is not configured. Go to Settings to add your Base URL and API Key.'))
         );
       }
       return;
     }
 
-    setState(() {
-      _isSearching = true;
-      _allTorrentResults = [];
-      _errorMessage = null;
-    });
+    setState(() { _isSearching = true; _allTorrentResults = []; _errorMessage = null; });
 
     try {
       final baseUrl = await _settings.getProwlarrBaseUrl();
       final apiKey = await _settings.getProwlarrApiKey();
 
-      if (baseUrl == null || apiKey == null)
-        throw Exception('Prowlarr configuration missing');
+      if (baseUrl == null || apiKey == null) throw Exception('Prowlarr configuration missing');
 
       // Resolve any saved tag filter to indexer IDs for this session.
       // Empty tag selection means no filter — use all torrent indexers.
       final tagIds = await _settings.getProwlarrTagIds();
       List<int>? allowedIndexerIds;
       if (tagIds.isNotEmpty) {
-        final resolved = await _prowlarr.resolveTagIndexerIds(
-          baseUrl,
-          apiKey,
-          tagIds,
-        );
+        final resolved = await _prowlarr.resolveTagIndexerIds(baseUrl, apiKey, tagIds);
         if (resolved.isNotEmpty) allowedIndexerIds = resolved;
         // If resolved is empty (tags exist but no matching indexers), fall back to all.
       }
@@ -1770,93 +1423,42 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         final s = _selectedSeason.toString().padLeft(2, '0');
         final e = _selectedEpisode.toString().padLeft(2, '0');
         final results = await Future.wait([
-          _prowlarr.search(
-            baseUrl,
-            apiKey,
-            '${_movie.title} S$s',
-            indexerIds: allowedIndexerIds,
-          ),
-          _prowlarr.search(
-            baseUrl,
-            apiKey,
-            '${_movie.title} S${s}E$e',
-            indexerIds: allowedIndexerIds,
-          ),
+          _prowlarr.search(baseUrl, apiKey, '${_movie.title} S$s', indexerIds: allowedIndexerIds),
+          _prowlarr.search(baseUrl, apiKey, '${_movie.title} S${s}E$e', indexerIds: allowedIndexerIds),
         ]);
         if (mounted) {
-          final filteredSeason = await TorrentFilter.filterTorrentsAsync(
-            results[0],
-            _movie.title,
-            requiredSeason: _selectedSeason,
-          );
-          final filteredEpisode = await TorrentFilter.filterTorrentsAsync(
-            results[1],
-            _movie.title,
-            requiredSeason: _selectedSeason,
-            requiredEpisode: _selectedEpisode,
-          );
+          final filteredSeason = await TorrentFilter.filterTorrentsAsync(results[0], _movie.title, requiredSeason: _selectedSeason);
+          final filteredEpisode = await TorrentFilter.filterTorrentsAsync(results[1], _movie.title, requiredSeason: _selectedSeason, requiredEpisode: _selectedEpisode);
           final combined = <String, TorrentResult>{};
-          for (var r in filteredEpisode) {
-            combined[r.magnet] = r;
-          }
-          for (var r in filteredSeason) {
-            combined[r.magnet] = r;
-          }
+          for (var r in filteredEpisode) { combined[r.magnet] = r; }
+          for (var r in filteredSeason) { combined[r.magnet] = r; }
           if (mounted) {
             if (combined.isEmpty) {
-              setState(() {
-                _errorMessage =
-                    'No results found for "S${s}E$e". Try checking your configured indexers in Prowlarr.';
-                _isSearching = false;
-              });
+              setState(() { _errorMessage = 'No results found for "S${s}E$e". Try checking your configured indexers in Prowlarr.'; _isSearching = false; });
             } else {
-              setState(() {
-                _allTorrentResults = combined.values.toList();
-                _isSearching = false;
-              });
+              setState(() { _allTorrentResults = combined.values.toList(); _isSearching = false; });
               _sortResults();
             }
           }
         }
       } else {
-        final year = _movie.releaseDate.length >= 4
-            ? _movie.releaseDate.substring(0, 4)
-            : '';
+        final year = _movie.releaseDate.length >= 4 ? _movie.releaseDate.substring(0, 4) : '';
         final query = year.isNotEmpty ? '${_movie.title} $year' : _movie.title;
-        final results = await _prowlarr.search(
-          baseUrl,
-          apiKey,
-          query,
-          indexerIds: allowedIndexerIds,
-        );
+        final results = await _prowlarr.search(baseUrl, apiKey, query, indexerIds: allowedIndexerIds);
         if (mounted) {
-          final filtered = await TorrentFilter.filterTorrentsAsync(
-            results,
-            _movie.title,
-          );
+          final filtered = await TorrentFilter.filterTorrentsAsync(results, _movie.title);
           if (mounted) {
             if (filtered.isEmpty) {
-              setState(() {
-                _errorMessage =
-                    'No results found for "$query". Try checking your configured indexers in Prowlarr.';
-                _isSearching = false;
-              });
+              setState(() { _errorMessage = 'No results found for "$query". Try checking your configured indexers in Prowlarr.'; _isSearching = false; });
             } else {
-              setState(() {
-                _allTorrentResults = filtered;
-                _isSearching = false;
-              });
+              setState(() { _allTorrentResults = filtered; _isSearching = false; });
               _sortResults();
             }
           }
         }
       }
     } catch (e) {
-      if (mounted)
-        setState(() {
-          _errorMessage = e.toString();
-          _isSearching = false;
-        });
+      if (mounted) setState(() { _errorMessage = e.toString(); _isSearching = false; });
     }
   }
 
@@ -1882,15 +1484,11 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
   // ─── play methods ─────────────────────────────────────────────────────────
 
-  void _playStremioStream(
-    Map<String, dynamic> stream, {
-    Duration? startPosition,
-  }) async {
+  void _playStremioStream(Map<String, dynamic> stream, {Duration? startPosition}) async {
     // Handle externalUrl streams (e.g. "More Like This" addon)
     final externalUrl = stream['externalUrl']?.toString();
     if (externalUrl != null && externalUrl.isNotEmpty) {
-      final streamAddonBaseUrl =
-          stream['_addonBaseUrl']?.toString() ?? _selectedSourceId;
+      final streamAddonBaseUrl = stream['_addonBaseUrl']?.toString() ?? _selectedSourceId;
       await _handleExternalUrl(externalUrl, addonBaseUrl: streamAddonBaseUrl);
       return;
     }
@@ -1900,30 +1498,21 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
     // Determine stremio item ID for resume (custom ID or IMDB ID)
     final stremioId = widget.stremioItem?['id']?.toString() ?? _movie.imdbId;
-    final stremioAddonBaseUrl =
-        stream['_addonBaseUrl']?.toString() ?? _selectedSourceId;
+    final stremioAddonBaseUrl = stream['_addonBaseUrl']?.toString() ?? _selectedSourceId;
 
     if (stream['url'] != null) {
       if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PlayerScreen(
-            streamUrl: stream['url'],
-            title: _movie.title,
-            headers: Map<String, String>.from(
-              stream['behaviorHints']?['proxyHeaders']?['request'] ?? {},
-            ),
-            movie: _movie,
-            selectedSeason: _movie.mediaType == 'tv' ? _selectedSeason : null,
-            selectedEpisode: _movie.mediaType == 'tv' ? _selectedEpisode : null,
-            startPosition: startPosition,
-            activeProvider: 'stremio_direct',
-            stremioId: stremioId,
-            stremioAddonBaseUrl: stremioAddonBaseUrl,
-          ),
-        ),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => PlayerScreen(
+        streamUrl: stream['url'], title: _movie.title,
+        headers: Map<String, String>.from(stream['behaviorHints']?['proxyHeaders']?['request'] ?? {}),
+        movie: _movie,
+        selectedSeason: _movie.mediaType == 'tv' ? _selectedSeason : null,
+        selectedEpisode: _movie.mediaType == 'tv' ? _selectedEpisode : null,
+        startPosition: startPosition,
+        activeProvider: 'stremio_direct',
+        stremioId: stremioId,
+        stremioAddonBaseUrl: stremioAddonBaseUrl,
+      )));
     } else if (stream['infoHash'] != null) {
       // Build a proper magnet link:
       // - include display name from stream title
@@ -1931,9 +1520,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       //   (Stremio addons provide these as "tracker:udp://...", "tracker:http://...")
       final infoHash = stream['infoHash'] as String;
       final streamTitle = (stream['title'] ?? stream['name'] ?? '').toString();
-      final dn = streamTitle.isNotEmpty
-          ? '&dn=${Uri.encodeComponent(streamTitle)}'
-          : '';
+      final dn = streamTitle.isNotEmpty ? '&dn=${Uri.encodeComponent(streamTitle)}' : '';
 
       // Extract trackers from sources
       final sources = stream['sources'];
@@ -1953,21 +1540,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
       if (!mounted) return;
       _streamCancelled = false;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        barrierColor: Colors.black,
-        builder: (_) => LoadingOverlay(
-          movie: _movie,
-          message: useDebrid && debridService != 'None'
-              ? 'Resolving with $debridService...'
-              : 'Starting Torrent Engine...',
-          onCancel: () {
-            _streamCancelled = true;
-            Navigator.of(context).pop();
-          },
-        ),
-      );
+      showDialog(context: context, barrierDismissible: false, barrierColor: Colors.black,
+        builder: (_) => LoadingOverlay(movie: _movie,
+          message: useDebrid && debridService != 'None' ? 'Resolving with $debridService...' : 'Starting Torrent Engine...',
+          onCancel: () { _streamCancelled = true; Navigator.of(context).pop(); }));
       final navigator = Navigator.of(context);
       String? url;
       int? resolvedFileIndex;
@@ -1988,47 +1564,30 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             url = files.first.downloadUrl;
           }
         } else {
-          url = await TorrentStreamService().streamTorrent(
-            magnet,
+          url = await TorrentStreamService().streamTorrent(magnet,
             season: _movie.mediaType == 'tv' ? _selectedSeason : null,
-            episode: _movie.mediaType == 'tv' ? _selectedEpisode : null,
-          );
+            episode: _movie.mediaType == 'tv' ? _selectedEpisode : null);
           if (_streamCancelled) return;
           if (url != null) {
             final idx = Uri.parse(url).queryParameters['index'];
             if (idx != null) resolvedFileIndex = int.tryParse(idx);
           }
         }
-      } catch (e) {
-        debugPrint('Stremio hash error: $e');
-      }
+      } catch (e) { debugPrint('Stremio hash error: $e'); }
       if (_streamCancelled) return;
       if (navigator.canPop()) navigator.pop();
       if (url != null && mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PlayerScreen(
-              streamUrl: url!,
-              title: _movie.title,
-              magnetLink: magnet,
-              movie: _movie,
-              selectedSeason: _movie.mediaType == 'tv' ? _selectedSeason : null,
-              selectedEpisode: _movie.mediaType == 'tv'
-                  ? _selectedEpisode
-                  : null,
-              fileIndex: resolvedFileIndex,
-              startPosition: startPosition,
-              activeProvider: 'stremio_direct',
-              stremioId: stremioId,
-              stremioAddonBaseUrl: stremioAddonBaseUrl,
-            ),
-          ),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (_) => PlayerScreen(
+          streamUrl: url!, title: _movie.title, magnetLink: magnet, movie: _movie,
+          selectedSeason: _movie.mediaType == 'tv' ? _selectedSeason : null,
+          selectedEpisode: _movie.mediaType == 'tv' ? _selectedEpisode : null,
+          fileIndex: resolvedFileIndex,
+          startPosition: startPosition,
+          activeProvider: 'stremio_direct',
+          stremioId: stremioId,
+          stremioAddonBaseUrl: stremioAddonBaseUrl)));
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to resolve stream.')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to resolve stream.')));
       }
     }
   }
@@ -2070,10 +1629,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         case 'discover':
           // Open the catalog screen for this discover link
           if (mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => StremioCatalogScreen()),
-            );
+            Navigator.push(context, MaterialPageRoute(
+              builder: (_) => StremioCatalogScreen()));
           }
           return;
       }
@@ -2090,8 +1647,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to handle this link')),
-      );
+        const SnackBar(content: Text('Unable to handle this link')));
     }
   }
 
@@ -2101,21 +1657,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (!mounted) return;
 
     _streamCancelled = false;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black,
-      builder: (_) => LoadingOverlay(
-        movie: _movie,
-        message: useDebrid && debridService != 'None'
-            ? 'Resolving with $debridService...'
-            : 'Starting Torrent Engine...',
-        onCancel: () {
-          _streamCancelled = true;
-          Navigator.of(context).pop();
-        },
-      ),
-    );
+    showDialog(context: context, barrierDismissible: false, barrierColor: Colors.black,
+      builder: (_) => LoadingOverlay(movie: _movie,
+        message: useDebrid && debridService != 'None' ? 'Resolving with $debridService...' : 'Starting Torrent Engine...',
+        onCancel: () { _streamCancelled = true; Navigator.of(context).pop(); }));
 
     String? url;
     String? magnetLink = result.magnet;
@@ -2125,19 +1670,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       if (!magnetLink.startsWith('magnet:')) {
         if (!mounted || _streamCancelled) return;
         Navigator.pop(context);
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          barrierColor: Colors.black,
-          builder: (_) => LoadingOverlay(
-            movie: _movie,
-            message: 'Resolving download link...',
-            onCancel: () {
-              _streamCancelled = true;
-              Navigator.of(context).pop();
-            },
-          ),
-        );
+        showDialog(context: context, barrierDismissible: false, barrierColor: Colors.black,
+          builder: (_) => LoadingOverlay(movie: _movie, message: 'Resolving download link...',
+            onCancel: () { _streamCancelled = true; Navigator.of(context).pop(); }));
         try {
           final resolved = await _linkResolver.resolve(magnetLink);
           if (_streamCancelled) return;
@@ -2147,11 +1682,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             if (!mounted) return;
             if (Navigator.canPop(context)) Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Torrent file downloads not yet supported. Please use magnet links.',
-                ),
-              ),
+              const SnackBar(content: Text('Torrent file downloads not yet supported. Please use magnet links.'))
             );
             return;
           }
@@ -2159,28 +1690,15 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           if (_streamCancelled) return;
           if (!mounted) return;
           if (Navigator.canPop(context)) Navigator.pop(context);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(e.toString())));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
           return;
         }
         if (!mounted || _streamCancelled) return;
         if (Navigator.canPop(context)) Navigator.pop(context);
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          barrierColor: Colors.black,
-          builder: (_) => LoadingOverlay(
-            movie: _movie,
-            message: useDebrid && debridService != 'None'
-                ? 'Resolving with $debridService...'
-                : 'Starting Torrent Engine...',
-            onCancel: () {
-              _streamCancelled = true;
-              Navigator.of(context).pop();
-            },
-          ),
-        );
+        showDialog(context: context, barrierDismissible: false, barrierColor: Colors.black,
+          builder: (_) => LoadingOverlay(movie: _movie,
+            message: useDebrid && debridService != 'None' ? 'Resolving with $debridService...' : 'Starting Torrent Engine...',
+            onCancel: () { _streamCancelled = true; Navigator.of(context).pop(); }));
       }
 
       if (useDebrid && debridService != 'None') {
@@ -2198,11 +1716,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           url = files.first.downloadUrl;
         }
       } else {
-        url = await TorrentStreamService().streamTorrent(
-          magnetLink,
+        url = await TorrentStreamService().streamTorrent(magnetLink,
           season: _movie.mediaType == 'tv' ? _selectedSeason : null,
-          episode: _movie.mediaType == 'tv' ? _selectedEpisode : null,
-        );
+          episode: _movie.mediaType == 'tv' ? _selectedEpisode : null);
         if (_streamCancelled) return;
         if (url != null) {
           final idx = Uri.parse(url).queryParameters['index'];
@@ -2211,32 +1727,20 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       }
     } catch (e) {
       debugPrint('Stream error: $e');
-      if (mounted && !_streamCancelled)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted && !_streamCancelled) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
 
     if (!mounted || _streamCancelled) return;
     if (Navigator.canPop(context)) Navigator.pop(context);
 
     if (url != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PlayerScreen(
-            streamUrl: url!,
-            title: result.name,
-            magnetLink: magnetLink,
-            movie: _movie,
-            selectedSeason: _movie.mediaType == 'tv' ? _selectedSeason : null,
-            selectedEpisode: _movie.mediaType == 'tv' ? _selectedEpisode : null,
-            fileIndex: resolvedFileIndex,
-            startPosition: startPosition,
-            activeProvider: 'torrent',
-          ),
-        ),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => PlayerScreen(
+        streamUrl: url!, title: result.name, magnetLink: magnetLink, movie: _movie,
+        selectedSeason: _movie.mediaType == 'tv' ? _selectedSeason : null,
+        selectedEpisode: _movie.mediaType == 'tv' ? _selectedEpisode : null,
+        fileIndex: resolvedFileIndex,
+        startPosition: startPosition,
+        activeProvider: 'torrent')));
     }
   }
 
@@ -2248,15 +1752,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            _buildBackdropWidget(),
-            const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryColor),
-            ),
-          ],
-        ),
+        body: Stack(fit: StackFit.expand, children: [
+          _buildBackdropWidget(),
+          const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+        ]),
       );
     }
 
@@ -2267,27 +1766,17 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       focusNode: _keyboardFocusNode,
       autofocus: true,
       onKeyEvent: (event) {
-        if (event is KeyDownEvent &&
-            _movie.mediaType == 'tv' &&
-            _seasonData != null) {
+        if (event is KeyDownEvent && _movie.mediaType == 'tv' && _seasonData != null) {
           final episodes = _seasonData!['episodes'] as List?;
           if (episodes == null || episodes.isEmpty) return;
-          if (event.logicalKey == LogicalKeyboardKey.arrowLeft &&
-              _selectedEpisode > 1) {
-            setState(() => _selectedEpisode--);
-            _autoSearch();
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
-              _selectedEpisode < episodes.length) {
-            setState(() => _selectedEpisode++);
-            _autoSearch();
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
-              _selectedSeason > 1) {
-            _fetchSeason(_selectedSeason - 1);
-            setState(() => _selectedEpisode = 1);
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
-              _selectedSeason < _movie.numberOfSeasons) {
-            _fetchSeason(_selectedSeason + 1);
-            setState(() => _selectedEpisode = 1);
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft && _selectedEpisode > 1) {
+            setState(() => _selectedEpisode--); _autoSearch();
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight && _selectedEpisode < episodes.length) {
+            setState(() => _selectedEpisode++); _autoSearch();
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp && _selectedSeason > 1) {
+            _fetchSeason(_selectedSeason - 1); setState(() => _selectedEpisode = 1);
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown && _selectedSeason < _movie.numberOfSeasons) {
+            _fetchSeason(_selectedSeason + 1); setState(() => _selectedEpisode = 1);
           }
         }
       },
@@ -2309,14 +1798,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             ),
           ),
         ),
-        body: Stack(
-          children: [
-            _buildBackdropWidget(),
-            SafeArea(
-              child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
-            ),
-          ],
-        ),
+        body: Stack(children: [
+          _buildBackdropWidget(),
+          SafeArea(child: isMobile ? _buildMobileLayout() : _buildDesktopLayout()),
+        ]),
       ),
     );
   }
@@ -2329,9 +1814,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       path.startsWith('http') ? path : TmdbApi.getBackdropUrl(path);
 
   Widget _buildBackdropWidget() {
-    final url = _imageUrl(
-      _movie.backdropPath.isNotEmpty ? _movie.backdropPath : _movie.posterPath,
-    );
+    final url = _imageUrl(_movie.backdropPath.isNotEmpty ? _movie.backdropPath : _movie.posterPath);
     return buildAtmosphereBackdrop(
       imageUrl: url,
       genres: _movie.genres,
@@ -2347,16 +1830,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     final r = _mdblistRatings;
     final chips = <Widget>[];
 
-    Widget ratingChip(
-      String label,
-      dynamic value, {
-      Color color = Colors.white70,
-      String? icon,
-    }) {
+    Widget ratingChip(String label, dynamic value, {Color color = Colors.white70, String? icon}) {
       if (value == null || value == 0) return const SizedBox.shrink();
-      final display = value is double
-          ? value.toStringAsFixed(1)
-          : value.toString();
+      final display = value is double ? value.toStringAsFixed(1) : value.toString();
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
@@ -2370,31 +1846,16 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               Text(icon, style: const TextStyle(fontSize: 12)),
               const SizedBox(width: 4),
             ],
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
             const SizedBox(width: 4),
-            Text(
-              display,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            Text(display, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
           ],
         ),
       );
     }
 
     if (r != null) {
-      final scores =
-          r['scores'] as List<dynamic>? ?? r['ratings'] as List<dynamic>? ?? [];
+      final scores = r['scores'] as List<dynamic>? ?? r['ratings'] as List<dynamic>? ?? [];
       for (final s in scores) {
         final source = (s['source'] ?? '').toString();
         final value = s['value'] ?? s['score'];
@@ -2438,71 +1899,43 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     }
 
     if (_userTraktRating != null) {
-      chips.add(
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFED1C24).withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFFED1C24).withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.star_rounded,
-                color: Color(0xFFED1C24),
-                size: 14,
-              ),
-              const SizedBox(width: 3),
-              Text(
-                'You: $_userTraktRating/10',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
+      chips.add(Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFED1C24).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFED1C24).withValues(alpha: 0.3)),
         ),
-      );
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.star_rounded, color: Color(0xFFED1C24), size: 14),
+            const SizedBox(width: 3),
+            Text('You: $_userTraktRating/10',
+              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+          ],
+        ),
+      ));
     }
 
     if (_userSimklRating != null) {
-      chips.add(
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0BF5E5).withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFF0BF5E5).withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.star_rounded,
-                color: Color(0xFF0BF5E5),
-                size: 14,
-              ),
-              const SizedBox(width: 3),
-              Text(
-                'Simkl: $_userSimklRating/10',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
+      chips.add(Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0BF5E5).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFF0BF5E5).withValues(alpha: 0.3)),
         ),
-      );
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.star_rounded, color: Color(0xFF0BF5E5), size: 14),
+            const SizedBox(width: 3),
+            Text('Simkl: $_userSimklRating/10',
+              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+          ],
+        ),
+      ));
     }
 
     if (chips.isEmpty) return const SizedBox.shrink();
@@ -2515,12 +1948,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       runSpacing: 8,
       children: [
         _actionButton(
-          icon: _userTraktRating != null
-              ? Icons.star_rounded
-              : Icons.star_outline_rounded,
-          label: _userTraktRating != null
-              ? 'Trakt $_userTraktRating'
-              : 'Rate Trakt',
+          icon: _userTraktRating != null ? Icons.star_rounded : Icons.star_outline_rounded,
+          label: _userTraktRating != null ? 'Trakt $_userTraktRating' : 'Rate Trakt',
           color: const Color(0xFFED1C24),
           onTap: () async {
             if (await TraktService().isLoggedIn()) {
@@ -2528,20 +1957,13 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             } else {
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Login to Trakt first in Settings'),
-                ),
-              );
+                const SnackBar(content: Text('Login to Trakt first in Settings')));
             }
           },
         ),
         _actionButton(
-          icon: _userSimklRating != null
-              ? Icons.star_rounded
-              : Icons.star_outline_rounded,
-          label: _userSimklRating != null
-              ? 'Simkl $_userSimklRating'
-              : 'Rate Simkl',
+          icon: _userSimklRating != null ? Icons.star_rounded : Icons.star_outline_rounded,
+          label: _userSimklRating != null ? 'Simkl $_userSimklRating' : 'Rate Simkl',
           color: const Color(0xFF0BF5E5),
           onTap: () async {
             if (await SimklService().isLoggedIn()) {
@@ -2549,17 +1971,12 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             } else {
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Login to Simkl first in Settings'),
-                ),
-              );
+                const SnackBar(content: Text('Login to Simkl first in Settings')));
             }
           },
         ),
         _actionButton(
-          icon: _isInTraktCollection
-              ? Icons.library_add_check_rounded
-              : Icons.library_add_rounded,
+          icon: _isInTraktCollection ? Icons.library_add_check_rounded : Icons.library_add_rounded,
           label: _isInTraktCollection ? 'Collected' : 'Collect',
           color: const Color(0xFFCC7B19),
           onTap: _toggleTraktCollection,
@@ -2600,14 +2017,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           children: [
             Icon(icon, color: color, size: 18),
             const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -2630,14 +2040,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: _movie.genres.take(3).map(_genreChip).toList(),
-                ),
-                if (_mdblistRatings != null ||
-                    _userTraktRating != null ||
-                    _userSimklRating != null) ...[
+                Wrap(spacing: 6, runSpacing: 6,
+                  children: _movie.genres.take(3).map(_genreChip).toList()),
+                if (_mdblistRatings != null || _userTraktRating != null || _userSimklRating != null) ...[  
                   const SizedBox(height: 12),
                   _buildRatingsRow(),
                 ],
@@ -2651,44 +2056,35 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                   _buildCollectionItemsSection(),
                   const SizedBox(height: 16),
                 ],
-                Builder(
-                  builder: (ctx) {
-                    final cast = _getCastNames();
-                    if (cast.isEmpty) return const SizedBox.shrink();
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _sectionLabel('Cast'),
-                        const SizedBox(height: 8),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: cast
-                                .take(8)
-                                .map(
-                                  (n) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: _castChip(n),
-                                  ),
-                                )
-                                .toList(),
-                          ),
+                Builder(builder: (ctx) {
+                  final cast = _getCastNames();
+                  if (cast.isEmpty) return const SizedBox.shrink();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionLabel('Cast'),
+                      const SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: cast.take(8).map((n) => Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _castChip(n),
+                          )).toList(),
                         ),
-                        const SizedBox(height: 16),
-                      ],
-                    );
-                  },
-                ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }),
                 _buildRecommendationsSection(),
                 if (_movie.mediaType == 'tv' && !_isCollection) ...[
                   _buildSeasonSelector(),
                   const SizedBox(height: 16),
                   _buildEpisodeSelector(),
                   const SizedBox(height: 6),
-                  const Text(
-                    '← → Episodes  |  ↑ ↓ Season',
-                    style: TextStyle(color: Colors.white24, fontSize: 10),
-                  ),
+                  const Text('← → Episodes  |  ↑ ↓ Season',
+                    style: TextStyle(color: Colors.white24, fontSize: 10)),
                   const SizedBox(height: 20),
                 ],
                 if (!_isCollection) ...[
@@ -2710,8 +2106,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   }
 
   Widget _buildMobileHero() {
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     final heroHeight = isLandscape ? 240.0 : 360.0;
     return SizedBox(
       height: heroHeight,
@@ -2730,15 +2125,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               ).createShader(rect),
               blendMode: BlendMode.dstIn,
               child: CachedNetworkImage(
-                imageUrl: _imageUrl(
-                  _movie.backdropPath.isNotEmpty
-                      ? _movie.backdropPath
-                      : _movie.posterPath,
-                ),
+                imageUrl: _imageUrl(_movie.backdropPath.isNotEmpty ? _movie.backdropPath : _movie.posterPath),
                 fit: BoxFit.cover,
                 alignment: Alignment.topCenter,
-                errorWidget: (c, u, e) =>
-                    Container(color: const Color(0xFF0A0A1A)),
+                errorWidget: (c, u, e) => Container(color: const Color(0xFF0A0A1A)),
               ),
             ),
           ),
@@ -2746,25 +2136,21 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           // readable and the seam against the page body disappears.
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x22000000),
-                    Color(0x55000000),
-                    Color(0xCC000000),
-                    Color(0xFF000000),
-                  ],
-                  stops: [0.0, 0.45, 0.8, 1.0],
-                ),
-              ),
+              decoration: const BoxDecoration(gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x22000000),
+                  Color(0x55000000),
+                  Color(0xCC000000),
+                  Color(0xFF000000),
+                ],
+                stops: [0.0, 0.45, 0.8, 1.0],
+              )),
             ),
           ),
           Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
+            left: 16, right: 16, bottom: 16,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -2779,9 +2165,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                       borderRadius: BorderRadius.circular(10),
                       child: CachedNetworkImage(
                         imageUrl: _imageUrl(_movie.posterPath),
-                        width: 90,
-                        height: 132,
-                        fit: BoxFit.cover,
+                        width: 90, height: 132, fit: BoxFit.cover,
                       ),
                     ),
                   ),
@@ -2792,44 +2176,20 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        _movie.title,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          height: 1.2,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(_movie.title,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold,
+                          color: Colors.white, height: 1.2),
+                        maxLines: 3, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Text(
-                            _movie.releaseDate.take(4),
-                            style: const TextStyle(
-                              color: Colors.white54,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.star_rounded,
-                            color: Color(0xFFFFD700),
-                            size: 13,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            _movie.voteAverage.toStringAsFixed(1),
-                            style: const TextStyle(
-                              color: Color(0xFFFFD700),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                      Row(children: [
+                        Text(_movie.releaseDate.take(4),
+                          style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.star_rounded, color: Color(0xFFFFD700), size: 13),
+                        const SizedBox(width: 3),
+                        Text(_movie.voteAverage.toStringAsFixed(1),
+                          style: const TextStyle(color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.w600)),
+                      ]),
                     ],
                   ),
                 ),
@@ -2887,10 +2247,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                   borderRadius: BorderRadius.circular(12),
                   child: CachedNetworkImage(
                     imageUrl: _imageUrl(_movie.posterPath),
-                    width: 260,
-                    height: 380,
-                    fit: BoxFit.cover,
-                  ),
+                    width: 260, height: 380, fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -2900,53 +2257,25 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 4),
-                  Text(
-                    _movie.title,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      height: 1.2,
-                    ),
-                  ),
+                  Text(_movie.title,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold,
+                      color: Colors.white, height: 1.2)),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        _movie.releaseDate.take(4),
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text('·', style: TextStyle(color: Colors.white38)),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.star_rounded,
-                        color: Color(0xFFFFD700),
-                        size: 15,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        _movie.voteAverage.toStringAsFixed(1),
-                        style: const TextStyle(
-                          color: Color(0xFFFFD700),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                  Row(children: [
+                    Text(_movie.releaseDate.take(4),
+                      style: const TextStyle(color: Colors.white54, fontSize: 13)),
+                    const SizedBox(width: 8),
+                    const Text('·', style: TextStyle(color: Colors.white38)),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.star_rounded, color: Color(0xFFFFD700), size: 15),
+                    const SizedBox(width: 3),
+                    Text(_movie.voteAverage.toStringAsFixed(1),
+                      style: const TextStyle(color: Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.w600)),
+                  ]),
                   const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: _movie.genres.take(3).map(_genreChip).toList(),
-                  ),
-                  if (_mdblistRatings != null ||
-                      _userTraktRating != null ||
-                      _userSimklRating != null) ...[
+                  Wrap(spacing: 6, runSpacing: 6,
+                    children: _movie.genres.take(3).map(_genreChip).toList()),
+                  if (_mdblistRatings != null || _userTraktRating != null || _userSimklRating != null) ...[  
                     const SizedBox(height: 12),
                     _buildRatingsRow(),
                   ],
@@ -2958,14 +2287,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           ],
         ),
         const SizedBox(height: 20),
-        Text(
-          _movie.overview,
-          style: const TextStyle(
-            color: Color(0xFFB0B0C0),
-            fontSize: 13.5,
-            height: 1.6,
-          ),
-        ),
+        Text(_movie.overview,
+          style: const TextStyle(color: Color(0xFFB0B0C0), fontSize: 13.5, height: 1.6)),
         const SizedBox(height: 20),
         // Collection items display
         if (_isCollection && _collectionItems.isNotEmpty) ...[
@@ -2996,7 +2319,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         ],
       );
     }
-
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3005,10 +2328,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           const SizedBox(height: 20),
           _buildEpisodeSelector(),
           const SizedBox(height: 8),
-          const Text(
-            '← → Navigate Episodes  |  ↑ ↓ Change Season',
-            style: TextStyle(color: Colors.white24, fontSize: 11),
-          ),
+          const Text('← → Navigate Episodes  |  ↑ ↓ Change Season',
+            style: TextStyle(color: Colors.white24, fontSize: 11)),
           const SizedBox(height: 24),
         ],
         _buildSourceToggle(),
@@ -3034,51 +2355,24 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       final seasons = _seasonData!['seasons'] as List<int>;
       seasonCount = seasons.length;
     }
-
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.layers_outlined,
-                  color: Colors.white54,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  'Seasons',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                _scrollArrow(
-                  Icons.arrow_back_ios_rounded,
-                  () => _seasonScrollController.animateTo(
-                    _seasonScrollController.offset - 160,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeInOut,
-                  ),
-                ),
-                _scrollArrow(
-                  Icons.arrow_forward_ios_rounded,
-                  () => _seasonScrollController.animateTo(
-                    _seasonScrollController.offset + 160,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeInOut,
-                  ),
-                ),
-              ],
-            ),
+            Row(children: [
+              const Icon(Icons.layers_outlined, color: Colors.white54, size: 16),
+              const SizedBox(width: 6),
+              const Text('Seasons', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+            ]),
+            Row(children: [
+              _scrollArrow(Icons.arrow_back_ios_rounded, () => _seasonScrollController.animateTo(
+                _seasonScrollController.offset - 160, duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
+              _scrollArrow(Icons.arrow_forward_ios_rounded, () => _seasonScrollController.animateTo(
+                _seasonScrollController.offset + 160, duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
+            ]),
           ],
         ),
         const SizedBox(height: 12),
@@ -3095,9 +2389,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               return FocusableControl(
                 onTap: () {
                   // For custom IDs, just update state and re-fetch
-                  if (widget.stremioItem != null &&
-                      _seasonData != null &&
-                      _seasonData!['episodesBySeason'] != null) {
+                  if (widget.stremioItem != null && _seasonData != null && _seasonData!['episodesBySeason'] != null) {
                     setState(() {
                       _selectedSeason = n;
                       _selectedEpisode = 1;
@@ -3111,26 +2403,15 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                 borderRadius: 20,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: sel ? Colors.white : Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: sel ? Colors.white : Colors.white30,
-                      width: 1.2,
-                    ),
+                    border: Border.all(color: sel ? Colors.white : Colors.white30, width: 1.2),
                   ),
-                  child: Text(
-                    'Season $n',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: sel ? Colors.black : Colors.white70,
-                    ),
-                  ),
+                  child: Text('Season $n',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                      color: sel ? Colors.black : Colors.white70)),
                 ),
               );
             },
@@ -3146,17 +2427,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
   Widget _buildEpisodeSelector() {
     if (_isLoadingSeason) {
-      return const SizedBox(
-        height: 140,
-        child: Center(
-          child: CircularProgressIndicator(
-            color: AppTheme.primaryColor,
-            strokeWidth: 2,
-          ),
-        ),
-      );
+      return const SizedBox(height: 140,
+        child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor, strokeWidth: 2)));
     }
-
+    
     // Handle both TMDB format (_seasonData['episodes']) and custom ID format (_seasonData['episodesBySeason'])
     List episodes = [];
     if (_seasonData != null) {
@@ -3165,13 +2439,11 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         episodes = _seasonData!['episodes'] as List;
       } else if (_seasonData!['episodesBySeason'] != null) {
         // Custom ID format
-        final episodesBySeason =
-            _seasonData!['episodesBySeason']
-                as Map<int, List<Map<String, dynamic>>>;
+        final episodesBySeason = _seasonData!['episodesBySeason'] as Map<int, List<Map<String, dynamic>>>;
         episodes = episodesBySeason[_selectedSeason] ?? [];
       }
     }
-
+    
     if (episodes.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -3180,44 +2452,18 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.video_library_outlined,
-                  color: Colors.white54,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Episodes (${episodes.length})',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                _scrollArrow(
-                  Icons.arrow_back_ios_rounded,
-                  () => _episodeScrollController.animateTo(
-                    _episodeScrollController.offset - 240,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeInOut,
-                  ),
-                ),
-                _scrollArrow(
-                  Icons.arrow_forward_ios_rounded,
-                  () => _episodeScrollController.animateTo(
-                    _episodeScrollController.offset + 240,
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeInOut,
-                  ),
-                ),
-              ],
-            ),
+            Row(children: [
+              const Icon(Icons.video_library_outlined, color: Colors.white54, size: 16),
+              const SizedBox(width: 6),
+              Text('Episodes (${episodes.length})',
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+            ]),
+            Row(children: [
+              _scrollArrow(Icons.arrow_back_ios_rounded, () => _episodeScrollController.animateTo(
+                _episodeScrollController.offset - 240, duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
+              _scrollArrow(Icons.arrow_forward_ios_rounded, () => _episodeScrollController.animateTo(
+                _episodeScrollController.offset + 240, duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
+            ]),
           ],
         ),
         const SizedBox(height: 12),
@@ -3235,14 +2481,12 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               final sel = _selectedEpisode == epNum;
               final epName = ep['name'] ?? ep['title'] ?? 'Episode $epNum';
               final thumbnail = ep['still_path'] ?? ep['thumbnail'];
-              final isWatched = _watchedEpisodes.contains(
-                '${_movie.id}_S${_selectedSeason}_E$epNum',
-              );
-
+              final isWatched = _watchedEpisodes.contains('${_movie.id}_S${_selectedSeason}_E$epNum');
+              
               return FocusableControl(
                 onTap: () {
                   setState(() => _selectedEpisode = epNum);
-                  if (_selectedSourceId == 'dizzy') {
+                  if (_selectedSourceId == 'playtorrio') {
                     _autoSearch();
                   } else if (_selectedSourceId == 'jackett') {
                     _searchJackett();
@@ -3268,124 +2512,62 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                   duration: const Duration(milliseconds: 180),
                   width: 200,
                   decoration: BoxDecoration(
-                    color: sel
-                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.04),
+                    color: sel ? AppTheme.primaryColor.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.04),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: sel ? AppTheme.primaryColor : Colors.white12,
-                      width: sel ? 1.5 : 1,
-                    ),
+                    border: Border.all(color: sel ? AppTheme.primaryColor : Colors.white12, width: sel ? 1.5 : 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(9),
-                              ),
-                              child: thumbnail != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: thumbnail.startsWith('http')
-                                          ? thumbnail
-                                          : TmdbApi.getStillUrl(thumbnail),
-                                      fit: BoxFit.cover,
-                                      errorWidget: (c, u, e) => Container(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.06,
-                                        ),
-                                        child: const Center(
-                                          child: Icon(
-                                            Icons.movie_outlined,
-                                            color: Colors.white24,
-                                            size: 28,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : Container(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.06,
-                                      ),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.movie_outlined,
-                                          color: Colors.white24,
-                                          size: 28,
-                                        ),
-                                      ),
-                                    ),
+                        child: Stack(fit: StackFit.expand, children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(9)),
+                            child: thumbnail != null
+                                ? CachedNetworkImage(
+                                    imageUrl: thumbnail.startsWith('http') 
+                                        ? thumbnail 
+                                        : TmdbApi.getStillUrl(thumbnail),
+                                    fit: BoxFit.cover,
+                                    errorWidget: (c, u, e) => Container(
+                                      color: Colors.white.withValues(alpha: 0.06),
+                                      child: const Center(child: Icon(Icons.movie_outlined, color: Colors.white24, size: 28))))
+                                : Container(color: Colors.white.withValues(alpha: 0.06),
+                                    child: const Center(child: Icon(Icons.movie_outlined, color: Colors.white24, size: 28))),
+                          ),
+                          Positioned(
+                            top: 6, left: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.65), borderRadius: BorderRadius.circular(4)),
+                              child: Text('$epNum', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
-                            Positioned(
-                              top: 6,
-                              left: 6,
+                          ),
+                          Positioned(
+                            top: 4, right: 4,
+                            child: GestureDetector(
+                              onTap: () => _toggleEpisodeWatched(_selectedSeason, epNum),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
+                                padding: const EdgeInsets.all(3),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.65),
-                                  borderRadius: BorderRadius.circular(4),
+                                  color: isWatched ? Colors.green : Colors.black.withValues(alpha: 0.55),
+                                  shape: BoxShape.circle,
                                 ),
-                                child: Text(
-                                  '$epNum',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                child: Icon(
+                                  isWatched ? Icons.check : Icons.check,
+                                  size: 14,
+                                  color: isWatched ? Colors.white : Colors.white38,
                                 ),
                               ),
                             ),
-                            Positioned(
-                              top: 4,
-                              right: 4,
-                              child: GestureDetector(
-                                onTap: () => _toggleEpisodeWatched(
-                                  _selectedSeason,
-                                  epNum,
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.all(3),
-                                  decoration: BoxDecoration(
-                                    color: isWatched
-                                        ? Colors.green
-                                        : Colors.black.withValues(alpha: 0.55),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    isWatched ? Icons.check : Icons.check,
-                                    size: 14,
-                                    color: isWatched
-                                        ? Colors.white
-                                        : Colors.white38,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ]),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
-                        child: Text(
-                          epName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: sel ? Colors.white : Colors.white70,
-                          ),
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        child: Text(epName, maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                            color: sel ? Colors.white : Colors.white70)),
                       ),
                     ],
                   ),
@@ -3403,7 +2585,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   // ═══════════════════════════════════════════════════════════════════════════
 
   bool get _isTorrentSource =>
-      _selectedSourceId == 'dizzy' ||
+      _selectedSourceId == 'playtorrio' ||
       _selectedSourceId == 'jackett' ||
       _selectedSourceId == 'prowlarr';
 
@@ -3432,113 +2614,72 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       child: Row(
         children: [
           Expanded(
-            child: _sourceTab(
-              'Stremio Addons',
-              Icons.extension_outlined,
-              isStremio,
-              compact,
-              () {
-                if (_streamAddons.isNotEmpty) {
-                  setState(() {
-                    _selectedSourceId = 'all_stremio';
-                    _applyStremioFilter();
-                    _errorMessage = null;
-                  });
-                  // Re-fetch if we don't have cached results
-                  if (_allCombinedStremioStreams.isEmpty)
-                    _fetchAllStremioStreams();
-                }
-              },
-            ),
+            child: _sourceTab('Stremio Addons', Icons.extension_outlined, isStremio, compact, () {
+            if (_streamAddons.isNotEmpty) {
+              setState(() {
+                _selectedSourceId = 'all_stremio';
+                _applyStremioFilter();
+                _errorMessage = null;
+              });
+              // Re-fetch if we don't have cached results
+              if (_allCombinedStremioStreams.isEmpty) _fetchAllStremioStreams();
+            }
+          }),
           ),
           if (_hasNuvioAddons)
             Expanded(
-              child: _sourceTab(
-                'Nuvio Addons',
-                Icons.code_rounded,
-                isNuvio,
-                compact,
-                () {
-                  setState(() {
-                    _selectedSourceId = 'nuvio_picker';
-                    _nuvioSelectedAddonUrl = null;
-                    _nuvioSelectedScraperId = null;
-                    _nuvioStreams = [];
-                    _errorMessage = null;
-                  });
-                  // Refresh the addon list lazily in case the user just
-                  // installed/enabled something.
-                  _checkAndFetchNuvio();
-                },
-              ),
+              child: _sourceTab('Nuvio Addons', Icons.code_rounded, isNuvio, compact, () {
+              setState(() {
+                _selectedSourceId = 'nuvio_picker';
+                _nuvioSelectedAddonUrl = null;
+                _nuvioSelectedScraperId = null;
+                _nuvioStreams = [];
+                _errorMessage = null;
+              });
+              // Refresh the addon list lazily in case the user just
+              // installed/enabled something.
+              _checkAndFetchNuvio();
+            }),
             ),
           Expanded(
-            child: _sourceTab(
-              'Torrent Sources',
-              Icons.downloading_rounded,
-              isTorrent,
-              compact,
-              () {
-                setState(() => _selectedSourceId = 'dizzy');
-                _autoSearch();
-              },
-            ),
+            child: _sourceTab('Torrent Sources', Icons.downloading_rounded, isTorrent, compact, () {
+            setState(() => _selectedSourceId = 'playtorrio');
+            _autoSearch();
+          }),
           ),
         ],
       ),
     );
   }
 
-  Widget _sourceTab(
-    String label,
-    IconData icon,
-    bool selected,
-    bool compact,
-    VoidCallback onTap,
-  ) {
+  Widget _sourceTab(String label, IconData icon, bool selected, bool compact, VoidCallback onTap) {
     // "Stremio Addons" / "Torrent Sources" are too wide for ~360-400dp
     // phones. Use a shorter label in compact mode and a FittedBox so any
     // remaining overflow gracefully shrinks rather than clipping.
     final shortLabel = compact
         ? (label.startsWith('Stremio')
-              ? 'Stremio'
-              : label.startsWith('Nuvio')
-              ? 'Nuvio'
-              : 'Torrent')
+            ? 'Stremio'
+            : label.startsWith('Nuvio')
+                ? 'Nuvio'
+                : 'Torrent')
         : label;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 8 : 14,
-          vertical: 8,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 14, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? AppTheme.primaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: FittedBox(
           fit: BoxFit.scaleDown,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 14,
-                color: selected ? Colors.white : Colors.white54,
-              ),
-              const SizedBox(width: 5),
-              Text(
-                shortLabel,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : Colors.white54,
-                ),
-              ),
-            ],
-          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(icon, size: 14, color: selected ? Colors.white : Colors.white54),
+            const SizedBox(width: 5),
+            Text(shortLabel, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+              color: selected ? Colors.white : Colors.white54)),
+          ]),
         ),
       ),
     );
@@ -3549,14 +2690,11 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     final isNuvio = _isNuvioSource;
     final chips = <Map<String, dynamic>>[];
     if (isTorrent) {
-      chips.add({'id': 'dizzy', 'label': 'Dizzy'});
-      if (_isJackettConfigured)
-        chips.add({'id': 'jackett', 'label': '🔍 Jackett'});
-      if (_isProwlarrConfigured)
-        chips.add({'id': 'prowlarr', 'label': '🔍 Prowlarr'});
+      chips.add({'id': 'playtorrio', 'label': 'PlayTorrio'});
+      if (_isJackettConfigured) chips.add({'id': 'jackett', 'label': '🔍 Jackett'});
+      if (_isProwlarrConfigured) chips.add({'id': 'prowlarr', 'label': '🔍 Prowlarr'});
       for (final a in _streamAddons) {
-        if (a['type'] == 'torrent')
-          chips.add({'id': a['baseUrl'], 'label': a['name']});
+        if (a['type'] == 'torrent') chips.add({'id': a['baseUrl'], 'label': a['name']});
       }
     } else if (isNuvio) {
       // Two-level navigation:
@@ -3576,11 +2714,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         final addon = _nuvioAddons.firstWhere(
           (a) => a.manifestUrl == _nuvioSelectedAddonUrl,
           orElse: () => NuvioAddon(
-            manifestUrl: _nuvioSelectedAddonUrl!,
-            name: '',
-            version: '',
-            scrapers: const [],
-          ),
+              manifestUrl: _nuvioSelectedAddonUrl!,
+              name: '',
+              version: '',
+              scrapers: const []),
         );
         for (final s in addon.scrapers) {
           if (!s.enabled) continue;
@@ -3602,150 +2739,111 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (chips.isEmpty) return const SizedBox.shrink();
     return Row(
       children: [
-        _scrollArrow(
-          Icons.arrow_back_ios_rounded,
-          () => _chipsScrollController.animateTo(
-            (_chipsScrollController.offset - 160).clamp(
-              0.0,
-              _chipsScrollController.position.maxScrollExtent,
-            ),
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeInOut,
-          ),
-        ),
+        _scrollArrow(Icons.arrow_back_ios_rounded, () => _chipsScrollController.animateTo(
+          (_chipsScrollController.offset - 160).clamp(0.0, _chipsScrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
         Expanded(
           child: SingleChildScrollView(
             controller: _chipsScrollController,
             scrollDirection: Axis.horizontal,
             child: Row(
               children: chips.map((chip) {
-                final id = chip['id'] as String;
-                // Selection rules for the new Nuvio drill-down:
-                //   - addon-picker chip: selected when its addon is the active one
-                //   - back chip: never visually selected
-                //   - scraper chip: selected when its scraperId matches
-                //   - everything else: legacy `_selectedSourceId` match
-                final bool sel;
+          final id = chip['id'] as String;
+          // Selection rules for the new Nuvio drill-down:
+          //   - addon-picker chip: selected when its addon is the active one
+          //   - back chip: never visually selected
+          //   - scraper chip: selected when its scraperId matches
+          //   - everything else: legacy `_selectedSourceId` match
+          final bool sel;
+          if (id.startsWith('nuvio_addon::')) {
+            sel = _nuvioSelectedAddonUrl ==
+                id.substring('nuvio_addon::'.length);
+          } else if (id == 'nuvio_back') {
+            sel = false;
+          } else {
+            sel = _selectedSourceId == id;
+          }
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () {
                 if (id.startsWith('nuvio_addon::')) {
-                  sel =
-                      _nuvioSelectedAddonUrl ==
-                      id.substring('nuvio_addon::'.length);
-                } else if (id == 'nuvio_back') {
-                  sel = false;
-                } else {
-                  sel = _selectedSourceId == id;
+                  setState(() {
+                    _nuvioSelectedAddonUrl =
+                        id.substring('nuvio_addon::'.length);
+                    _nuvioSelectedScraperId = null;
+                    _selectedSourceId = 'nuvio_picker';
+                    _nuvioStreams = [];
+                    _errorMessage = null;
+                  });
+                  return;
                 }
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: GestureDetector(
-                    onTap: () {
-                      if (id.startsWith('nuvio_addon::')) {
-                        setState(() {
-                          _nuvioSelectedAddonUrl = id.substring(
-                            'nuvio_addon::'.length,
-                          );
-                          _nuvioSelectedScraperId = null;
-                          _selectedSourceId = 'nuvio_picker';
-                          _nuvioStreams = [];
-                          _errorMessage = null;
-                        });
-                        return;
-                      }
-                      if (id == 'nuvio_back') {
-                        setState(() {
-                          _nuvioSelectedAddonUrl = null;
-                          _nuvioSelectedScraperId = null;
-                          _selectedSourceId = 'nuvio_picker';
-                          _nuvioStreams = [];
-                          _errorMessage = null;
-                        });
-                        return;
-                      }
-                      if (id.startsWith('nuvio:')) {
-                        final scraperId = id.substring('nuvio:'.length);
-                        setState(() {
-                          _selectedSourceId = id;
-                          _nuvioSelectedScraperId = scraperId;
-                        });
-                        _runSingleNuvioScraper(scraperId);
-                        return;
-                      }
-                      setState(() => _selectedSourceId = id);
-                      if (id == 'dizzy') {
-                        _autoSearch();
-                      } else if (id == 'jackett') {
-                        _searchJackett();
-                      } else if (id == 'prowlarr') {
-                        _searchProwlarr();
-                      } else if (id == 'all_stremio') {
-                        setState(() {
-                          _applyStremioFilter();
-                          _errorMessage =
-                              _stremioStreams.isEmpty && !_isStremioFetching
-                              ? 'No streams found from any addon'
-                              : null;
-                        });
-                      } else if (id == 'all_nuvio' ||
-                          id.startsWith('nuvio://')) {
-                        setState(() {
-                          _errorMessage = null;
-                        });
-                      } else {
-                        // Single addon filter from cached combined results
-                        setState(() {
-                          _applyStremioFilter();
-                          _errorMessage =
-                              _stremioStreams.isEmpty && !_isStremioFetching
-                              ? 'No streams found in ${chip['label']}'
-                              : null;
-                        });
-                      }
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: sel
-                            ? AppTheme.primaryColor
-                            : Colors.white.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: sel
-                              ? AppTheme.primaryColor
-                              : Colors.white.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Text(
-                        chip['label'] as String,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: sel
-                              ? Colors.white
-                              : Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
+                if (id == 'nuvio_back') {
+                  setState(() {
+                    _nuvioSelectedAddonUrl = null;
+                    _nuvioSelectedScraperId = null;
+                    _selectedSourceId = 'nuvio_picker';
+                    _nuvioStreams = [];
+                    _errorMessage = null;
+                  });
+                  return;
+                }
+                if (id.startsWith('nuvio:')) {
+                  final scraperId = id.substring('nuvio:'.length);
+                  setState(() {
+                    _selectedSourceId = id;
+                    _nuvioSelectedScraperId = scraperId;
+                  });
+                  _runSingleNuvioScraper(scraperId);
+                  return;
+                }
+                setState(() => _selectedSourceId = id);
+                if (id == 'playtorrio') {
+                  _autoSearch();
+                } else if (id == 'jackett') {
+                  _searchJackett();
+                } else if (id == 'prowlarr') {
+                  _searchProwlarr();
+                } else if (id == 'all_stremio') {
+                  setState(() {
+                    _applyStremioFilter();
+                    _errorMessage = _stremioStreams.isEmpty && !_isStremioFetching
+                        ? 'No streams found from any addon' : null;
+                  });
+                } else if (id == 'all_nuvio' || id.startsWith('nuvio://')) {
+                  setState(() {
+                    _errorMessage = null;
+                  });
+                } else {
+                  // Single addon filter from cached combined results
+                  setState(() {
+                    _applyStremioFilter();
+                    _errorMessage = _stremioStreams.isEmpty && !_isStremioFetching
+                        ? 'No streams found in ${chip['label']}' : null;
+                  });
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: sel ? AppTheme.primaryColor : Colors.white.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: sel ? AppTheme.primaryColor : Colors.white.withValues(alpha: 0.2)),
+                ),
+                child: Text(chip['label'] as String,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                    color: sel ? Colors.white : Colors.white.withValues(alpha: 0.6))),
+              ),
+            ),
+          );
               }).toList(),
             ),
           ),
         ),
-        _scrollArrow(
-          Icons.arrow_forward_ios_rounded,
-          () => _chipsScrollController.animateTo(
-            (_chipsScrollController.offset + 160).clamp(
-              0.0,
-              _chipsScrollController.position.maxScrollExtent,
-            ),
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeInOut,
-          ),
-        ),
+        _scrollArrow(Icons.arrow_forward_ios_rounded, () => _chipsScrollController.animateTo(
+          (_chipsScrollController.offset + 160).clamp(0.0, _chipsScrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
       ],
     );
   }
@@ -3755,7 +2853,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildResultsHeader() {
-    // Show sort dropdown for ALL torrent sources, not just Dizzy
+    // Show sort dropdown for ALL torrent sources, not just PlayTorrio
     final showSort = _isTorrentSource;
     String? epLabel;
     if (_movie.mediaType == 'tv') {
@@ -3767,31 +2865,16 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       children: [
         const Icon(Icons.download_rounded, color: Colors.white54, size: 16),
         const SizedBox(width: 6),
-        const Text(
-          'Available Sources',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
+        const Text('Available Sources',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
         if (epLabel != null) ...[
           const SizedBox(width: 6),
-          Text(
-            '— $epLabel',
-            style: const TextStyle(color: Colors.white38, fontSize: 12),
-          ),
+          Text('— $epLabel', style: const TextStyle(color: Colors.white38, fontSize: 12)),
         ],
         if (_isSearching || _isStremioFetching || _isNuvioFetching) ...[
           const SizedBox(width: 8),
-          const SizedBox(
-            width: 12,
-            height: 12,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppTheme.primaryColor,
-            ),
-          ),
+          const SizedBox(width: 12, height: 12,
+            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryColor)),
         ],
         const Spacer(),
         if (showSort)
@@ -3807,19 +2890,12 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               isDense: true,
               underline: const SizedBox.shrink(),
               dropdownColor: const Color(0xFF0F0F2D),
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: Colors.white54,
-                size: 16,
-              ),
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white54, size: 16),
               style: const TextStyle(color: Colors.white70, fontSize: 11),
               items: [
-                'Seeders (High to Low)',
-                'Seeders (Low to High)',
-                'Quality (High to Low)',
-                'Quality (Low to High)',
-                'Size (High to Low)',
-                'Size (Low to High)',
+                'Seeders (High to Low)', 'Seeders (Low to High)',
+                'Quality (High to Low)', 'Quality (Low to High)',
+                'Size (High to Low)', 'Size (Low to High)',
               ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
               onChanged: (val) {
                 if (val != null) {
@@ -3839,15 +2915,9 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     final active = _activeAudioFilters.isNotEmpty;
     return GestureDetector(
       onTapDown: (details) async {
-        final overlay =
-            Overlay.of(context).context.findRenderObject() as RenderBox;
+        final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
         final position = RelativeRect.fromRect(
-          Rect.fromLTWH(
-            details.globalPosition.dx,
-            details.globalPosition.dy,
-            1,
-            1,
-          ),
+          Rect.fromLTWH(details.globalPosition.dx, details.globalPosition.dy, 1, 1),
           Offset.zero & overlay.size,
         );
         // Build a temporary stateful popup via showMenu
@@ -3855,9 +2925,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
           context: context,
           position: position,
           color: const Color(0xFF0F0F2D),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           items: [
             PopupMenuItem(
               enabled: false,
@@ -3865,8 +2933,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               child: _AudioFilterMenu(
                 allTags: _kAudioTags,
                 activeTags: Set<String>.from(_activeAudioFilters),
-                onChanged: (updated) =>
-                    setState(() => _activeAudioFilters = updated),
+                onChanged: (updated) => setState(() => _activeAudioFilters = updated),
               ),
             ),
           ],
@@ -3880,32 +2947,18 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
               : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: active
-                ? AppTheme.primaryColor.withValues(alpha: 0.6)
-                : Colors.white12,
+            color: active ? AppTheme.primaryColor.withValues(alpha: 0.6) : Colors.white12,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.graphic_eq,
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.graphic_eq,
               size: 14,
-              color: active ? AppTheme.primaryColor : Colors.white54,
-            ),
-            if (active) ...[
-              const SizedBox(width: 4),
-              Text(
-                '${_activeAudioFilters.length}',
-                style: TextStyle(
-                  color: AppTheme.primaryColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ],
-        ),
+              color: active ? AppTheme.primaryColor : Colors.white54),
+          if (active) ...[const SizedBox(width: 4),
+            Text('${_activeAudioFilters.length}',
+                style: TextStyle(color: AppTheme.primaryColor, fontSize: 11,
+                    fontWeight: FontWeight.bold))],
+        ]),
       ),
     );
   }
@@ -3918,12 +2971,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     if (_errorMessage != null) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Center(
-          child: Text(
-            _errorMessage!,
-            style: const TextStyle(color: Colors.redAccent),
-          ),
-        ),
+        child: Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent))),
       );
     }
     final isTorrent = _isTorrentSource;
@@ -3931,24 +2979,21 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     // Pick the active stream list based on the source tab.
     final List<dynamic> visibleStreams = isNuvio
         ? (_selectedSourceId == 'all_nuvio'
-              ? _nuvioStreams
-              : (_selectedSourceId.startsWith('nuvio:')
-                    ? _nuvioStreams
-                          .where((s) => s['_addonBaseUrl'] == _selectedSourceId)
-                          .toList()
-                    : <dynamic>[]))
+            ? _nuvioStreams
+            : (_selectedSourceId.startsWith('nuvio:')
+                ? _nuvioStreams
+                    .where((s) =>
+                        s['_addonBaseUrl'] == _selectedSourceId)
+                    .toList()
+                : <dynamic>[]))
         : _stremioStreams;
-    final count = isTorrent
-        ? _filteredTorrentResults.length
-        : visibleStreams.length;
+    final count = isTorrent ? _filteredTorrentResults.length : visibleStreams.length;
     final isFetching = isTorrent
         ? _isSearching
         : (isNuvio ? _isNuvioFetching : _isStremioFetching);
     if (!_isSearching && !isFetching && count == 0) {
       String msg;
-      if (isTorrent &&
-          _activeAudioFilters.isNotEmpty &&
-          _allTorrentResults.isNotEmpty) {
+      if (isTorrent && _activeAudioFilters.isNotEmpty && _allTorrentResults.isNotEmpty) {
         msg = 'No results match the audio filter';
       } else if (isNuvio && _nuvioSelectedScraperId == null) {
         msg = _nuvioSelectedAddonUrl == null
@@ -3959,9 +3004,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       }
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Center(
-          child: Text(msg, style: const TextStyle(color: Colors.white38)),
-        ),
+        child: Center(child: Text(msg, style: const TextStyle(color: Colors.white38))),
       );
     }
     return ListView.separated(
@@ -3972,39 +3015,29 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       itemBuilder: (_, i) {
         if (isTorrent) {
           final r = _filteredTorrentResults[i];
-          double prog = 0;
-          bool resumable = false;
+          double prog = 0; bool resumable = false;
           if (_lastProgress != null && _lastProgress!['method'] == 'torrent') {
             if (_getHash(r.magnet) == _getHash(_lastProgress!['sourceId'])) {
               final pos = _lastProgress!['position'] as int;
               final dur = _lastProgress!['duration'] as int;
-              if (dur > 0) {
-                prog = (pos / dur).clamp(0.0, 1.0);
-                resumable = true;
-              }
+              if (dur > 0) { prog = (pos / dur).clamp(0.0, 1.0); resumable = true; }
             }
           }
           return _buildTorrentTile(r, progress: prog, isResumable: resumable);
         } else {
           final s = visibleStreams[i];
-          double prog = 0;
-          bool resumable = false;
+          double prog = 0; bool resumable = false;
           if (_lastProgress != null) {
             final String? sid = s['infoHash'] != null
-                ? 'magnet:?xt=urn:btih:${s['infoHash']}'
-                : s['url'];
+                ? 'magnet:?xt=urn:btih:${s['infoHash']}' : s['url'];
             if (sid != null) {
               final hs = _lastProgress!['sourceId'] as String;
               final match = s['infoHash'] != null
-                  ? _getHash(hs) == _getHash(sid)
-                  : hs == sid;
+                  ? _getHash(hs) == _getHash(sid) : hs == sid;
               if (match) {
                 final pos = _lastProgress!['position'] as int;
                 final dur = _lastProgress!['duration'] as int;
-                if (dur > 0) {
-                  prog = (pos / dur).clamp(0.0, 1.0);
-                  resumable = true;
-                }
+                if (dur > 0) { prog = (pos / dur).clamp(0.0, 1.0); resumable = true; }
               }
             }
           }
@@ -4012,9 +3045,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             stream: s,
             title: s['title'] ?? s['name'] ?? 'Unknown Stream',
             description: s['description'] ?? '',
-            progress: prog,
-            isResumable: resumable,
-          );
+            progress: prog, isResumable: resumable);
         }
       },
     );
@@ -4024,35 +3055,23 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   //  TORRENT TILE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildTorrentTile(
-    TorrentResult result, {
-    double progress = 0,
-    bool isResumable = false,
-  }) {
+  Widget _buildTorrentTile(TorrentResult result, {double progress = 0, bool isResumable = false}) {
     final n = result.name.toUpperCase();
-    String quality = '?';
-    Color qColor = Colors.grey;
+    String quality = '?'; Color qColor = Colors.grey;
     if (n.contains('2160') || n.contains('4K') || n.contains('UHD')) {
-      quality = '4K';
-      qColor = const Color(0xFF7C3AED);
+      quality = '4K'; qColor = const Color(0xFF7C3AED);
     } else if (n.contains('1080')) {
-      quality = '1080p';
-      qColor = const Color(0xFF1D4ED8);
+      quality = '1080p'; qColor = const Color(0xFF1D4ED8);
     } else if (n.contains('720')) {
-      quality = '720p';
-      qColor = const Color(0xFF0369A1);
+      quality = '720p'; qColor = const Color(0xFF0369A1);
     } else if (n.contains('480')) {
-      quality = '480p';
-      qColor = Colors.grey.shade700;
+      quality = '480p'; qColor = Colors.grey.shade700;
     }
 
     String? codec;
     if (n.contains('HEVC') || n.contains('X265') || n.contains('H.265')) {
       codec = 'HEVC';
-    } else if (n.contains('X264') ||
-        n.contains('H.264') ||
-        n.contains('H264') ||
-        n.contains('AVC')) {
+    } else if (n.contains('X264') || n.contains('H.264') || n.contains('H264') || n.contains('AVC')) {
       codec = 'h264';
     } else if (n.contains('AV1')) {
       codec = 'AV1';
@@ -4061,167 +3080,83 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     final tracker = _getTrackerName(result);
 
     return FocusableControl(
-      onTap: () => _playTorrent(
-        result,
-        startPosition: isResumable
-            ? Duration(milliseconds: _lastProgress!['position'] as int)
-            : widget.startPosition,
-      ),
+      onTap: () => _playTorrent(result,
+        startPosition: isResumable ? Duration(milliseconds: _lastProgress!['position'] as int) : widget.startPosition),
       borderRadius: 10,
       child: Container(
         decoration: BoxDecoration(
-          color: (isResumable || widget.startPosition != null)
-              ? AppTheme.primaryColor.withValues(alpha: 0.08)
-              : Colors.white.withValues(alpha: 0.04),
+          color: (isResumable || widget.startPosition != null) ? AppTheme.primaryColor.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isResumable
-                ? AppTheme.primaryColor.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.07),
-          ),
+          border: Border.all(color: isResumable
+              ? AppTheme.primaryColor.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.07)),
         ),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 52,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _qualityBadge(quality, qColor),
-                        if (codec != null) ...[
-                          const SizedBox(height: 4),
-                          _codecBadge(codec),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (isResumable)
-                          const Text(
-                            'RESUME',
-                            style: TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        Text(
-                          result.name,
-                          maxLines: 3,
-                          overflow: TextOverflow.visible,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            height: 1.35,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 2,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.arrow_upward_rounded,
-                                  size: 11,
-                                  color: Color(0xFF22C55E),
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  result.seeders,
-                                  style: const TextStyle(
-                                    color: Color(0xFF22C55E),
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              result.size,
-                              style: const TextStyle(
-                                color: Colors.white38,
-                                fontSize: 11,
-                              ),
-                            ),
-                            if (tracker.isNotEmpty)
-                              Text(
-                                tracker,
-                                style: const TextStyle(
-                                  color: Color(0xFF60A5FA),
-                                  fontSize: 11,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
+        child: Stack(children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 52,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _iconBtn(Icons.content_copy_rounded, false, () {
-                        Clipboard.setData(ClipboardData(text: result.magnet));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Magnet copied'),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
-                      }),
-                      const SizedBox(height: 6),
-                      _iconBtn(
-                        Icons.play_arrow_rounded,
-                        true,
-                        () => _playTorrent(
-                          result,
-                          startPosition: isResumable
-                              ? Duration(
-                                  milliseconds:
-                                      _lastProgress!['position'] as int,
-                                )
-                              : widget.startPosition,
-                        ),
+                      _qualityBadge(quality, qColor),
+                      if (codec != null) ...[const SizedBox(height: 4), _codecBadge(codec)],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isResumable)
+                        const Text('RESUME', style: TextStyle(color: AppTheme.primaryColor,
+                          fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+                      Text(result.name, maxLines: 3, overflow: TextOverflow.visible,
+                        style: const TextStyle(color: Colors.white, fontSize: 12,
+                          height: 1.35, fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8, runSpacing: 2,
+                        children: [
+                          Row(mainAxisSize: MainAxisSize.min, children: [
+                            const Icon(Icons.arrow_upward_rounded, size: 11, color: Color(0xFF22C55E)),
+                            const SizedBox(width: 2),
+                            Text(result.seeders, style: const TextStyle(color: Color(0xFF22C55E), fontSize: 11)),
+                          ]),
+                          Text(result.size, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                          if (tracker.isNotEmpty)
+                            Text(tracker, style: const TextStyle(color: Color(0xFF60A5FA), fontSize: 11),
+                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            if (isResumable && progress > 0)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(10),
-                  ),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.transparent,
-                    color: AppTheme.primaryColor,
-                    minHeight: 2.5,
-                  ),
                 ),
-              ),
-          ],
-        ),
+                const SizedBox(width: 8),
+                Column(children: [
+                  _iconBtn(Icons.content_copy_rounded, false, () {
+                    Clipboard.setData(ClipboardData(text: result.magnet));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Magnet copied'), duration: Duration(seconds: 1)));
+                  }),
+                  const SizedBox(height: 6),
+                  _iconBtn(Icons.play_arrow_rounded, true, () => _playTorrent(result,
+                    startPosition: isResumable ? Duration(milliseconds: _lastProgress!['position'] as int) : widget.startPosition)),
+                ]),
+              ],
+            ),
+          ),
+          if (isResumable && progress > 0)
+            Positioned(bottom: 0, left: 0, right: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
+                child: LinearProgressIndicator(value: progress,
+                  backgroundColor: Colors.transparent, color: AppTheme.primaryColor, minHeight: 2.5))),
+        ]),
       ),
     );
   }
@@ -4240,12 +3175,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     // Determine if this is an external-link stream (e.g. "More Like This" addon)
     final externalUrl = stream['externalUrl']?.toString();
     final isExternal = externalUrl != null && externalUrl.isNotEmpty;
-    final bool isStremioLink =
-        isExternal && externalUrl.startsWith('stremio://');
-    final bool isWebLink =
-        isExternal &&
-        (externalUrl.startsWith('http://') ||
-            externalUrl.startsWith('https://'));
+    final bool isStremioLink = isExternal && externalUrl.startsWith('stremio://');
+    final bool isWebLink = isExternal && (externalUrl.startsWith('http://') || externalUrl.startsWith('https://'));
     final String? addonName = stream['_addonName']?.toString();
 
     // Choose icon based on link type
@@ -4283,124 +3214,55 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
     }
 
     return FocusableControl(
-      onTap: () => _playStremioStream(
-        stream,
-        startPosition: isResumable
-            ? Duration(milliseconds: _lastProgress!['position'] as int)
-            : widget.startPosition,
-      ),
+      onTap: () => _playStremioStream(stream,
+        startPosition: isResumable ? Duration(milliseconds: _lastProgress!['position'] as int) : widget.startPosition),
       borderRadius: 10,
       child: Container(
         decoration: BoxDecoration(
           color: isExternal
               ? leadingColor.withValues(alpha: 0.06)
-              : ((isResumable || widget.startPosition != null)
-                    ? AppTheme.primaryColor.withValues(alpha: 0.08)
-                    : Colors.white.withValues(alpha: 0.04)),
+              : ((isResumable || widget.startPosition != null) ? AppTheme.primaryColor.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.04)),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isExternal
-                ? leadingColor.withValues(alpha: 0.25)
-                : (isResumable
-                      ? AppTheme.primaryColor.withValues(alpha: 0.35)
-                      : Colors.white.withValues(alpha: 0.07)),
+          border: Border.all(color: isExternal
+              ? leadingColor.withValues(alpha: 0.25)
+              : (isResumable ? AppTheme.primaryColor.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.07))),
+        ),
+        child: Stack(children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+              Icon(leadingIcon, color: leadingColor, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  if (isResumable && !isExternal)
+                    const Text('RESUME', style: TextStyle(color: AppTheme.primaryColor,
+                      fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+                  if (addonName != null && _selectedSourceId == 'all_stremio')
+                    Text(addonName, style: TextStyle(color: leadingColor.withValues(alpha: 0.7),
+                      fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                  Text(title, maxLines: 4, overflow: TextOverflow.visible,
+                    style: const TextStyle(color: Colors.white, fontSize: 12,
+                      height: 1.35, fontWeight: FontWeight.w500)),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(description, maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                  ],
+                ]),
+              ),
+              const SizedBox(width: 8),
+              _iconBtn(actionIcon, true, () => _playStremioStream(stream,
+                startPosition: isResumable ? Duration(milliseconds: _lastProgress!['position'] as int) : widget.startPosition)),
+            ]),
           ),
-        ),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(leadingIcon, color: leadingColor, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (isResumable && !isExternal)
-                          const Text(
-                            'RESUME',
-                            style: TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        if (addonName != null &&
-                            _selectedSourceId == 'all_stremio')
-                          Text(
-                            addonName,
-                            style: TextStyle(
-                              color: leadingColor.withValues(alpha: 0.7),
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        Text(
-                          title,
-                          maxLines: 4,
-                          overflow: TextOverflow.visible,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            height: 1.35,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (description.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          Text(
-                            description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white38,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _iconBtn(
-                    actionIcon,
-                    true,
-                    () => _playStremioStream(
-                      stream,
-                      startPosition: isResumable
-                          ? Duration(
-                              milliseconds: _lastProgress!['position'] as int,
-                            )
-                          : widget.startPosition,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isResumable && progress > 0 && !isExternal)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(10),
-                  ),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.transparent,
-                    color: AppTheme.primaryColor,
-                    minHeight: 2.5,
-                  ),
-                ),
-              ),
-          ],
-        ),
+          if (isResumable && progress > 0 && !isExternal)
+            Positioned(bottom: 0, left: 0, right: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
+                child: LinearProgressIndicator(value: progress,
+                  backgroundColor: Colors.transparent, color: AppTheme.primaryColor, minHeight: 2.5))),
+        ]),
       ),
     );
   }
@@ -4409,106 +3271,52 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
   //  SMALL REUSABLE WIDGETS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  Widget _sectionLabel(String text) => Text(
-    text,
-    style: const TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w700,
-      fontSize: 14,
-    ),
-  );
+  Widget _sectionLabel(String text) => Text(text,
+    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14));
 
   Widget _genreChip(String label) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
     decoration: BoxDecoration(
       color: Colors.white.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white24),
-    ),
-    child: Text(
-      label,
-      style: const TextStyle(
-        color: Colors.white70,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-      ),
-    ),
-  );
+      border: Border.all(color: Colors.white24)),
+    child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)));
 
   Widget _castChip(String name) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white24),
-    ),
-    child: Text(
-      name,
-      style: const TextStyle(color: Colors.white70, fontSize: 12),
-    ),
-  );
+      border: Border.all(color: Colors.white24)),
+    child: Text(name, style: const TextStyle(color: Colors.white70, fontSize: 12)));
 
   Widget _qualityBadge(String q, Color c) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
     decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(5)),
-    child: Text(
-      q,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 10,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  );
+    child: Text(q, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)));
 
   Widget _codecBadge(String codec) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(5),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-    ),
-    child: Text(
-      codec,
-      style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.6),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  );
+      color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(5),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.2))),
+    child: Text(codec,
+      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10, fontWeight: FontWeight.w600)));
 
-  Widget _iconBtn(IconData icon, bool highlight, VoidCallback onTap) =>
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: highlight
-                ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                : Colors.white.withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: highlight
-                  ? AppTheme.primaryColor.withValues(alpha: 0.4)
-                  : Colors.white12,
-            ),
-          ),
-          child: Icon(
-            icon,
-            size: 17,
-            color: highlight ? AppTheme.primaryColor : Colors.white54,
-          ),
-        ),
-      );
+  Widget _iconBtn(IconData icon, bool highlight, VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 32, height: 32,
+      decoration: BoxDecoration(
+        color: highlight ? AppTheme.primaryColor.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: highlight ? AppTheme.primaryColor.withValues(alpha: 0.4) : Colors.white12)),
+      child: Icon(icon, size: 17, color: highlight ? AppTheme.primaryColor : Colors.white54)));
 
   Widget _scrollArrow(IconData icon, VoidCallback onTap) => GestureDetector(
     onTap: onTap,
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Icon(icon, color: Colors.white38, size: 16),
-    ),
-  );
+      child: Icon(icon, color: Colors.white38, size: 16)));
 
   // ═════════════════════════════════════════════════════════════════════════════
   //  DESKTOP CAST ROW
@@ -4553,17 +3361,15 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                       backgroundColor: Colors.white10,
                       backgroundImage: profilePath.isNotEmpty
                           ? CachedNetworkImageProvider(
-                              TmdbApi.getProfileUrl(profilePath),
-                            )
+                              TmdbApi.getProfileUrl(profilePath))
                           : null,
                       child: profilePath.isEmpty
                           ? Text(
                               name.isNotEmpty ? name[0].toUpperCase() : '?',
                               style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 26,
-                                fontWeight: FontWeight.w600,
-                              ),
+                                  color: Colors.white54,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w600),
                             )
                           : null,
                     ),
@@ -4574,10 +3380,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                          color: Colors.white, fontSize: 11,
+                          fontWeight: FontWeight.w600),
                     ),
                     Text(
                       character,
@@ -4585,9 +3389,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        color: Colors.white38,
-                        fontSize: 10,
-                      ),
+                          color: Colors.white38, fontSize: 10),
                     ),
                   ],
                 ),
@@ -4609,10 +3411,8 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
         icon: Icon(icon, size: 16, color: Colors.white60),
         onPressed: () {
           if (!_castScrollController.hasClients) return;
-          final target = (_castScrollController.offset + delta).clamp(
-            0.0,
-            _castScrollController.position.maxScrollExtent,
-          );
+          final target = (_castScrollController.offset + delta)
+              .clamp(0.0, _castScrollController.position.maxScrollExtent);
           _castScrollController.animateTo(
             target,
             duration: const Duration(milliseconds: 300),
@@ -4656,9 +3456,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -4675,10 +3473,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                             width: 120,
                             height: 68,
                             color: Colors.white.withValues(alpha: 0.1),
-                            child: const Icon(
-                              Icons.movie,
-                              color: Colors.white24,
-                            ),
+                            child: const Icon(Icons.movie, color: Colors.white24),
                           ),
                         ),
                       ),
@@ -4722,11 +3517,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white38,
-                      size: 16,
-                    ),
+                    const Icon(Icons.arrow_forward_ios, color: Colors.white38, size: 16),
                   ],
                 ),
               ),
@@ -4744,10 +3535,7 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
       try {
         final movie = await _api.findByImdbId(id, mediaType: 'movie');
         if (movie != null && mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie)),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(movie: movie)));
           return;
         }
       } catch (e) {
@@ -4757,24 +3545,16 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
 
     // Fallback: create minimal Movie object
     if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DetailsScreen(
-            movie: Movie(
-              id: id.hashCode,
-              imdbId: id.startsWith('tt') ? id : null,
-              title: id,
-              posterPath: '',
-              backdropPath: '',
-              voteAverage: 0,
-              releaseDate: '',
-              overview: '',
-              mediaType: 'movie',
-            ),
-          ),
+      Navigator.push(context, MaterialPageRoute(builder: (_) => DetailsScreen(
+        movie: Movie(
+          id: id.hashCode,
+          imdbId: id.startsWith('tt') ? id : null,
+          title: id,
+          posterPath: '', backdropPath: '', voteAverage: 0,
+          releaseDate: '', overview: '',
+          mediaType: 'movie',
         ),
-      );
+      )));
     }
   }
 
@@ -4793,16 +3573,10 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             const SizedBox(height: 12),
             const SizedBox(
               height: 40,
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.primaryColor,
-                  ),
-                ),
-              ),
+              child: Center(child: SizedBox(
+                width: 20, height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryColor),
+              )),
             ),
           ],
         ),
@@ -4819,26 +3593,14 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
             children: [
               _sectionLabel('Similar'),
               const Spacer(),
-              Row(
-                children: [
-                  _scrollArrow(
-                    Icons.arrow_back_ios_rounded,
-                    () => _recommendationsScrollController.animateTo(
-                      _recommendationsScrollController.offset - 260,
-                      duration: const Duration(milliseconds: 280),
-                      curve: Curves.easeInOut,
-                    ),
-                  ),
-                  _scrollArrow(
-                    Icons.arrow_forward_ios_rounded,
-                    () => _recommendationsScrollController.animateTo(
-                      _recommendationsScrollController.offset + 260,
-                      duration: const Duration(milliseconds: 280),
-                      curve: Curves.easeInOut,
-                    ),
-                  ),
-                ],
-              ),
+              Row(children: [
+                _scrollArrow(Icons.arrow_back_ios_rounded, () => _recommendationsScrollController.animateTo(
+                  _recommendationsScrollController.offset - 260,
+                  duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
+                _scrollArrow(Icons.arrow_forward_ios_rounded, () => _recommendationsScrollController.animateTo(
+                  _recommendationsScrollController.offset + 260,
+                  duration: const Duration(milliseconds: 280), curve: Curves.easeInOut)),
+              ]),
             ],
           ),
           const SizedBox(height: 12),
@@ -4865,56 +3627,34 @@ class _DetailsScreenState extends State<DetailsScreen> with AtmosphereMixin {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            width: 115,
-                            height: 150,
+                            width: 115, height: 150,
                             color: AppTheme.bgCard,
                             child: poster.isNotEmpty
                                 ? CachedNetworkImage(
                                     imageUrl: poster,
                                     fit: BoxFit.cover,
-                                    width: 115,
-                                    height: 150,
-                                    placeholder: (_, _) =>
-                                        Container(color: AppTheme.bgCard),
+                                    width: 115, height: 150,
+                                    placeholder: (_, _) => Container(color: AppTheme.bgCard),
                                     errorWidget: (_, _, _) => Center(
                                       child: Padding(
                                         padding: const EdgeInsets.all(6),
-                                        child: Text(
-                                          name,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.white38,
-                                          ),
-                                        ),
+                                        child: Text(name, textAlign: TextAlign.center,
+                                          style: const TextStyle(fontSize: 10, color: Colors.white38)),
                                       ),
                                     ),
                                   )
                                 : Center(
                                     child: Padding(
                                       padding: const EdgeInsets.all(6),
-                                      child: Text(
-                                        name,
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.white38,
-                                        ),
-                                      ),
+                                      child: Text(name, textAlign: TextAlign.center,
+                                        style: const TextStyle(fontSize: 10, color: Colors.white38)),
                                     ),
                                   ),
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.white70,
-                          ),
-                        ),
+                        Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 11, color: Colors.white70)),
                       ],
                     ),
                   ),
@@ -4950,39 +3690,19 @@ class _ExpandableSynopsisState extends State<_ExpandableSynopsis> {
       children: [
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 250),
-          firstChild: Text(
-            widget.text,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFFB0B0C0),
-              fontSize: 13.5,
-              height: 1.6,
-            ),
-          ),
-          secondChild: Text(
-            widget.text,
-            style: const TextStyle(
-              color: Color(0xFFB0B0C0),
-              fontSize: 13.5,
-              height: 1.6,
-            ),
-          ),
-          crossFadeState: _expanded
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
+          firstChild: Text(widget.text,
+            maxLines: 3, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Color(0xFFB0B0C0), fontSize: 13.5, height: 1.6)),
+          secondChild: Text(widget.text,
+            style: const TextStyle(color: Color(0xFFB0B0C0), fontSize: 13.5, height: 1.6)),
+          crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
         ),
         const SizedBox(height: 4),
         GestureDetector(
           onTap: () => setState(() => _expanded = !_expanded),
-          child: Text(
-            _expanded ? 'Show less' : 'Show more',
-            style: TextStyle(
-              color: AppTheme.primaryColor.withValues(alpha: 0.9),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          child: Text(_expanded ? 'Show less' : 'Show more',
+            style: TextStyle(color: AppTheme.primaryColor.withValues(alpha: 0.9),
+              fontSize: 12, fontWeight: FontWeight.w600)),
         ),
       ],
     );
@@ -5030,18 +3750,16 @@ class _AudioFilterMenuState extends State<_AudioFilterMenu> {
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
               child: Row(
                 children: [
-                  const Icon(Icons.graphic_eq, size: 14, color: Colors.white54),
+                  const Icon(Icons.graphic_eq,
+                      size: 14, color: Colors.white54),
                   const SizedBox(width: 6),
                   const Expanded(
-                    child: Text(
-                      'Audio',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+                    child: Text('Audio',
+                        style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5)),
                   ),
                   if (_selected.isNotEmpty)
                     GestureDetector(
@@ -5049,13 +3767,10 @@ class _AudioFilterMenuState extends State<_AudioFilterMenu> {
                         setState(() => _selected.clear());
                         widget.onChanged({});
                       },
-                      child: Text(
-                        'Clear',
-                        style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: 11,
-                        ),
-                      ),
+                      child: Text('Clear',
+                          style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontSize: 11)),
                     ),
                 ],
               ),
@@ -5066,53 +3781,35 @@ class _AudioFilterMenuState extends State<_AudioFilterMenu> {
               return InkWell(
                 onTap: () {
                   setState(() {
-                    if (on) {
-                      _selected.remove(tag);
-                    } else {
-                      _selected.add(tag);
-                    }
+                    if (on) { _selected.remove(tag); } else { _selected.add(tag); }
                   });
                   widget.onChanged(Set<String>.from(_selected));
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: Row(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          color: on
-                              ? AppTheme.primaryColor
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: on ? AppTheme.primaryColor : Colors.white30,
-                            width: 1.5,
-                          ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      width: 18, height: 18,
+                      decoration: BoxDecoration(
+                        color: on ? AppTheme.primaryColor : Colors.transparent,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: on ? AppTheme.primaryColor : Colors.white30,
+                          width: 1.5,
                         ),
-                        child: on
-                            ? const Icon(
-                                Icons.check_rounded,
-                                size: 13,
-                                color: Colors.white,
-                              )
-                            : null,
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        tag,
+                      child: on
+                          ? const Icon(Icons.check_rounded,
+                              size: 13, color: Colors.white)
+                          : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(tag,
                         style: TextStyle(
-                          color: on ? Colors.white : Colors.white60,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
+                            color: on ? Colors.white : Colors.white60,
+                            fontSize: 13)),
+                  ]),
                 ),
               );
             }),

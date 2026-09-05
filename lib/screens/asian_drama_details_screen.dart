@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 
 import '../api/kisskh_service.dart';
 import '../utils/app_theme.dart';
-import '../widgets/dizzy_components.dart';
 import '../widgets/hover_scale.dart';
 import 'asian_drama_player_screen.dart';
 
@@ -86,18 +85,16 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
 
   void _play(KdramaEpisode ep, {Duration? startPosition}) {
     final det = _details!;
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute(
-            builder: (_) => AsianDramaPlayerScreen(
-              drama: det.toCard(),
-              episode: ep,
-              allEpisodes: det.episodes,
-              startPosition: startPosition,
-            ),
-          ),
-        )
-        .then((_) => _refreshProgress());
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AsianDramaPlayerScreen(
+          drama: det.toCard(),
+          episode: ep,
+          allEpisodes: det.episodes,
+          startPosition: startPosition,
+        ),
+      ),
+    ).then((_) => _refreshProgress());
   }
 
   void _playFirst() {
@@ -148,32 +145,68 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
                   ),
                 )
               : _error != null
-              ? _buildError()
-              : CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    _buildSliverAppBar(),
-                    SliverToBoxAdapter(child: _buildTitleBlock()),
-                    SliverToBoxAdapter(child: _buildActionRow()),
-                    SliverToBoxAdapter(child: _buildSynopsis()),
-                    SliverToBoxAdapter(child: _buildMetaGrid()),
-                    SliverToBoxAdapter(child: _buildEpisodesHeader()),
-                    _buildEpisodesGrid(),
-                    const SliverToBoxAdapter(child: SizedBox(height: 80)),
-                  ],
-                ),
+                  ? _buildError()
+                  : CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        _buildSliverAppBar(),
+                        SliverToBoxAdapter(child: _buildTitleBlock()),
+                        SliverToBoxAdapter(child: _buildActionRow()),
+                        SliverToBoxAdapter(child: _buildSynopsis()),
+                        SliverToBoxAdapter(child: _buildMetaGrid()),
+                        SliverToBoxAdapter(child: _buildEpisodesHeader()),
+                        _buildEpisodesGrid(),
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 80),
+                        ),
+                      ],
+                    ),
         );
       },
     );
   }
 
   Widget _buildError() {
-    return DizzyEmptyState(
-      title: 'Failed to Load',
-      description: _error ?? 'An error occurred',
-      icon: Icons.error_outline_rounded,
-      actionLabel: 'Retry',
-      onActionTap: _load,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline_rounded,
+                color: AppTheme.primaryColor, size: 56),
+            const SizedBox(height: 14),
+            Text(
+              'Failed to load:\n$_error',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton.icon(
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Back',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -186,7 +219,9 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
       stretch: true,
       backgroundColor: AppTheme.bgDark,
       iconTheme: const IconThemeData(color: Colors.white),
-      flexibleSpace: FlexibleSpaceBar(background: _buildBackdrop(det)),
+      flexibleSpace: FlexibleSpaceBar(
+        background: _buildBackdrop(det),
+      ),
     );
   }
 
@@ -254,7 +289,8 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
                 _chip(det.status, accent: AppTheme.primaryColor),
               if (det.episodesCount > 0) _chip('${det.episodesCount} EP'),
               if (det.label != null && det.label!.isNotEmpty)
-                _chip(det.label!, accent: const Color(0xFFFF8F00)),
+                _chip(det.label!,
+                    accent: const Color(0xFFFF8F00)),
             ],
           ),
         ],
@@ -442,7 +478,8 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
       if (det.country.isNotEmpty) ('Country', det.country),
       if (det.type.isNotEmpty) ('Type', det.type),
       if (det.status.isNotEmpty) ('Status', det.status),
-      if (det.episodesCount > 0) ('Episodes', '${det.episodesCount}'),
+      if (det.episodesCount > 0)
+        ('Episodes', '${det.episodesCount}'),
     ];
     if (entries.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -463,16 +500,16 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
             decoration: BoxDecoration(
               color: AppTheme.bgCard.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.06),
+              ),
             ),
             child: Column(
               children: [
                 for (var i = 0; i < entries.length; i++) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
+                        horizontal: 14, vertical: 10),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -541,7 +578,8 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
           ),
           const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(10),
@@ -563,7 +601,8 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
               onSelected: (v) => setState(() => _activeChunk = v),
               itemBuilder: (_) => List.generate(chunkCount, (i) {
                 final start = i * _chunkSize + 1;
-                final end = ((i + 1) * _chunkSize).clamp(0, eps.length);
+                final end =
+                    ((i + 1) * _chunkSize).clamp(0, eps.length);
                 return PopupMenuItem<int>(
                   value: i,
                   child: Text(
@@ -574,9 +613,7 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
               }),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                    horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
@@ -597,11 +634,8 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
-                      Icons.expand_more_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                    const Icon(Icons.expand_more_rounded,
+                        color: Colors.white, size: 18),
                   ],
                 ),
               ),
@@ -642,54 +676,57 @@ class _AsianDramaDetailsScreenState extends State<AsianDramaDetailsScreen> {
           crossAxisSpacing: 8,
           childAspectRatio: 1.6,
         ),
-        delegate: SliverChildBuilderDelegate((_, i) {
-          final ep = slice[i];
-          final isActive = epNum != null && ep.number == epNum;
-          return HoverScale(
-            onTap: () => _play(ep),
-            radius: 10,
-            child: Container(
-              decoration: BoxDecoration(
-                color: isActive
-                    ? AppTheme.primaryColor.withValues(alpha: 0.25)
-                    : AppTheme.bgCard.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
+        delegate: SliverChildBuilderDelegate(
+          (_, i) {
+            final ep = slice[i];
+            final isActive = epNum != null && ep.number == epNum;
+            return HoverScale(
+              onTap: () => _play(ep),
+              radius: 10,
+              child: Container(
+                decoration: BoxDecoration(
                   color: isActive
-                      ? AppTheme.primaryColor.withValues(alpha: 0.7)
-                      : Colors.white.withValues(alpha: 0.06),
+                      ? AppTheme.primaryColor.withValues(alpha: 0.25)
+                      : AppTheme.bgCard.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isActive
+                        ? AppTheme.primaryColor.withValues(alpha: 0.7)
+                        : Colors.white.withValues(alpha: 0.06),
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        ep.displayNumber,
+                        style: TextStyle(
+                          color: isActive
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.92),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'EP',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      ep.displayNumber,
-                      style: TextStyle(
-                        color: isActive
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.92),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'EP',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }, childCount: slice.length),
+            );
+          },
+          childCount: slice.length,
+        ),
       ),
     );
   }

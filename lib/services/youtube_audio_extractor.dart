@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-/// Lightweight, Dart port of Dizzy TV's `YouTubeExtractor` + `MusicAudioExtractor`.
+/// Lightweight, Dart port of PlayTorrio TV's `YouTubeExtractor` + `MusicAudioExtractor`.
 ///
 /// Fast path for music playback:
 ///   1. Search YouTube HTML once, regex-pick the first 11-char videoId.
